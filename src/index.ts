@@ -12,6 +12,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
+import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 
 const execAsync = promisify(exec);
 
@@ -97,7 +98,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
  * Handler for the create_note tool.
  * Creates a new note with the provided title and content, and returns success message.
  */
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
+server.setRequestHandler(CallToolRequestSchema, async (request) : Promise<{ toolResult: CallToolResult }> => {
     switch (request.params.name) {
         case "run_command": {
             const command = String(request.params.arguments?.command);
