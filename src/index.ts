@@ -112,10 +112,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) : Promise<{ tool
                         {
                             type: "text",
                             text: stdout,
+                            name: "STDOUT",
                         },
                         {
                             type: "text",
                             text: stderr,
+                            name: "STDERR",
                         },
                     ],
                 },
