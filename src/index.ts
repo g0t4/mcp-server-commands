@@ -11,24 +11,6 @@ import {
   GetPromptRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 
-/**
- * Type alias for a note object.
- */
-type Note = { title: string, content: string };
-
-/**
- * Simple in-memory storage for notes.
- * In a real implementation, this would likely be backed by a database.
- */
-const notes: { [id: string]: Note } = {
-  "1": { title: "First Note", content: "This is note 1" },
-  "2": { title: "Second Note", content: "This is note 2" }
-};
-
-/**
- * Create an MCP server with capabilities for resources (to list/read notes),
- * tools (to create new notes), and prompts (to summarize notes).
- */
 const server = new Server(
   {
     name: "mcp-server-commands",
@@ -36,52 +18,52 @@ const server = new Server(
   },
   {
     capabilities: {
-      resources: {},
+      //resources: {},
       tools: {},
-      prompts: {},
+      //prompts: {},
     },
   }
 );
 
-/**
- * Handler for listing available notes as resources.
- * Each note is exposed as a resource with:
- * - A note:// URI scheme
- * - Plain text MIME type
- * - Human readable name and description (now including the note title)
- */
-server.setRequestHandler(ListResourcesRequestSchema, async () => {
-  return {
-    resources: Object.entries(notes).map(([id, note]) => ({
-      uri: `note:///${id}`,
-      mimeType: "text/plain",
-      name: note.title,
-      description: `A text note: ${note.title}`
-    }))
-  };
-});
+///**
+// * Handler for listing available notes as resources.
+// * Each note is exposed as a resource with:
+// * - A note:// URI scheme
+// * - Plain text MIME type
+// * - Human readable name and description (now including the note title)
+// */
+//server.setRequestHandler(ListResourcesRequestSchema, async () => {
+//  return {
+//    resources: Object.entries(notes).map(([id, note]) => ({
+//      uri: `note:///${id}`,
+//      mimeType: "text/plain",
+//      name: note.title,
+//      description: `A text note: ${note.title}`
+//    }))
+//  };
+//});
 
-/**
- * Handler for reading the contents of a specific note.
- * Takes a note:// URI and returns the note content as plain text.
- */
-server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
-  const url = new URL(request.params.uri);
-  const id = url.pathname.replace(/^\//, '');
-  const note = notes[id];
-
-  if (!note) {
-    throw new Error(`Note ${id} not found`);
-  }
-
-  return {
-    contents: [{
-      uri: request.params.uri,
-      mimeType: "text/plain",
-      text: note.content
-    }]
-  };
-});
+///**
+// * Handler for reading the contents of a specific note.
+// * Takes a note:// URI and returns the note content as plain text.
+// */
+//server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+//  const url = new URL(request.params.uri);
+//  const id = url.pathname.replace(/^\//, '');
+//  const note = notes[id];
+//
+//  if (!note) {
+//    throw new Error(`Note ${id} not found`);
+//  }
+//
+//  return {
+//    contents: [{
+//      uri: request.params.uri,
+//      mimeType: "text/plain",
+//      text: note.content
+//    }]
+//  };
+//});
 
 /**
  * Handler that lists available tools.
@@ -141,67 +123,63 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 });
 
-/**
- * Handler that lists available prompts.
- * Exposes a single "summarize_notes" prompt that summarizes all notes.
- */
-server.setRequestHandler(ListPromptsRequestSchema, async () => {
-  return {
-    prompts: [
-      {
-        name: "summarize_notes",
-        description: "Summarize all notes",
-      }
-    ]
-  };
-});
+///**
+// * Handler that lists available prompts.
+// * Exposes a single "summarize_notes" prompt that summarizes all notes.
+// */
+//server.setRequestHandler(ListPromptsRequestSchema, async () => {
+//  return {
+//    prompts: [
+//      {
+//        name: "summarize_notes",
+//        description: "Summarize all notes",
+//      }
+//    ]
+//  };
+//});
 
-/**
- * Handler for the summarize_notes prompt.
- * Returns a prompt that requests summarization of all notes, with the notes' contents embedded as resources.
- */
-server.setRequestHandler(GetPromptRequestSchema, async (request) => {
-  if (request.params.name !== "summarize_notes") {
-    throw new Error("Unknown prompt");
-  }
+///**
+// * Handler for the summarize_notes prompt.
+// * Returns a prompt that requests summarization of all notes, with the notes' contents embedded as resources.
+// */
+//server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+//  if (request.params.name !== "summarize_notes") {
+//    throw new Error("Unknown prompt");
+//  }
+//
+//  const embeddedNotes = Object.entries(notes).map(([id, note]) => ({
+//    type: "resource" as const,
+//    resource: {
+//      uri: `note:///${id}`,
+//      mimeType: "text/plain",
+//      text: note.content
+//    }
+//  }));
+//
+//  return {
+//    messages: [
+//      {
+//        role: "user",
+//        content: {
+//          type: "text",
+//          text: "Please summarize the following notes:"
+//        }
+//      },
+//      ...embeddedNotes.map(note => ({
+//        role: "user" as const,
+//        content: note
+//      })),
+//      {
+//        role: "user",
+//        content: {
+//          type: "text",
+//          text: "Provide a concise summary of all the notes above."
+//        }
+//      }
+//    ]
+//  };
+//});
 
-  const embeddedNotes = Object.entries(notes).map(([id, note]) => ({
-    type: "resource" as const,
-    resource: {
-      uri: `note:///${id}`,
-      mimeType: "text/plain",
-      text: note.content
-    }
-  }));
-
-  return {
-    messages: [
-      {
-        role: "user",
-        content: {
-          type: "text",
-          text: "Please summarize the following notes:"
-        }
-      },
-      ...embeddedNotes.map(note => ({
-        role: "user" as const,
-        content: note
-      })),
-      {
-        role: "user",
-        content: {
-          type: "text",
-          text: "Provide a concise summary of all the notes above."
-        }
-      }
-    ]
-  };
-});
-
-/**
- * Start the server using stdio transport.
- * This allows the server to communicate via standard input/output streams.
- */
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
