@@ -107,16 +107,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request) : Promise<{ tool
             }
             const { stdout, stderr } = await execAsync(command);
             return {
-                content: [
-                    {
-                        type: "text",
-                        text: stdout,
-                    },
-                    {
-                        type: "text",
-                        text: stderr,
-                    },
-                ],
+                toolResult: {
+                    content: [
+                        {
+                            type: "text",
+                            text: stdout,
+                        },
+                        {
+                            type: "text",
+                            text: stderr,
+                        },
+                    ],
+                },
             };
         }
         default:
