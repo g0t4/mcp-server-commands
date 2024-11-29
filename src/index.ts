@@ -129,7 +129,7 @@ server.setRequestHandler(
                     };
                 } catch (error) {
                     const { message, stdout, stderr } = error as {
-                        // TODO type?
+                        // todo is there a builtin type I can use instead? ALSO is stdout/stderr ? nullable?
                         message: string;
                         stdout?: string;
                         stderr?: string;
@@ -143,7 +143,16 @@ server.setRequestHandler(
                                     text: message,
                                     name: "ERROR",
                                 },
-                                // TODO why the F can't I include the stdout and stderr?
+                                {
+                                    type: "text",
+                                    text: stderr || "",
+                                    name: "STDERR",
+                                },
+                                {
+                                    type: "text",
+                                    text: stdout || "",
+                                    name: "STDOUT",
+                                },
                             ],
                         },
                     };
