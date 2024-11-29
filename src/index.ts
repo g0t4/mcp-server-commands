@@ -98,35 +98,62 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
  * Handler for the create_note tool.
  * Creates a new note with the provided title and content, and returns success message.
  */
-server.setRequestHandler(CallToolRequestSchema, async (request) : Promise<{ toolResult: CallToolResult }> => {
-    switch (request.params.name) {
-        case "run_command": {
-            const command = String(request.params.arguments?.command);
-            if (!command) {
-                throw new Error("Command is required");
+server.setRequestHandler(
+    CallToolRequestSchema,
+    async (request): Promise<{ toolResult: CallToolResult }> => {
+        switch (request.params.name) {
+            case "run_command": {
+                const command = String(request.params.arguments?.command);
+                if (!command) {
+                    throw new Error("Command is required");
+                }
+
+                try {
+                    const { stdout, stderr } = await execAsync(command);
+                    return {
+                        toolResult: {
+                            isError: false,
+                            content: [
+                                {
+                                    type: "text",
+                                    text: stdout,
+                                    name: "STDOUT",
+                                },
+                                {
+                                    type: "text",
+                                    text: stderr,
+                                    name: "STDERR",
+                                },
+                            ],
+                        },
+                    };
+                } catch (error) {
+                    const { message, stdout, stderr } = error as {
+                        // TODO type?
+                        message: string;
+                        stdout?: string;
+                        stderr?: string;
+                    };
+                    return {
+                        toolResult: {
+                            isError: true,
+                            content: [
+                                {
+                                    type: "text",
+                                    text: message,
+                                    name: "ERROR",
+                                },
+                                // TODO why the F can't I include the stdout and stderr?
+                            ],
+                        },
+                    };
+                }
             }
-            const { stdout, stderr } = await execAsync(command);
-            return {
-                toolResult: {
-                    content: [
-                        {
-                            type: "text",
-                            text: stdout,
-                            name: "STDOUT",
-                        },
-                        {
-                            type: "text",
-                            text: stderr,
-                            name: "STDERR",
-                        },
-                    ],
-                },
-            };
+            default:
+                throw new Error("Unknown tool");
         }
-        default:
-            throw new Error("Unknown tool");
     }
-});
+);
 
 ///**
 // * Handler that lists available prompts.
