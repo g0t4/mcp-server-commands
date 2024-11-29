@@ -3,26 +3,30 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
-  CallToolRequestSchema,
-  ListResourcesRequestSchema,
-  ListToolsRequestSchema,
-  ReadResourceRequestSchema,
-  ListPromptsRequestSchema,
-  GetPromptRequestSchema,
+    CallToolRequestSchema,
+    ListResourcesRequestSchema,
+    ListToolsRequestSchema,
+    ReadResourceRequestSchema,
+    ListPromptsRequestSchema,
+    GetPromptRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
+import { exec } from "node:child_process";
+import { promisify } from "node:util";
+
+const execAsync = promisify(exec);
 
 const server = new Server(
-  {
-    name: "mcp-server-commands",
-    version: "0.1.0",
-  },
-  {
-    capabilities: {
-      //resources: {},
-      tools: {},
-      //prompts: {},
+    {
+        name: "mcp-server-commands",
+        version: "0.1.0",
     },
-  }
+    {
+        capabilities: {
+            //resources: {},
+            tools: {},
+            //prompts: {},
+        },
+    }
 );
 
 ///**
@@ -70,28 +74,23 @@ const server = new Server(
  * Exposes a single "create_note" tool that lets clients create new notes.
  */
 server.setRequestHandler(ListToolsRequestSchema, async () => {
-  return {
-    tools: [
-      {
-        name: "create_note",
-        description: "Create a new note",
-        inputSchema: {
-          type: "object",
-          properties: {
-            title: {
-              type: "string",
-              description: "Title of the note"
+    return {
+        tools: [
+            {
+                name: "run_command",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        command: {
+                            type: "string",
+                            description: "Command to run",
+                        },
+                    },
+                    required: ["command"],
+                },
             },
-            content: {
-              type: "string",
-              description: "Text content of the note"
-            }
-          },
-          required: ["title", "content"]
-        }
-      }
-    ]
-  };
+        ],
+    };
 });
 
 /**
@@ -99,28 +98,29 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
  * Creates a new note with the provided title and content, and returns success message.
  */
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  switch (request.params.name) {
-    case "create_note": {
-      const title = String(request.params.arguments?.title);
-      const content = String(request.params.arguments?.content);
-      if (!title || !content) {
-        throw new Error("Title and content are required");
-      }
-
-      const id = String(Object.keys(notes).length + 1);
-      notes[id] = { title, content };
-
-      return {
-        content: [{
-          type: "text",
-          text: `Created note ${id}: ${title}`
-        }]
-      };
+    switch (request.params.name) {
+        case "run_command": {
+            const command = String(request.params.arguments?.command);
+            if (!command) {
+                throw new Error("Command is required");
+            }
+            const { stdout, stderr } = await execAsync(command);
+            return {
+                content: [
+                    {
+                        type: "text",
+                        text: stdout,
+                    },
+                    {
+                        type: "text",
+                        text: stderr,
+                    },
+                ],
+            };
+        }
+        default:
+            throw new Error("Unknown tool");
     }
-
-    default:
-      throw new Error("Unknown tool");
-  }
 });
 
 ///**
@@ -181,11 +181,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 //});
 
 async function main() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
 }
 
 main().catch((error) => {
-  console.error("Server error:", error);
-  process.exit(1);
+    console.error("Server error:", error);
+    process.exit(1);
 });
