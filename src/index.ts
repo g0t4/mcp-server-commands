@@ -197,17 +197,19 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
     }
 
     const { stdout, stderr } = await execAsync(command);
-    const messages: PromptMessage[] = [];
+    // let error bubble up, errors look good in zed /prompts (i.e. command not found)
 
-    messages.push({
-        role: "user",
-        content: {
-            type: "text",
-            text:
-                "I ran the following command, if there is any output it will be shown below:\n" +
-                command,
+    const messages: PromptMessage[] = [
+        {
+            role: "user",
+            content: {
+                type: "text",
+                text:
+                    "I ran the following command, if there is any output it will be shown below:\n" +
+                    command,
+            },
         },
-    });
+    ];
     if (stdout && stdout.length > 0) {
         messages.push({
             role: "user",
