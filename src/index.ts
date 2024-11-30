@@ -166,62 +166,54 @@ server.setRequestHandler(
     }
 );
 
-///**
-// * Handler that lists available prompts.
-// * Exposes a single "summarize_notes" prompt that summarizes all notes.
-// */
-//server.setRequestHandler(ListPromptsRequestSchema, async () => {
-//  return {
-//    prompts: [
-//      {
-//        name: "summarize_notes",
-//        description: "Summarize all notes",
-//      }
-//    ]
-//  };
-//});
+server.setRequestHandler(ListPromptsRequestSchema, async () => {
+  return {
+    prompts: [
+      {
+        name: "summarize_notes",
+        description: "Summarize all notes",
+      }
+    ]
+  };
+});
 
-///**
-// * Handler for the summarize_notes prompt.
-// * Returns a prompt that requests summarization of all notes, with the notes' contents embedded as resources.
-// */
-//server.setRequestHandler(GetPromptRequestSchema, async (request) => {
-//  if (request.params.name !== "summarize_notes") {
-//    throw new Error("Unknown prompt");
-//  }
-//
-//  const embeddedNotes = Object.entries(notes).map(([id, note]) => ({
-//    type: "resource" as const,
-//    resource: {
-//      uri: `note:///${id}`,
-//      mimeType: "text/plain",
-//      text: note.content
-//    }
-//  }));
-//
-//  return {
-//    messages: [
-//      {
-//        role: "user",
-//        content: {
-//          type: "text",
-//          text: "Please summarize the following notes:"
-//        }
-//      },
-//      ...embeddedNotes.map(note => ({
-//        role: "user" as const,
-//        content: note
-//      })),
-//      {
-//        role: "user",
-//        content: {
-//          type: "text",
-//          text: "Provide a concise summary of all the notes above."
-//        }
-//      }
-//    ]
-//  };
-//});
+server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+  if (request.params.name !== "summarize_notes") {
+    throw new Error("Unknown prompt");
+  }
+
+  const embeddedNotes = Object.entries(notes).map(([id, note]) => ({
+    type: "resource" as const,
+    resource: {
+      uri: `note:///${id}`,
+      mimeType: "text/plain",
+      text: note.content
+    }
+  }));
+
+  return {
+    messages: [
+      {
+        role: "user",
+        content: {
+          type: "text",
+          text: "Please summarize the following notes:"
+        }
+      },
+      ...embeddedNotes.map(note => ({
+        role: "user" as const,
+        content: note
+      })),
+      {
+        role: "user",
+        content: {
+          type: "text",
+          text: "Provide a concise summary of all the notes above."
+        }
+      }
+    ]
+  };
+});
 
 async function main() {
     console.log("Starting server...");
