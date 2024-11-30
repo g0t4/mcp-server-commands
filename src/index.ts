@@ -5,6 +5,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import {
     CallToolRequestSchema,
     ListResourcesRequestSchema,
+    PromptMessage,
     ListToolsRequestSchema,
     ReadResourceRequestSchema,
     ListPromptsRequestSchema,
@@ -196,34 +197,34 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
     }
 
     const { stdout, stderr } = await execAsync(command);
+    const messages: PromptMessage[] = [];
 
-    return {
-        messages: [
-            {
-                role: "user",
-                content: {
-                    type: "text",
-                    text:
-                        "I ran the following command:\n" +
-                        request.params.arguments?.command,
-                },
+    messages.push({
+        role: "user",
+        content: {
+            type: "text",
+            text: "I ran the following command:\n" + command,
+        },
+    });
+    if (stdout) {
+        messages.push({
+            role: "user",
+            content: {
+                type: "text",
+                text: "STDOUT:\n" + stdout,
             },
-            {
-                role: "user",
-                content: {
-                    type: "text",
-                    text: "STDOUT:\n" + stdout,
-                },
+        });
+    }
+    if (stderr) {
+        messages.push({
+            role: "user",
+            content: {
+                type: "text",
+                text: "STDERR:\n" + stderr,
             },
-            {
-                role: "user",
-                content: {
-                    type: "text",
-                    text: "STDERR:\n" + stderr,
-                },
-            },
-        ],
-    };
+        });
+    }
+    return { messages };
 });
 
 async function main() {
