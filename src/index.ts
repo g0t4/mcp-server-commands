@@ -167,39 +167,40 @@ server.setRequestHandler(
 );
 
 server.setRequestHandler(ListPromptsRequestSchema, async () => {
-  return {
-    prompts: [
-      {
-        name: "include_command_output",
-        description: "Run the command and inline its output into the prompt, essentially allows user to decide what commands to run instead of the AI deciding, the mirror of a tool.",
-      }
-    ]
-  };
+    return {
+        prompts: [
+            {
+                name: "include_command_output",
+                description:
+                    "Run the command and inline its output into the prompt, essentially allows user to decide what commands to run instead of the AI deciding, the mirror of a tool.",
+            },
+        ],
+    };
 });
 
 server.setRequestHandler(GetPromptRequestSchema, async (request) => {
-  if (request.params.name !== "include_command_output") {
-    throw new Error("Unknown prompt");
-  }
+    if (request.params.name !== "include_command_output") {
+        throw new Error("Unknown prompt");
+    }
 
-  return {
-    messages: [
-      {
-        role: "user",
-        content: {
-          type: "text",
-          text: "Please summarize the following notes:"
-        }
-      },
-      {
-        role: "user",
-        content: {
-          type: "text",
-          text: "Provide a concise summary of all the notes above."
-        }
-      }
-    ]
-  };
+    return {
+        messages: [
+            {
+                role: "user",
+                content: {
+                    type: "text",
+                    text: "Please summarize the following notes:",
+                },
+            },
+            {
+                role: "user",
+                content: {
+                    type: "text",
+                    text: "Provide a concise summary of all the notes above.",
+                },
+            },
+        ],
+    };
 });
 
 async function main() {
