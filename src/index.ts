@@ -182,15 +182,6 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
     throw new Error("Unknown prompt");
   }
 
-  const embeddedNotes = Object.entries(notes).map(([id, note]) => ({
-    type: "resource" as const,
-    resource: {
-      uri: `note:///${id}`,
-      mimeType: "text/plain",
-      text: note.content
-    }
-  }));
-
   return {
     messages: [
       {
@@ -200,10 +191,6 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
           text: "Please summarize the following notes:"
         }
       },
-      ...embeddedNotes.map(note => ({
-        role: "user" as const,
-        content: note
-      })),
       {
         role: "user",
         content: {
