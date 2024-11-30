@@ -189,20 +189,36 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
         throw new Error("Unknown prompt");
     }
 
+    const command = String(request.params.arguments?.command);
+    if (!command) {
+        throw new Error("Command is required");
+    }
+
+    const { stdout, stderr } = await execAsync(command);
+
     return {
         messages: [
             {
                 role: "user",
                 content: {
                     type: "text",
-                    text: "Please summarize the following notes:",
+                    text:
+                        "I ran the following command:\n" +
+                        request.params.arguments?.command,
                 },
             },
             {
                 role: "user",
                 content: {
-                    type: "text",
-                    text: "Provide a concise summary of all the notes above.",
+                    type: "STDOUT",
+                    text: stdout,
+                },
+            },
+            {
+                role: "user",
+                content: {
+                    type: "STDERR",
+                    text: stderr,
                 },
             },
         ],
