@@ -170,15 +170,15 @@ server.setRequestHandler(ListPromptsRequestSchema, async () => {
   return {
     prompts: [
       {
-        name: "summarize_notes",
-        description: "Summarize all notes",
+        name: "include_command_output",
+        description: "Run the command and inline its output into the prompt, essentially allows user to decide what commands to run instead of the AI deciding, the mirror of a tool.",
       }
     ]
   };
 });
 
 server.setRequestHandler(GetPromptRequestSchema, async (request) => {
-  if (request.params.name !== "summarize_notes") {
+  if (request.params.name !== "include_command_output") {
     throw new Error("Unknown prompt");
   }
 
