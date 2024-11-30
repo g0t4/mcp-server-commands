@@ -173,12 +173,13 @@ server.setRequestHandler(ListPromptsRequestSchema, async () => {
                 name: "include_command_output",
                 description:
                     "Run the command and inline its output into the prompt, essentially allows user to decide what commands to run instead of the AI deciding, the mirror of a tool.",
-                arguments: {
-                    command: {
-                        type: "string",
+                arguments: [
+                    {
+                        name: "command",
                         description: "Command to run",
+                        required: true,
                     },
-                },
+                ],
             },
         ],
     };
@@ -210,15 +211,15 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
             {
                 role: "user",
                 content: {
-                    type: "STDOUT",
-                    text: stdout,
+                    type: "text",
+                    text: "STDOUT:\n" + stdout,
                 },
             },
             {
                 role: "user",
                 content: {
-                    type: "STDERR",
-                    text: stderr,
+                    type: "text",
+                    text: "STDERR:\n" + stderr,
                 },
             },
         ],
