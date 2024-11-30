@@ -139,6 +139,7 @@ server.setRequestHandler(
                             isError: true,
                             content: [
                                 {
+                                    // most of the time this is gonna match stderr, TODO do I want/need both error and stderr?
                                     type: "text",
                                     text: message,
                                     name: "ERROR",
@@ -149,6 +150,7 @@ server.setRequestHandler(
                                     name: "STDERR",
                                 },
                                 {
+                                    // keep STDOUT b/c there might be some useful output before the failure
                                     type: "text",
                                     text: stdout || "",
                                     name: "STDOUT",
