@@ -173,6 +173,12 @@ server.setRequestHandler(ListPromptsRequestSchema, async () => {
                 name: "include_command_output",
                 description:
                     "Run the command and inline its output into the prompt, essentially allows user to decide what commands to run instead of the AI deciding, the mirror of a tool.",
+                arguments: {
+                    command: {
+                        type: "string",
+                        description: "Command to run",
+                    },
+                },
             },
         ],
     };
