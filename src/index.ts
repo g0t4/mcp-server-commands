@@ -177,7 +177,6 @@ server.setRequestHandler(ListPromptsRequestSchema, async () => {
                 arguments: [
                     {
                         name: "command",
-                        description: "Command to run",
                         required: true,
                     },
                 ],
