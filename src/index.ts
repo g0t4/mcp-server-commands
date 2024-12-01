@@ -31,46 +31,6 @@ const server = new Server(
     }
 );
 
-///**
-// * Handler for listing available notes as resources.
-// * Each note is exposed as a resource with:
-// * - A note:// URI scheme
-// * - Plain text MIME type
-// * - Human readable name and description (now including the note title)
-// */
-//server.setRequestHandler(ListResourcesRequestSchema, async () => {
-//  return {
-//    resources: Object.entries(notes).map(([id, note]) => ({
-//      uri: `note:///${id}`,
-//      mimeType: "text/plain",
-//      name: note.title,
-//      description: `A text note: ${note.title}`
-//    }))
-//  };
-//});
-
-///**
-// * Handler for reading the contents of a specific note.
-// * Takes a note:// URI and returns the note content as plain text.
-// */
-//server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
-//  const url = new URL(request.params.uri);
-//  const id = url.pathname.replace(/^\//, '');
-//  const note = notes[id];
-//
-//  if (!note) {
-//    throw new Error(`Note ${id} not found`);
-//  }
-//
-//  return {
-//    contents: [{
-//      uri: request.params.uri,
-//      mimeType: "text/plain",
-//      text: note.content
-//    }]
-//  };
-//});
-
 server.setRequestHandler(ListToolsRequestSchema, async () => {
     return {
         tools: [
