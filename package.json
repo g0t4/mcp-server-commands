@@ -11,6 +11,7 @@
     "build"
   ],
   "scripts": {
+    "clean": "rm -rf build",
     "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
     "prepare": "npm run build",
     "watch": "tsc --watch",
