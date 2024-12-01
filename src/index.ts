@@ -209,7 +209,7 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
             },
         },
     ];
-    if (stdout && stdout.length > 0) {
+    if (stdout) {
         messages.push({
             role: "user",
             content: {
@@ -218,7 +218,7 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
             },
         });
     }
-    if (stderr && stderr.length > 0) {
+    if (stderr) {
         messages.push({
             role: "user",
             content: {
