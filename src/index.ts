@@ -113,7 +113,6 @@ server.setRequestHandler(
                     const { stdout, stderr } = await execAsync(command);
                     return {
                         toolResult: {
-                            isError: false,
                             content: [
                                 {
                                     type: "text",
@@ -137,7 +136,6 @@ server.setRequestHandler(
                     };
                     return {
                         toolResult: {
-                            isError: true,
                             content: [
                                 {
                                     // most of the time this is gonna match stderr, TODO do I want/need both error and stderr?
