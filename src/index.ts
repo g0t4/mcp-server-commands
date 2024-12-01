@@ -71,10 +71,6 @@ const server = new Server(
 //  };
 //});
 
-/**
- * Handler that lists available tools.
- * Exposes a single "create_note" tool that lets clients create new notes.
- */
 server.setRequestHandler(ListToolsRequestSchema, async () => {
     return {
         tools: [
@@ -95,10 +91,6 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     };
 });
 
-/**
- * Handler for the create_note tool.
- * Creates a new note with the provided title and content, and returns success message.
- */
 server.setRequestHandler(
     CallToolRequestSchema,
     async (request): Promise<{ toolResult: CallToolResult }> => {
