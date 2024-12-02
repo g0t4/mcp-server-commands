@@ -4,10 +4,8 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
     CallToolRequestSchema,
-    ListResourcesRequestSchema,
     PromptMessage,
     ListToolsRequestSchema,
-    ReadResourceRequestSchema,
     ListPromptsRequestSchema,
     GetPromptRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
@@ -65,6 +63,7 @@ server.setRequestHandler(
                     const { stdout, stderr } = await execAsync(command);
                     return {
                         toolResult: {
+                            isError: false,
                             content: [
                                 {
                                     type: "text",
@@ -88,6 +87,7 @@ server.setRequestHandler(
                     };
                     return {
                         toolResult: {
+                            isError: true,
                             content: [
                                 {
                                     // most of the time this is gonna match stderr, TODO do I want/need both error and stderr?
@@ -121,7 +121,7 @@ server.setRequestHandler(ListPromptsRequestSchema, async () => {
     return {
         prompts: [
             {
-                name: "include_command_output",
+                name: "run_command",
                 description:
                     "Include command output in the prompt. Instead of a tool call, the user decides what commands are relevant.",
                 arguments: [
@@ -136,7 +136,7 @@ server.setRequestHandler(ListPromptsRequestSchema, async () => {
 });
 
 server.setRequestHandler(GetPromptRequestSchema, async (request) => {
-    if (request.params.name !== "include_command_output") {
+    if (request.params.name !== "run_command") {
         throw new Error("Unknown prompt");
     }
 
@@ -159,7 +159,7 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
             },
         },
     ];
-    if (stdout) {
+    if (stdout && stdout.length > 0) {
         messages.push({
             role: "user",
             content: {
@@ -168,7 +168,7 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
             },
         });
     }
-    if (stderr) {
+    if (stderr && stderr.length > 0) {
         messages.push({
             role: "user",
             content: {

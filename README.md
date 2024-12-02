@@ -10,7 +10,7 @@ An MCP server to run commands and includ the output in chat history.
 
 ## Prompts
 
-- `include_command_output` - include the output of a command in the chat history
+- `run_command` - include the output of a command in the chat history
 - for users to include relevant commands in chat history, i.e. via `Zed`'s slash commands
 
 ## Development
