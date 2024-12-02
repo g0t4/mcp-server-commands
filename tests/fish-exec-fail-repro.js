@@ -27,8 +27,8 @@ import { execFileWithInput } from "../build/exec-utils.js";
 
 async function test_workaround() {
     const { stdout, stderr } = await execFileWithInput(
-        "fish",
-        // todo "fish --foo",
+        //"fish",
+        "fish -i",
         "echo hello",
         {}
     );
@@ -39,12 +39,11 @@ async function test_workaround() {
 
 test_workaround();
 
-
 // WEIRD FISH SHELL FAILURE, look into later, actually referenced in fish source code:
-//   re: "Unable to read input file: Is a directory" 
+//   re: "Unable to read input file: Is a directory"
 //   has smth to do with stdin for script
 //   what is strange is if I do `fish -c "echo foobar"` that works fine via exec but I cannot exec/execFile and pass string to stdin and have it work with just fish shell
-//   appears to be open bug in fish shell: 
+//   appears to be open bug in fish shell:
 //     https://github.com/fish-shell/fish-shell/blob/master/src/reader.rs#L678-L681
 //       // XXX: This can be triggered spuriously, so we'll not do that for stdin.
 //       // This can be seen e.g. with node's "spawn" api.

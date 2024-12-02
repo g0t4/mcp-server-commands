@@ -26,7 +26,8 @@ function execFileWithInput(
     // FYI for now, using `exec()` so the interpreter can have cmd+args AIO
     //  could switch to `execFile()` to pass args array separately
     // TODO starts with fish too? "fish -..." PRN use a library to parse the command and determine this?
-    if (interpreter === "fish") {
+    if (interpreter.split(" ")[0] === "fish") {
+        // PRN also check error from fish and add possible clarification to error message though there are legit ways to trigger that same error message! i.e. `fish .` which is not the same issue!
         return fishWorkaround(interpreter, stdin_text, options);
     }
 
