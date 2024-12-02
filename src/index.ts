@@ -146,7 +146,7 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
     }
 
     const { stdout, stderr } = await execAsync(command);
-    // let error bubble up, errors look good in zed /prompts (i.e. command not found)
+    // TODO gracefully handle errors and turn them into a prompt message that can be used by LLM to troubleshoot the issue, currently errors result in nothing inserted into the prompt and instead it shows the Zed's chat panel as a failure
 
     const messages: PromptMessage[] = [
         {
