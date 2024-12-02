@@ -85,15 +85,15 @@ server.setRequestHandler(
 type ExecResult = {
     stdout?: string;
     stderr?: string;
-    error?: string;
+    message?: string;
 };
 function messagesFor(result: ExecResult): TextContent[] {
     const messages: TextContent[] = [];
-    if (result.error) {
+    if (result.message) {
         messages.push({
             // most of the time this is gonna match stderr, TODO do I want/need both error and stderr?
             type: "text",
-            text: result.error,
+            text: result.message,
             name: "3ERROR",
         });
     }
