@@ -55,7 +55,11 @@ server.setRequestHandler(
     async (request): Promise<{ toolResult: CallToolResult }> => {
         switch (request.params.name) {
             case "run_command": {
-                return runCommand(request.params.arguments?.command as string);
+                return {
+                    toolResult: await runCommand(
+                        request.params.arguments?.command as string
+                    ),
+                };
             }
             default:
                 throw new Error("Unknown tool");
@@ -63,26 +67,20 @@ server.setRequestHandler(
     }
 );
 
-async function runCommand(
-    command?: string
-): Promise<{ toolResult: CallToolResult }> {
+async function runCommand(command?: string): Promise<CallToolResult> {
     if (!command) {
         throw new Error("Command is required");
     }
     try {
         const result = await execAsync(command);
         return {
-            toolResult: {
-                isError: false,
-                content: messagesFor(result),
-            },
+            isError: false,
+            content: messagesFor(result),
         };
     } catch (error) {
         return {
-            toolResult: {
-                isError: true,
-                content: messagesFor(error as ExecResult),
-            },
+            isError: true,
+            content: messagesFor(error as ExecResult),
         };
     }
 }
