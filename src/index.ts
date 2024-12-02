@@ -56,9 +56,7 @@ server.setRequestHandler(
         switch (request.params.name) {
             case "run_command": {
                 return {
-                    toolResult: await runCommand(
-                        request.params.arguments
-                    ),
+                    toolResult: await runCommand(request.params.arguments),
                 };
             }
             //case "run_script": {
