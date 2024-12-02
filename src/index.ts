@@ -5,6 +5,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import {
     CallToolRequestSchema,
     PromptMessage,
+    TextContent,
     ListToolsRequestSchema,
     ListPromptsRequestSchema,
     GetPromptRequestSchema,
@@ -58,24 +59,27 @@ server.setRequestHandler(
                 if (!command) {
                     throw new Error("Command is required");
                 }
-
+                const messages: TextContent[] = [];
                 try {
                     const { stdout, stderr } = await execAsync(command);
+                    if (stdout && stdout.length > 0) {
+                        messages.push({
+                            type: "text",
+                            text: stdout,
+                            name: "STDOUT",
+                        });
+                    }
+                    if (stderr && stderr.length > 0) {
+                        messages.push({
+                            type: "text",
+                            text: stderr,
+                            name: "STDERR",
+                        });
+                    }
                     return {
                         toolResult: {
                             isError: false,
-                            content: [
-                                {
-                                    type: "text",
-                                    text: stdout,
-                                    name: "STDOUT",
-                                },
-                                {
-                                    type: "text",
-                                    text: stderr,
-                                    name: "STDERR",
-                                },
-                            ],
+                            content: messages,
                         },
                     };
                 } catch (error) {
@@ -85,28 +89,30 @@ server.setRequestHandler(
                         stdout?: string;
                         stderr?: string;
                     };
+                    messages.push({
+                        // most of the time this is gonna match stderr, TODO do I want/need both error and stderr?
+                        type: "text",
+                        text: message,
+                        name: "ERROR",
+                    });
+                    if (stdout && stdout.length > 0) {
+                        messages.push({
+                            type: "text",
+                            text: stdout,
+                            name: "STDOUT",
+                        });
+                    }
+                    if (stderr && stderr.length > 0) {
+                        messages.push({
+                            type: "text",
+                            text: stderr,
+                            name: "STDERR",
+                        });
+                    }
                     return {
                         toolResult: {
                             isError: true,
-                            content: [
-                                {
-                                    // most of the time this is gonna match stderr, TODO do I want/need both error and stderr?
-                                    type: "text",
-                                    text: message,
-                                    name: "ERROR",
-                                },
-                                {
-                                    type: "text",
-                                    text: stderr || "",
-                                    name: "STDERR",
-                                },
-                                {
-                                    // keep STDOUT b/c there might be some useful output before the failure
-                                    type: "text",
-                                    text: stdout || "",
-                                    name: "STDOUT",
-                                },
-                            ],
+                            content: messages,
                         },
                     };
                 }
