@@ -1,6 +1,6 @@
 # mcp-server-commands
 
-An MCP server to run commands and includ the output in chat history.
+An MCP server to run commands.
 
 > [!WARNING]
 > Be careful what you ask this server to run!
