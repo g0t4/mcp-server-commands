@@ -1,4 +1,4 @@
-# mcp-server-commands MCP Server
+# mcp-server-commands
 
 An MCP server to run commands and includ the output in chat history.
 
