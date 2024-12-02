@@ -59,8 +59,8 @@ server.setRequestHandler(
                 if (!command) {
                     throw new Error("Command is required");
                 }
-                const messages: TextContent[] = [];
                 try {
+                    const messages: TextContent[] = [];
                     const { stdout, stderr } = await execAsync(command);
                     if (stdout && stdout.length > 0) {
                         messages.push({
@@ -89,12 +89,14 @@ server.setRequestHandler(
                         stdout?: string;
                         stderr?: string;
                     };
-                    messages.push({
-                        // most of the time this is gonna match stderr, TODO do I want/need both error and stderr?
-                        type: "text",
-                        text: message,
-                        name: "ERROR",
-                    });
+                    const messages: TextContent[] = [
+                        {
+                            // most of the time this is gonna match stderr, TODO do I want/need both error and stderr?
+                            type: "text",
+                            text: message,
+                            name: "ERROR",
+                        },
+                    ];
                     if (stdout && stdout.length > 0) {
                         messages.push({
                             type: "text",
