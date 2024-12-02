@@ -1,4 +1,5 @@
-import { execFile, ExecFileOptionsWithStringEncoding } from "child_process";
+import { exec, ExecOptions } from "child_process";
+import { ObjectEncodingOptions } from "fs";
 
 type ExecResult = {
     // FYI leave this type for now as a declaration of the expected shape of the result for BOTH success and failure (errors)
@@ -20,12 +21,14 @@ type ExecResult = {
  */
 function execFileWithInput(
     file: string,
-    args: [],
     stdin_text: string,
-    options: ExecFileOptionsWithStringEncoding
+    options: ObjectEncodingOptions & ExecOptions
 ): Promise<ExecResult> {
+    // FYI for now, using `exec()` so the interpreter can have cmd+args AIO
+    //  could switch to `execFile()` to pass args array separately
+
     return new Promise((resolve, reject) => {
-        const child = execFile(file, args, options, (error, stdout, stderr) => {
+        const child = exec(file, options, (error, stdout, stderr) => {
             if (error) {
                 reject({ message: error.message, stdout, stderr });
             } else {

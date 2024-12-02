@@ -10,11 +10,8 @@ import {
     ListPromptsRequestSchema,
     GetPromptRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import {
-    exec,
-    ExecOptions,
-    ExecFileOptionsWithStringEncoding,
-} from "node:child_process";
+import { exec, ExecOptions } from "node:child_process";
+import { ObjectEncodingOptions } from "node:fs";
 import { promisify } from "node:util";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { execFileWithInput, ExecResult } from "./exec-utils.js";
@@ -153,7 +150,8 @@ async function runScript(
         throw new Error("Interpreter is required");
     }
 
-    const options: ExecFileOptionsWithStringEncoding = {
+    const options: ObjectEncodingOptions & ExecOptions = {
+        //const options = {
         // constrains typescript too, to string based overload
         encoding: "utf8",
     };
@@ -170,7 +168,6 @@ async function runScript(
     try {
         const result = await execFileWithInput(
             interpreter,
-            [],
             script,
             options
         );
