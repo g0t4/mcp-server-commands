@@ -64,11 +64,11 @@ server.setRequestHandler(
                     return {
                         toolResult: {
                             isError: false,
-                            content: messagesFor2(result),
+                            content: messagesFor(result),
                         },
                     };
                 } catch (error) {
-                    const messages = messagesFor2(error as ExecResult);
+                    const messages = messagesFor(error as ExecResult);
                     return {
                         toolResult: { isError: true, content: messages },
                     };
@@ -85,7 +85,7 @@ type ExecResult = {
     stderr?: string;
     error?: string;
 };
-function messagesFor2(result: ExecResult): TextContent[] {
+function messagesFor(result: ExecResult): TextContent[] {
     const messages: TextContent[] = [];
     if (result.error) {
         messages.push({
@@ -107,29 +107,6 @@ function messagesFor2(result: ExecResult): TextContent[] {
             type: "text",
             text: result.stderr,
             name: "3STDERR",
-        });
-    }
-    return messages;
-}
-
-function messagesFor(stdout?: string, stderr?: string): TextContent[] {
-    const messages: TextContent[] = [];
-
-    // test with:
-    //  fish -c echo -n # no output
-    //  fish -c echo # has new line
-    if (stdout) {
-        messages.push({
-            type: "text",
-            text: stdout,
-            name: "STDOUT",
-        });
-    }
-    if (stderr) {
-        messages.push({
-            type: "text",
-            text: stderr,
-            name: "STDERR",
         });
     }
     return messages;
