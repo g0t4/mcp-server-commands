@@ -74,28 +74,13 @@ server.setRequestHandler(
                         stdout?: string;
                         stderr?: string;
                     };
-                    const messages: TextContent[] = [
-                        {
-                            // most of the time this is gonna match stderr, TODO do I want/need both error and stderr?
-                            type: "text",
-                            text: message,
-                            name: "ERROR",
-                        },
-                    ];
-                    if (stdout && stdout.length > 0) {
-                        messages.push({
-                            type: "text",
-                            text: stdout,
-                            name: "STDOUT",
-                        });
-                    }
-                    if (stderr && stderr.length > 0) {
-                        messages.push({
-                            type: "text",
-                            text: stderr,
-                            name: "STDERR",
-                        });
-                    }
+                    const messages = messagesFor(stdout, stderr);
+                    messages.push({
+                        // most of the time this is gonna match stderr, TODO do I want/need both error and stderr?
+                        type: "text",
+                        text: message,
+                        name: "ERROR",
+                    });
                     return {
                         toolResult: { isError: true, content: messages },
                     };
@@ -174,7 +159,7 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
     return { messages };
 });
 
-function messagesFor(stdout: string, stderr: string): TextContent[] {
+function messagesFor(stdout?: string, stderr?: string): TextContent[] {
     const messages: TextContent[] = [];
 
     if (stdout && stdout.length > 0) {
