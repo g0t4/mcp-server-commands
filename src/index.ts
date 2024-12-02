@@ -92,6 +92,26 @@ server.setRequestHandler(
     }
 );
 
+function messagesFor(stdout?: string, stderr?: string): TextContent[] {
+    const messages: TextContent[] = [];
+
+    if (stdout && stdout.length > 0) {
+        messages.push({
+            type: "text",
+            text: stdout,
+            name: "STDOUT",
+        });
+    }
+    if (stderr && stderr.length > 0) {
+        messages.push({
+            type: "text",
+            text: stderr,
+            name: "STDERR",
+        });
+    }
+    return messages;
+}
+
 server.setRequestHandler(ListPromptsRequestSchema, async () => {
     return {
         prompts: [
@@ -158,26 +178,6 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
     }
     return { messages };
 });
-
-function messagesFor(stdout?: string, stderr?: string): TextContent[] {
-    const messages: TextContent[] = [];
-
-    if (stdout && stdout.length > 0) {
-        messages.push({
-            type: "text",
-            text: stdout,
-            name: "STDOUT",
-        });
-    }
-    if (stderr && stderr.length > 0) {
-        messages.push({
-            type: "text",
-            text: stderr,
-            name: "STDERR",
-        });
-    }
-    return messages;
-}
 
 async function main() {
     console.log("Starting server...");
