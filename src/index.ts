@@ -85,6 +85,9 @@ server.setRequestHandler(
 type ExecResult = {
     stdout?: string;
     stderr?: string;
+
+    // message is the error message from the child process, not sure I like this naming
+    // - perhaps worth pushing the error logic out of messagesFor back into catch block above
     message?: string;
 };
 function messagesFor(result: ExecResult): TextContent[] {
