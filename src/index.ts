@@ -95,14 +95,17 @@ server.setRequestHandler(
 function messagesFor(stdout?: string, stderr?: string): TextContent[] {
     const messages: TextContent[] = [];
 
-    if (stdout && stdout.length > 0) {
+    // test with:
+    //  fish -c echo -n # no output
+    //  fish -c echo # has new line
+    if (stdout) {
         messages.push({
             type: "text",
             text: stdout,
             name: "STDOUT",
         });
     }
-    if (stderr && stderr.length > 0) {
+    if (stderr) {
         messages.push({
             type: "text",
             text: stderr,
@@ -158,7 +161,7 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
             },
         },
     ];
-    if (stdout && stdout.length > 0) {
+    if (stdout) {
         messages.push({
             role: "user",
             content: {
@@ -167,7 +170,7 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
             },
         });
     }
-    if (stderr && stderr.length > 0) {
+    if (stderr) {
         messages.push({
             role: "user",
             content: {
