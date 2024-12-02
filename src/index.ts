@@ -18,7 +18,7 @@ const execAsync = promisify(exec);
 const server = new Server(
     {
         name: "mcp-server-commands",
-        version: "0.2.0",
+        version: "0.2.1",
     },
     {
         capabilities: {
