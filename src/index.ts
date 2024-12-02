@@ -62,20 +62,7 @@ server.setRequestHandler(
                 try {
                     const messages: TextContent[] = [];
                     const { stdout, stderr } = await execAsync(command);
-                    if (stdout && stdout.length > 0) {
-                        messages.push({
-                            type: "text",
-                            text: stdout,
-                            name: "STDOUT",
-                        });
-                    }
-                    if (stderr && stderr.length > 0) {
-                        messages.push({
-                            type: "text",
-                            text: stderr,
-                            name: "STDERR",
-                        });
-                    }
+                    addMessages(stdout, messages, stderr);
                     return {
                         toolResult: { isError: false, content: messages },
                     };
@@ -185,6 +172,23 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
     }
     return { messages };
 });
+
+function addMessages(stdout: string, messages, stderr: string) {
+    if (stdout && stdout.length > 0) {
+        messages.push({
+            type: "text",
+            text: stdout,
+            name: "STDOUT",
+        });
+    }
+    if (stderr && stderr.length > 0) {
+        messages.push({
+            type: "text",
+            text: stderr,
+            name: "STDERR",
+        });
+    }
+}
 
 async function main() {
     console.log("Starting server...");
