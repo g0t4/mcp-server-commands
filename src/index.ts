@@ -10,10 +10,16 @@ import {
     ListPromptsRequestSchema,
     GetPromptRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { exec } from "node:child_process";
+import {
+    exec,
+    ExecOptions,
+    ExecFileOptionsWithStringEncoding,
+} from "node:child_process";
 import { promisify } from "node:util";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { execFileWithInput, ExecResult } from "./exec-utils.js";
 
+// TODO use .promises?
 const execAsync = promisify(exec);
 
 const server = new Server(
@@ -40,10 +46,49 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                     properties: {
                         command: {
                             type: "string",
-                            description: "Command to run",
+                            description: "Command with args",
                         },
+                        cwd: {
+                            // previous run_command calls can probe the filesystem and find paths to change to
+                            type: "string",
+                            description:
+                                "Current working directory, leave empty in most cases",
+                        },
+                        // FYI using child_process.exec runs command in a shell, so you can pass a script here too but I still think separate tools would be helpful?
+                        //   FYI gonna use execFile for run_script
+                        // - env - obscure cases where command takes a param only via an env var?
+                        // args to consider:
+                        // - timeout - lets just hard code this for now
+                        // - shell - (cmd/args) - for now use run_script for this case, also can just pass "fish -c 'command'" or "sh ..."
+                        // - stdin? though this borders on the run_script below
+                        // - capture_output (default true) - for now can just redirect to /dev/null - perhaps capture_stdout/capture_stderr
                     },
                     required: ["command"],
+                },
+            },
+            // PRN tool to introspect the environment (i.e. windows vs linux vs mac, maybe default shell, etc?) - for now LLM can run commands and when they fail it can make adjustments accordingly - some cases where knowing this would help avoid dispatching erroneous commands (i.e. using free on linux, vm_stat on mac)
+            {
+                // TODO is run_script even needed if I were to add STDIN support to run_command above?
+                name: "run_script",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        interpreter: {
+                            // TODO use shebang on *nix?
+                            type: "string",
+                            description:
+                                "Command with arguments. Script will be piped to stdin. Examples: bash, fish, zsh, python, or: bash --norc",
+                        },
+                        script: {
+                            type: "string",
+                            description: "Script to run",
+                        },
+                        cwd: {
+                            type: "string",
+                            description: "Current working directory",
+                        },
+                    },
+                    required: ["script"],
                 },
             },
         ],
@@ -59,13 +104,11 @@ server.setRequestHandler(
                     toolResult: await runCommand(request.params.arguments),
                 };
             }
-            //case "run_script": {
-            //    return {
-            //        toolResult: await runScript(
-            //            request.params.arguments?.script as string
-            //        ),
-            //    };
-            //}
+            case "run_script": {
+                return {
+                    toolResult: await runScript(request.params.arguments),
+                };
+            }
             default:
                 throw new Error("Unknown tool");
         }
@@ -79,8 +122,58 @@ async function runCommand(
     if (!command) {
         throw new Error("Command is required");
     }
+
+    const options: ExecOptions = {};
+    if (args?.cwd) {
+        options.cwd = String(args.cwd);
+        // ENOENT is thrown if the cwd doesn't exist, and I think LLMs can understand that?
+    }
+
     try {
-        const result = await execAsync(command);
+        const result = await execAsync(command, options);
+        return {
+            isError: false,
+            content: messagesFor(result),
+        };
+    } catch (error) {
+        // TODO catch for other errors, not just ExecException
+        return {
+            isError: true,
+            content: messagesFor(error as ExecResult),
+            //content: [{ type: "text", text: JSON.stringify(error) }],
+        };
+    }
+}
+
+async function runScript(
+    args: Record<string, unknown> | undefined
+): Promise<CallToolResult> {
+    const interpreter = String(args?.interpreter);
+    if (!interpreter) {
+        throw new Error("Interpreter is required");
+    }
+
+    const options: ExecFileOptionsWithStringEncoding = {
+        // constrains typescript too, to string based overload
+        encoding: "utf8",
+    };
+    if (args?.cwd) {
+        options.cwd = String(args.cwd);
+        // ENOENT is thrown if the cwd doesn't exist, and I think LLMs can understand that?
+    }
+
+    const script = String(args?.script);
+    if (!script) {
+        throw new Error("Script is required");
+    }
+
+    try {
+        const result = await execFileWithInput(
+            interpreter,
+            [],
+            script,
+            options
+        );
         return {
             isError: false,
             content: messagesFor(result),
@@ -93,14 +186,6 @@ async function runCommand(
     }
 }
 
-type ExecResult = {
-    stdout?: string;
-    stderr?: string;
-
-    // message is the error message from the child process, not sure I like this naming
-    // - perhaps worth pushing the error logic out of messagesFor back into catch block above
-    message?: string;
-};
 function messagesFor(result: ExecResult): TextContent[] {
     const messages: TextContent[] = [];
     if (result.message) {
