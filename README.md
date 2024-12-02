@@ -4,9 +4,9 @@ An MCP server to run commands and includ the output in chat history.
 
 > [!WARNING]
 > Be careful what you ask this server to run!
-> In Claude Desktop app, use "Approve Once" (not "Approv for chat") so you can review each command before running it.
+> In Claude Desktop app, use `Approve Once` (not `Allow for This Chat`) so you can review each command, use `Deny` if you don't trust the command.
 > Permissions are dictated by the user that runs the server.
-> DO NOT run with `sudo`
+> DO NOT run with `sudo`.
 
 ## Tools
 
