@@ -144,6 +144,10 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
     if (!command) {
         throw new Error("Command is required");
     }
+    // Is it possible/feasible to pass a path for the CWD when running the command?
+    // - currently it uses / (yikez)
+    // - IMO makes more sense to have it be based on the Zed CWD of each project
+    // - Fallback could be to configure on server level (i.e. home dir of current user) - perhaps CLI arg? (thinking of zed's context_servers config section)
 
     const { stdout, stderr } = await execAsync(command);
     // TODO gracefully handle errors and turn them into a prompt message that can be used by LLM to troubleshoot the issue, currently errors result in nothing inserted into the prompt and instead it shows the Zed's chat panel as a failure
