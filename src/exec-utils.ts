@@ -15,7 +15,6 @@ type ExecResult = {
 /**
  * Executes a file with the given arguments, piping input to stdin.
  * @param {string} file - The file to execute.
- * @param {string[]} args - Array of arguments for the file.
  * @param {string} stdin_text - The string to pipe to stdin.
  * @returns {Promise<ExecResult>} A promise that resolves with the stdout and stderr of the command. `message` is provided on a failure to explain the error.
  */
