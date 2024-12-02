@@ -61,6 +61,13 @@ server.setRequestHandler(
                     ),
                 };
             }
+            //case "run_script": {
+            //    return {
+            //        toolResult: await runScript(
+            //            request.params.arguments?.script as string
+            //        ),
+            //    };
+            //}
             default:
                 throw new Error("Unknown tool");
         }
