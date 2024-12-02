@@ -77,10 +77,7 @@ server.setRequestHandler(
                         });
                     }
                     return {
-                        toolResult: {
-                            isError: false,
-                            content: messages,
-                        },
+                        toolResult: { isError: false, content: messages },
                     };
                 } catch (error) {
                     const { message, stdout, stderr } = error as {
@@ -112,10 +109,7 @@ server.setRequestHandler(
                         });
                     }
                     return {
-                        toolResult: {
-                            isError: true,
-                            content: messages,
-                        },
+                        toolResult: { isError: true, content: messages },
                     };
                 }
             }
