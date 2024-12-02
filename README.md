@@ -2,6 +2,10 @@
 
 An MCP server to run commands and includ the output in chat history.
 
+### ⚠️  Warning
+
+Be careful what you ask this server to run, also might be wise to only approve "once" for each command so you can review it first!
+
 ## Tools
 
 - `run_command` - run a command, i.e. `hostname` or `ls -al` or `echo "hello world"` etc
