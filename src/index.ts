@@ -182,7 +182,6 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
 });
 
 async function main() {
-    console.log("Starting server...");
     const transport = new StdioServerTransport();
     await server.connect(transport);
 }
