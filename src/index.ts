@@ -60,11 +60,11 @@ server.setRequestHandler(
                     throw new Error("Command is required");
                 }
                 try {
-                    const { stdout, stderr } = await execAsync(command);
+                    const result = await execAsync(command);
                     return {
                         toolResult: {
                             isError: false,
-                            content: messagesFor(stdout, stderr),
+                            content: messagesFor2(result),
                         },
                     };
                 } catch (error) {
@@ -91,6 +91,30 @@ server.setRequestHandler(
         }
     }
 );
+
+type ExecResult = {
+    stdout?: string;
+    stderr?: string;
+    error?: string;
+};
+function messagesFor2(result: ExecResult): TextContent[] {
+    const messages: TextContent[] = [];
+    if (result.stdout) {
+        messages.push({
+            type: "text",
+            text: result.stdout,
+            name: "3STDOUT",
+        });
+    }
+    if (result.stderr) {
+        messages.push({
+            type: "text",
+            text: result.stderr,
+            name: "3STDERR",
+        });
+    }
+    return messages;
+}
 
 function messagesFor(stdout?: string, stderr?: string): TextContent[] {
     const messages: TextContent[] = [];
