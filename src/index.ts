@@ -75,7 +75,7 @@ server.setRequestHandler(
                         stderr?: string;
                     };
                     const messages = messagesFor(stdout, stderr);
-                    messages.push({
+                    messages.unshift({
                         // most of the time this is gonna match stderr, TODO do I want/need both error and stderr?
                         type: "text",
                         text: message,
