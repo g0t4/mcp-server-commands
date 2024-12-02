@@ -27,6 +27,7 @@ import { execFileWithInput } from "../build/exec-utils.js";
 
 async function test_workaround() {
     const { stdout, stderr } = await execFileWithInput(
+        // TODO add integration tests for these scenarios, I need to verify them as I make more changes
         //"fish",
         "fish -i",
         "echo hello",
