@@ -61,9 +61,11 @@ server.setRequestHandler(
                 }
                 try {
                     const { stdout, stderr } = await execAsync(command);
-                    const messages = messagesFor(stdout, stderr);
                     return {
-                        toolResult: { isError: false, content: messages },
+                        toolResult: {
+                            isError: false,
+                            content: messagesFor(stdout, stderr),
+                        },
                     };
                 } catch (error) {
                     const { message, stdout, stderr } = error as {
