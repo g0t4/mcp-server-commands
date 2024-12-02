@@ -94,21 +94,21 @@ function messagesFor(result: ExecResult): TextContent[] {
             // most of the time this is gonna match stderr, TODO do I want/need both error and stderr?
             type: "text",
             text: result.message,
-            name: "3ERROR",
+            name: "ERROR",
         });
     }
     if (result.stdout) {
         messages.push({
             type: "text",
             text: result.stdout,
-            name: "3STDOUT",
+            name: "STDOUT",
         });
     }
     if (result.stderr) {
         messages.push({
             type: "text",
             text: result.stderr,
-            name: "3STDERR",
+            name: "STDERR",
         });
     }
     return messages;
