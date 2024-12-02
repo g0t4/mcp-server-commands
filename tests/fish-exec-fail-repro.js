@@ -25,9 +25,10 @@ async function main() {
 
 import { execFileWithInput } from "../build/exec-utils.js";
 
-async function main2() {
+async function test_workaround() {
     const { stdout, stderr } = await execFileWithInput(
-        "fish -i ",
+        "fish",
+        // todo "fish --foo",
         "echo hello",
         {}
     );
@@ -36,8 +37,8 @@ async function main2() {
     console.log("stderr", stderr);
 }
 
-//main2();
-//
+test_workaround();
+
 
 // WEIRD FISH SHELL FAILURE, look into later, actually referenced in fish source code:
 //   re: "Unable to read input file: Is a directory" 
@@ -58,4 +59,4 @@ async function main_execSyncTest() {
     console.log("stderr", stderr);
 }
 
-main_execSyncTest();
+//main_execSyncTest();

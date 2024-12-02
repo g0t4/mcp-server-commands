@@ -14,20 +14,24 @@ type ExecResult = {
 
 /**
  * Executes a file with the given arguments, piping input to stdin.
- * @param {string} file - The file to execute.
+ * @param {string} interpreter - The file to execute.
  * @param {string} stdin_text - The string to pipe to stdin.
  * @returns {Promise<ExecResult>} A promise that resolves with the stdout and stderr of the command. `message` is provided on a failure to explain the error.
  */
 function execFileWithInput(
-    file: string,
+    interpreter: string,
     stdin_text: string,
     options: ObjectEncodingOptions & ExecOptions
 ): Promise<ExecResult> {
     // FYI for now, using `exec()` so the interpreter can have cmd+args AIO
     //  could switch to `execFile()` to pass args array separately
+    // TODO starts with fish too? "fish -..." PRN use a library to parse the command and determine this?
+    if (interpreter === "fish") {
+        return fishWorkaround(interpreter, stdin_text, options);
+    }
 
     return new Promise((resolve, reject) => {
-        const child = exec(file, options, (error, stdout, stderr) => {
+        const child = exec(interpreter, options, (error, stdout, stderr) => {
             if (error) {
                 reject({ message: error.message, stdout, stderr });
             } else {
@@ -43,6 +47,30 @@ function execFileWithInput(
             child.stdin.write(stdin_text);
             child.stdin.end();
         }
+    });
+}
+
+async function fishWorkaround(
+    interpreter: string,
+    script: string,
+    options: ObjectEncodingOptions & ExecOptions
+): Promise<ExecResult> {
+    // fish right now chokes on piped input (STDIN) + node's exec/spawn/etc, so lets use a workaround to echo the input
+    // base64 encode thee input, then decode in pipeline
+    const base64Script = Buffer.from(script).toString("base64");
+
+    const command = `${interpreter} -c "echo ${base64Script} | base64 -d | fish"`;
+
+    return new Promise((resolve, reject) => {
+        // const child = ... // careful with refactoring not to return that unused child
+        exec(command, options, (error, stdout, stderr) => {
+            // I like this style of error vs success handling! it's beautiful-est (prommises are underrated)
+            if (error) {
+                reject({ message: error.message, stdout, stderr });
+            } else {
+                resolve({ stdout, stderr });
+            }
+        });
     });
 }
 
