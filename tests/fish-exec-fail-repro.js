@@ -44,7 +44,7 @@ async function main2() {
 //   has smth to do with stdin for script
 //   what is strange is if I do `fish -c "echo foobar"` that works fine via exec but I cannot exec/execFile and pass string to stdin and have it work with just fish shell
 //   appears to be open bug in fish shell: 
-//     https://github.com/fish-shell/fish-shell/issues/1002
+//     https://github.com/fish-shell/fish-shell/blob/master/src/reader.rs#L678-L681
 //       // XXX: This can be triggered spuriously, so we'll not do that for stdin.
 //       // This can be seen e.g. with node's "spawn" api.
 
