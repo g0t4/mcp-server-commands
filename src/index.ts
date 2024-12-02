@@ -60,9 +60,8 @@ server.setRequestHandler(
                     throw new Error("Command is required");
                 }
                 try {
-                    const messages: TextContent[] = [];
                     const { stdout, stderr } = await execAsync(command);
-                    addMessages(stdout, messages, stderr);
+                    const messages = messagesFor(stdout, stderr);
                     return {
                         toolResult: { isError: false, content: messages },
                     };
@@ -173,7 +172,9 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
     return { messages };
 });
 
-function addMessages(stdout: string, messages, stderr: string) {
+function messagesFor(stdout: string, stderr: string): TextContent[] {
+    const messages: TextContent[] = [];
+
     if (stdout && stdout.length > 0) {
         messages.push({
             type: "text",
@@ -188,6 +189,7 @@ function addMessages(stdout: string, messages, stderr: string) {
             name: "STDERR",
         });
     }
+    return messages;
 }
 
 async function main() {
