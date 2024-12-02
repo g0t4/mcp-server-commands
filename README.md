@@ -10,14 +10,16 @@ An MCP server to run commands.
 
 ## Tools
 
+Tools are for LLMs to request, i.e. Claude Desktop app
+
 - `run_command` - run a command, i.e. `hostname` or `ls -al` or `echo "hello world"` etc
   - Returns STDOUT and STDERR as text
-- for LLMs to request tool use and get back the command output, i.e. Claude Desktop app
 
 ## Prompts
 
-- `run_command` - include the output of a command in the chat history
-- for users to include relevant commands in chat history, i.e. via `Zed`'s slash commands
+Prompts are for users to include in chat history, i.e. via `Zed`'s slash commands (in its AI Chat panel)
+
+- `run_command` - generate a prompt message with the command output
 
 ## Development
 
