@@ -68,9 +68,11 @@ server.setRequestHandler(
                         },
                     };
                 } catch (error) {
-                    const messages = messagesFor(error as ExecResult);
                     return {
-                        toolResult: { isError: true, content: messages },
+                        toolResult: {
+                            isError: true,
+                            content: messagesFor(error as ExecResult),
+                        },
                     };
                 }
             }
