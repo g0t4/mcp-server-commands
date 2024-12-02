@@ -68,19 +68,7 @@ server.setRequestHandler(
                         },
                     };
                 } catch (error) {
-                    const { message, stdout, stderr } = error as {
-                        // todo is there a builtin type I can use instead? ALSO is stdout/stderr ? nullable?
-                        message: string;
-                        stdout?: string;
-                        stderr?: string;
-                    };
-                    const messages = messagesFor(stdout, stderr);
-                    messages.unshift({
-                        // most of the time this is gonna match stderr, TODO do I want/need both error and stderr?
-                        type: "text",
-                        text: message,
-                        name: "ERROR",
-                    });
+                    const messages = messagesFor2(error as ExecResult);
                     return {
                         toolResult: { isError: true, content: messages },
                     };
@@ -99,6 +87,14 @@ type ExecResult = {
 };
 function messagesFor2(result: ExecResult): TextContent[] {
     const messages: TextContent[] = [];
+    if (result.error) {
+        messages.push({
+            // most of the time this is gonna match stderr, TODO do I want/need both error and stderr?
+            type: "text",
+            text: result.error,
+            name: "3ERROR",
+        });
+    }
     if (result.stdout) {
         messages.push({
             type: "text",
