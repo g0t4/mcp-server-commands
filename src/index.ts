@@ -72,7 +72,9 @@ server.setRequestHandler(
     }
 );
 
-async function runCommand(args: Record<string, unknown> | undefined): Promise<CallToolResult> {
+async function runCommand(
+    args: Record<string, unknown> | undefined
+): Promise<CallToolResult> {
     const command = String(args?.command);
     if (!command) {
         throw new Error("Command is required");
