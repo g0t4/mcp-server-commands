@@ -12,7 +12,8 @@ execFile("ls", ["-l"], { input: "echo foobar2" }, (error, stdout, stderr) => {
 });
 
 // !!! key demo here of execFileSync
-const foo = execFileSync("bash", [], { input: "echo foobar" });
-const foo = execFileSync("fish", [], { input: "echo foobar" });
+const inbash = execFileSync("bash", [], { input: "echo foobar" });
+console.log(inbash.toString()); // sync means it will show before async callbacks
+const infish = execFileSync("fish", [], { input: "echo foobar" });
 // show buffer text:
-console.log(foo.toString()); // sync means it will show before async callbacks
+console.log(infish.toString()); // sync means it will show before async callbacks
