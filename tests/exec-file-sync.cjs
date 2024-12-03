@@ -13,5 +13,6 @@ execFile("ls", ["-l"], { input: "echo foobar2" }, (error, stdout, stderr) => {
 
 // !!! key demo here of execFileSync
 const foo = execFileSync("bash", [], { input: "echo foobar" });
+const foo = execFileSync("fish", [], { input: "echo foobar" });
 // show buffer text:
 console.log(foo.toString()); // sync means it will show before async callbacks
