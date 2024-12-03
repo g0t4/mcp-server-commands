@@ -30,6 +30,7 @@ async function test_workaround() {
         // TODO add integration tests for these scenarios, I need to verify them as I make more changes
         //"fish",
         "fish -i",
+        // TODO "bash" test case too
         "echo hello",
         {}
     );
