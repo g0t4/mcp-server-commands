@@ -14,6 +14,9 @@ Tools are for LLMs to request, i.e. Claude Desktop app
 
 - `run_command` - run a command, i.e. `hostname` or `ls -al` or `echo "hello world"` etc
   - Returns STDOUT and STDERR as text
+- `run_script` - run a script! (i.e. `fish`, `bash`, `zsh`, `python`)
+  - Let your LLM run the code it writes!
+  - script is passed over STDIN
 
 ## Prompts
 
