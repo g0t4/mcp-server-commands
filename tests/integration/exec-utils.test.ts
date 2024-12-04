@@ -1,5 +1,8 @@
 import { execFileWithInput } from '../../src/exec-utils.js';
 
+// !!! FYI THESE are TESTS that Claude generated (ironically dog fooding the run_command/script tools
+// !!! NATURALLY, I need to review them so don't put any faith in them (yet)
+
 describe('execFileWithInput integration tests', () => {
   test('should execute a simple bash command', async () => {
     const result = await execFileWithInput('bash', 'echo "Hello World"', {});
