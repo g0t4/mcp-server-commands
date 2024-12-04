@@ -64,6 +64,7 @@ describe('execFileWithInput integration tests', () => {
       done
     `;
     const result = await execFileWithInput('zsh', script, {});
+    // TODO validate all of the output, shouldn't be that brittle
     expect(result.stdout).toContain('Line 1 from Zsh');
     expect(result.stdout).toContain('Number 1');
     expect(result.stdout).toContain('Number 2');
@@ -83,16 +84,17 @@ describe('execFileWithInput integration tests', () => {
     expect(result.stdout.trim()).toBe("/");
   });
 
-  test('should handle multiline scripts', async () => {
+  test('should handle bash multiline scripts', async () => {
     const script = `
       echo "Line 1"
       echo "Line 2"
       echo "Line 3"
     `;
     const result = await execFileWithInput('bash', script, {});
-    expect(result.stdout).toContain('Line 1');
-    expect(result.stdout).toContain('Line 2');
-    expect(result.stdout).toContain('Line 3');
+    // validate all of output:
+    expect(result.stdout).toContain(`Line 1
+Line 2
+Line 3`);
   });
 });
 
