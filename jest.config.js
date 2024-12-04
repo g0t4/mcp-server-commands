@@ -14,4 +14,5 @@ export default {
       },
     ],
   },
+  testPathIgnorePatterns: ['tests/manual'],
 };
