@@ -28,6 +28,7 @@ describe('execFileWithInput integration tests', () => {
     expect(result.stderr).toBe('');
   });
 
+  // TODO make sure to cover the fish workaround logic, in all its edge cases and then can leave those tests when I remove that or just nuke them
   test('should handle command errors properly in fish', async () => {
     try {
       await execFileWithInput('fish', 'totallynonexistentcommand', {});
