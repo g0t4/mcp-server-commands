@@ -5,6 +5,7 @@ import { execFileWithInput } from '../../src/exec-utils.js';
 
 describe('execFileWithInput integration tests', () => {
   // ok, impressive choice of "seam" to add testing of the most critical part, executing the command! this is EXACTLY what I had in mind and didn't even tell Claude I wanted.
+
   test('should execute a simple bash command', async () => {
     const result = await execFileWithInput('bash', 'echo "Hello World"', {});
     expect(result.stdout.trim()).toBe('Hello World');
@@ -88,3 +89,9 @@ describe('execFileWithInput integration tests', () => {
     expect(result.stdout).toContain('Line 3');
   });
 });
+
+// TODO add testing of try/catch in runScript block
+//   just make sure I cover failure cases through the catch blocks
+//   maybe, push the try/catch into a new, interim seam 
+//   keep this testing separate of the lower level seam around execWithInput
+//   don't need a ton of tests, just an integration "glue" test of the try/catch impl (so if it changes I can validate it)
