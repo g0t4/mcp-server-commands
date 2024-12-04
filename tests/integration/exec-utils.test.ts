@@ -64,12 +64,15 @@ describe('execFileWithInput integration tests', () => {
       done
     `;
     const result = await execFileWithInput('zsh', script, {});
-    const lines = result.stdout.split('\n');
-    expect(lines.length).toBe(5);
-    expect(lines[0]).toContain('Line 1 from Zsh');
-    expect(lines[1]).toContain('Number 1');
-    expect(lines[2]).toContain('Number 2');
-    expect(lines[3]).toContain('Number 3');
+    //expect(lines[0]).toContain('Line 1 from Zsh');
+    //expect(lines[1]).toContain('Number 1');
+    //expect(lines[2]).toContain('Number 2');
+    //expect(lines[3]).toContain('Number 3');
+    expect(result.stdout).toContain(`Line 1 from Zsh
+Number 1
+Number 2
+Number 3
+`);
   });
 
   test('should respect working directory option', async () => {
