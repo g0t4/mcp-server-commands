@@ -5,6 +5,7 @@ import { execFileWithInput } from '../../src/exec-utils.js';
 
 describe('execFileWithInput integration tests', () => {
   test('should execute a simple bash command', async () => {
+    // ok, impressive choice of "seam" to add testing of the most critical part, executing the command! this is EXACTLY what I had in mind and didn't even tell Claude I wanted.
     const result = await execFileWithInput('bash', 'echo "Hello World"', {});
     expect(result.stdout.trim()).toBe('Hello World');
     expect(result.stderr).toBe('');
