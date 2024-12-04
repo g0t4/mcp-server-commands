@@ -1,3 +1,4 @@
+import os from 'os'
 import { execFileWithInput } from '../../src/exec-utils.js';
 
 // !!! FYI THESE are TESTS that Claude generated (ironically dog fooding the run_command/script tools
@@ -70,12 +71,16 @@ describe('execFileWithInput integration tests', () => {
   });
 
   test('should respect working directory option', async () => {
+    // FYI best to pick a path that is common on both macOS and Linux
+    //  unfortunately, on macOS /tmp is a symlink to /private/tmp so that can cause issues
+    // TODO make sure cwd is not already / in the test?
+    // PRN use multiple paths would be another way around checking cwd of test runner
     const result = await execFileWithInput(
       'bash',
       'pwd',
-      { cwd: '/tmp' }
+      { cwd: "/" }
     );
-    expect(result.stdout.trim()).toBe('/tmp');
+    expect(result.stdout.trim()).toBe("/");
   });
 
   test('should handle multiline scripts', async () => {
