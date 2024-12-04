@@ -1,8 +1,8 @@
 import os from 'os'
 import { execFileWithInput } from '../../src/exec-utils.js';
 
-// !!! FYI THESE are TESTS that Claude generated (ironically dog fooding the run_command/script tools
-// !!! NATURALLY, I need to review them so don't put any faith in them (yet)
+// FYI Claude generated most of these, by dog fooding the run_command/script tools!
+// I am going to keep asking Claude to add new tests to see how I feel about that workflow
 
 describe('execFileWithInput integration tests', () => {
   // ok, impressive choice of "seam" to add testing of the most critical part, executing the command! this is EXACTLY what I had in mind and didn't even tell Claude I wanted.
