@@ -83,3 +83,7 @@ npm run inspector
 ```
 
 The Inspector will provide a URL to access debugging tools in your browser.
+
+## TODOs
+
+- Add some mechanism (likely in a new MCP server) to retain memory of past command failures, i.e. to use `python3` and not `python` and tie it to a machine or some context?
