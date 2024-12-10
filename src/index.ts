@@ -40,8 +40,12 @@ const server = new Server(
     }
 );
 
-function always_log(message: string) {
-    console.error(message);
+function always_log(message: string, data?: any) {
+    if (data) {
+        console.error(message + ": " + JSON.stringify(data));
+    } else {
+        console.error(message);
+    }
 }
 
 if (verbose) {
@@ -50,7 +54,7 @@ if (verbose) {
     always_log("INFO: verbose logging disabled, enable it with --verbose");
 }
 
-function verbose_log(message: string) {
+function verbose_log(message: string, data?: any) {
     // https://modelcontextprotocol.io/docs/tools/debugging - mentions various ways to debug/troubleshoot (including dev tools)
     //
     // remember STDIO transport means can't log over STDOUT (client expects JSON messages per the spec)
@@ -60,7 +64,7 @@ function verbose_log(message: string) {
     //   SO, IIUC use STDERR for logging into Claude Desktop app logs in:
     //      '~/Library/Logs/Claude/mcp.log'
     if (verbose) {
-        console.error(message);
+        always_log(message, data);
     }
     // inspector, catches these logs and shows them on left hand side of screen (sidebar)
 
@@ -148,7 +152,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 server.setRequestHandler(
     CallToolRequestSchema,
     async (request): Promise<{ toolResult: CallToolResult }> => {
-        verbose_log("INFO: CallToolRequest: " + JSON.stringify(request));
+        verbose_log("INFO: CallToolRequest", request);
         switch (request.params.name) {
             case "run_command": {
                 return {
@@ -193,7 +197,7 @@ async function runCommand(
             isError: true,
             content: messagesFor(error as ExecResult),
         };
-        always_log("WARNING: run_command failed: " + JSON.stringify(response));
+        always_log("WARNING: run_command failed", response);
         return response;
     }
 }
@@ -232,7 +236,7 @@ async function runScript(
             isError: true,
             content: messagesFor(error as ExecResult),
         };
-        always_log("WARNING: run_script failed: " + JSON.stringify(response));
+        always_log("WARNING: run_script failed", response);
         return response;
     }
 }
@@ -265,7 +269,7 @@ function messagesFor(result: ExecResult): TextContent[] {
 }
 
 server.setRequestHandler(ListPromptsRequestSchema, async () => {
-    verbose_log("ListPromptsRequestSchema");
+    verbose_log("INFO: ListPromptsRequestSchema");
     return {
         prompts: [
             {
@@ -287,9 +291,7 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
     if (request.params.name !== "run_command") {
         throw new Error("Unknown prompt");
     }
-    verbose_log(
-        "INFO: GetPromptRequestSchema for " + JSON.stringify(request.params)
-    );
+    verbose_log("INFO: GetPromptRequestSchema", request);
 
     const command = String(request.params.arguments?.command);
     if (!command) {
@@ -332,7 +334,7 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
             },
         });
     }
-    verbose_log("GetPromptRequestSchema response: " + JSON.stringify(messages));
+    verbose_log("INFO: GetPromptRequestSchema", messages);
     return { messages };
 });
 
