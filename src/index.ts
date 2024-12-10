@@ -189,11 +189,12 @@ async function runCommand(
     } catch (error) {
         // TODO catch for other errors, not just ExecException
         // FYI failure may not always be a bad thing if for example checking for a file to exist so just keep that in mind in terms of logging?
-        verbose_log("ERROR: run_command failed: " + JSON.stringify(error)); // PRN log messagesFor here too...
-        return {
+        const response = {
             isError: true,
             content: messagesFor(error as ExecResult),
         };
+        verbose_log("WARNING: run_command failed: " + JSON.stringify(response));
+        return response;
     }
 }
 
@@ -227,11 +228,12 @@ async function runScript(
             content: messagesFor(result),
         };
     } catch (error) {
-        verbose_log("ERROR: run_script failed: " + JSON.stringify(error)); // PRN log messagesFor here too...
-        return {
+        const response = {
             isError: true,
             content: messagesFor(error as ExecResult),
         };
+        verbose_log("WARNING: run_script failed: " + JSON.stringify(response));
+        return response;
     }
 }
 
