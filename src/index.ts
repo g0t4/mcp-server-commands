@@ -90,7 +90,7 @@ function verbose_log(message: string, data?: any) {
 }
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
-    verbose_log("INFO: ListToolsRequest");
+    verbose_log("INFO: ListTools");
     return {
         tools: [
             {
@@ -152,7 +152,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 server.setRequestHandler(
     CallToolRequestSchema,
     async (request): Promise<{ toolResult: CallToolResult }> => {
-        verbose_log("INFO: CallToolRequest", request);
+        verbose_log("INFO: ToolRequest", request);
         switch (request.params.name) {
             case "run_command": {
                 return {
@@ -197,7 +197,7 @@ async function runCommand(
             isError: true,
             content: messagesFor(error as ExecResult),
         };
-        always_log("WARNING: run_command failed", response);
+        always_log("WARN: run_command failed", response);
         return response;
     }
 }
@@ -236,7 +236,7 @@ async function runScript(
             isError: true,
             content: messagesFor(error as ExecResult),
         };
-        always_log("WARNING: run_script failed", response);
+        always_log("WARN: run_script failed", response);
         return response;
     }
 }
@@ -269,7 +269,7 @@ function messagesFor(result: ExecResult): TextContent[] {
 }
 
 server.setRequestHandler(ListPromptsRequestSchema, async () => {
-    verbose_log("INFO: ListPromptsRequestSchema");
+    verbose_log("INFO: ListPrompts");
     return {
         prompts: [
             {
@@ -291,7 +291,7 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
     if (request.params.name !== "run_command") {
         throw new Error("Unknown prompt");
     }
-    verbose_log("INFO: GetPromptRequestSchema", request);
+    verbose_log("INFO: PromptRequest", request);
 
     const command = String(request.params.arguments?.command);
     if (!command) {
@@ -334,7 +334,7 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
             },
         });
     }
-    verbose_log("INFO: GetPromptRequestSchema", messages);
+    verbose_log("INFO: PromptResponse", messages);
     return { messages };
 });
 
