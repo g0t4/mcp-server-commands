@@ -332,6 +332,7 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
             },
         });
     }
+    verbose_log("GetPromptRequestSchema response: " + JSON.stringify(messages));
     return { messages };
 });
 
