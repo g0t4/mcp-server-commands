@@ -193,7 +193,7 @@ async function runCommand(
             isError: true,
             content: messagesFor(error as ExecResult),
         };
-        verbose_log("WARNING: run_command failed: " + JSON.stringify(response));
+        always_log("WARNING: run_command failed: " + JSON.stringify(response));
         return response;
     }
 }
@@ -232,7 +232,7 @@ async function runScript(
             isError: true,
             content: messagesFor(error as ExecResult),
         };
-        verbose_log("WARNING: run_script failed: " + JSON.stringify(response));
+        always_log("WARNING: run_script failed: " + JSON.stringify(response));
         return response;
     }
 }
