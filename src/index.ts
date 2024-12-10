@@ -86,7 +86,7 @@ function verbose_log(message: string) {
 }
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
-    verbose_log("INFO: ListToolsRequest"); // TODO remove? (inline a level since notify based logging isn't working yet)
+    verbose_log("INFO: ListToolsRequest");
     return {
         tools: [
             {
@@ -228,6 +228,7 @@ async function runScript(
             content: messagesFor(result),
         };
     } catch (error) {
+        verbose_log("ERROR: run_script failed: " + JSON.stringify(error));
         return {
             isError: true,
             content: messagesFor(error as ExecResult),
