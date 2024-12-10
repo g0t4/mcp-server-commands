@@ -15,6 +15,7 @@ import { ObjectEncodingOptions } from "node:fs";
 import { promisify } from "node:util";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { execFileWithInput, ExecResult } from "./exec-utils.js";
+//import os from "os";
 
 // TODO use .promises? in node api
 const execAsync = promisify(exec);
@@ -29,6 +30,7 @@ const server = new Server(
     {
         name: "mcp-server-commands",
         version: "0.4.0",
+        //description: "Run commands on this " + os.platform() + " machine",
     },
     {
         capabilities: {
@@ -95,6 +97,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         tools: [
             {
                 name: "run_command",
+                //description: "Run a command on this " + os.platform() + " machine",
                 inputSchema: {
                     type: "object",
                     properties: {
@@ -124,6 +127,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             {
                 // TODO is run_script even needed if I were to add STDIN support to run_command above?
                 name: "run_script",
+                // TODO is it useful to include OS type? I need to test this on a windows machine and see how Claude does w/ and w/o this os hint:
+                //description: "Run a script on this " + os.platform() + " machine",
                 inputSchema: {
                     type: "object",
                     properties: {
