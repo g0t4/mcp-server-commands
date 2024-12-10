@@ -107,3 +107,6 @@ Line 3`);
 //   maybe, push the try/catch into a new, interim seam 
 //   keep this testing separate of the lower level seam around execWithInput
 //   don't need a ton of tests, just an integration "glue" test of the try/catch impl (so if it changes I can validate it)
+//
+
+// TODO add tests for logging on failures?
