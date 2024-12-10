@@ -265,6 +265,7 @@ function messagesFor(result: ExecResult): TextContent[] {
 }
 
 server.setRequestHandler(ListPromptsRequestSchema, async () => {
+    verbose_log("ListPromptsRequestSchema");
     return {
         prompts: [
             {
@@ -286,6 +287,9 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
     if (request.params.name !== "run_command") {
         throw new Error("Unknown prompt");
     }
+    verbose_log(
+        "INFO: GetPromptRequestSchema for " + JSON.stringify(request.params)
+    );
 
     const command = String(request.params.arguments?.command);
     if (!command) {
