@@ -16,8 +16,14 @@ import { promisify } from "node:util";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { execFileWithInput, ExecResult } from "./exec-utils.js";
 
-// TODO use .promises?
+// TODO use .promises? in node api
 const execAsync = promisify(exec);
+
+let verbose = false;
+// check CLI args:
+if (process.argv.includes("--verbose")) {
+    verbose = true;
+}
 
 const server = new Server(
     {
@@ -29,11 +35,58 @@ const server = new Server(
             //resources: {},
             tools: {},
             prompts: {},
+            //logging: {}, // for logging messages that don't seem to work yet or I am doing them wrong
         },
     }
 );
 
+function always_log(message: string) {
+    console.error(message);
+}
+
+if (verbose) {
+    always_log("INFO: verbose logging enabled");
+} else {
+    always_log("INFO: verbose logging disabled, enable it with --verbose");
+}
+
+function verbose_log(message: string) {
+    // https://modelcontextprotocol.io/docs/tools/debugging - mentions various ways to debug/troubleshoot (including dev tools)
+    //
+    // remember STDIO transport means can't log over STDOUT (client expects JSON messages per the spec)
+    // https://modelcontextprotocol.io/docs/tools/debugging#implementing-logging
+    //   mentions STDERR is captured by the host app (i.e. Claude Desktop app)
+    //   server.sendLoggingMessage is captured by MCP client (not Claude Desktop app)
+    //   SO, IIUC use STDERR for logging into Claude Desktop app logs in:
+    //      '~/Library/Logs/Claude/mcp.log'
+    if (verbose) {
+        console.error(message);
+    }
+    // inspector, catches these logs and shows them on left hand side of screen (sidebar)
+
+    // TODO add verbose parameter (CLI arg?)
+
+    // IF I wanted to log via MCP client logs (not sure what those are/do):
+    //  I do not see inspector catching these logs :(, there is a server notifications section and it remains empty
+    //server.sendLoggingMessage({
+    //    level: "info",
+    //    data: message,
+    //});
+    // which results in something like:
+    //server.notification({
+    //    method: "notifications/message",
+    //    params: {
+    //        level: "warning",
+    //        logger: "mcp-server-commands",
+    //        data: "ListToolsRequest2",
+    //    },
+    //});
+    //
+    // FYI client should also requets a log level from the server, so that needs to be here at some point too
+}
+
 server.setRequestHandler(ListToolsRequestSchema, async () => {
+    verbose_log("INFO: ListToolsRequest"); // TODO remove? (inline a level since notify based logging isn't working yet)
     return {
         tools: [
             {
@@ -95,6 +148,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 server.setRequestHandler(
     CallToolRequestSchema,
     async (request): Promise<{ toolResult: CallToolResult }> => {
+        verbose_log("INFO: CallToolRequest: " + JSON.stringify(request));
         switch (request.params.name) {
             case "run_command": {
                 return {
@@ -134,6 +188,8 @@ async function runCommand(
         };
     } catch (error) {
         // TODO catch for other errors, not just ExecException
+        // FYI failure may not always be a bad thing if for example checking for a file to exist so just keep that in mind in terms of logging?
+        verbose_log("ERROR: run_command failed: " + JSON.stringify(error));
         return {
             isError: true,
             content: messagesFor(error as ExecResult),
@@ -166,11 +222,7 @@ async function runScript(
     }
 
     try {
-        const result = await execFileWithInput(
-            interpreter,
-            script,
-            options
-        );
+        const result = await execFileWithInput(interpreter, script, options);
         return {
             isError: false,
             content: messagesFor(result),
