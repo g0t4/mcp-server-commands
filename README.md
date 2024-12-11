@@ -2,6 +2,8 @@
 
 An MCP server to run commands.
 
+Published to npm as [mcp-server-commands](https://www.npmjs.com/package/mcp-server-commands).
+
 > [!WARNING]
 > Be careful what you ask this server to run!
 > In Claude Desktop app, use `Approve Once` (not `Allow for This Chat`) so you can review each command, use `Deny` if you don't trust the command.
