@@ -20,6 +20,11 @@ jobs:
         node-version: '20.x'
         cache: 'npm'
     
+    - name: install shells
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y zsh fish
+
     - name: Install dependencies
       run: npm ci
     
