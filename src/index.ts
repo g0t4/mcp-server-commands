@@ -153,6 +153,25 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                     required: ["script"],
                 },
             },
+
+            {
+                name: "write_command_notes",
+                description: "Use sparingly to record notes that you would benefit from knowing for future run_command/run_script tool use. For example, if you encounter an error with a command and find a workaround",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        all_notes: {
+                            type: "string",
+                            description: "This replaces the entire notes file, it's not just appending"
+                        },
+                    },
+                    required: ["all_notes"],
+                },
+            },
+            {
+                name: "read_command_notes",
+                description: "Reads all command notes",
+            }
         ],
     };
 });
@@ -162,6 +181,16 @@ server.setRequestHandler(
     async (request): Promise<{ toolResult: CallToolResult }> => {
         verbose_log("INFO: ToolRequest", request);
         switch (request.params.name) {
+            case "write_command_notes": {
+                return {
+                    toolResult: await writeCommandNotes(request.params.arguments),
+                };
+            }
+            case "read_command_notes": {
+                return {
+                    toolResult: await readCommandNotes(),
+                };
+            }
             case "run_command": {
                 return {
                     toolResult: await runCommand(request.params.arguments),
