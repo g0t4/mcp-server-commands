@@ -3,8 +3,9 @@ name: Tests
 on:
     push:
         branches: [master]
+        tags: ["v*"]
     # pull_request:
-    #   branches: [ master ]
+    #   branches: [ master ] # careful what access these builds get, i.e. to secrets (put sensitive stuff into environments for restricted access?)
     workflow_dispatch: # Add manual trigger
 
 jobs:
