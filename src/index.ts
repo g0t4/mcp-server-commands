@@ -18,7 +18,7 @@ import { execFileWithInput, ExecResult } from "./exec-utils.js";
 
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-const pkg = require("../package.json");
+const { name: package_name, version: package_version } = require("../package.json");
 
 // TODO use .promises? in node api
 const execAsync = promisify(exec);
@@ -31,8 +31,8 @@ if (process.argv.includes("--verbose")) {
 
 const server = new Server(
     {
-        name: pkg.name,
-        version: pkg.version,
+        name: package_name,
+        version: package_version,
         //description: "Run commands on this " + os.platform() + " machine",
     },
     {
