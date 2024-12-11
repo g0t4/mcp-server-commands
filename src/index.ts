@@ -9,12 +9,14 @@ import {
     ListToolsRequestSchema,
     ListPromptsRequestSchema,
     GetPromptRequestSchema,
+    CallToolResult,
 } from "@modelcontextprotocol/sdk/types.js";
 import { exec, ExecOptions } from "node:child_process";
 import { ObjectEncodingOptions } from "node:fs";
 import { promisify } from "node:util";
-import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { execFileWithInput, ExecResult } from "./exec-utils.js";
+
+import { writeCommandNotes, readCommandNotes } from "./notes.js";
 
 import { createRequire } from "module";
 import { always_log,  verbose_log } from "./logs.js";
@@ -118,6 +120,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             {
                 name: "read_command_notes",
                 description: "Reads all command notes",
+				inputSchema: {
+					type: "object",
+					properties: { },
+				},
             }
         ],
     };
@@ -277,6 +283,7 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
     }
     verbose_log("INFO: PromptRequest", request);
 
+    // !TODO get rid of all String() calls followed by !check ... won't work  for undefined
     const command = String(request.params.arguments?.command);
     if (!command) {
         throw new Error("Command is required");

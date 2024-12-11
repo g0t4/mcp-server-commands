@@ -11,7 +11,8 @@ if (verbose) {
 }
 
 export function always_log(message: string, data?: any) {
-    if (data) {
+    if (data !== undefined) {
+        // I want false to hit this branch
         console.error(message + ": " + JSON.stringify(data));
     } else {
         console.error(message);

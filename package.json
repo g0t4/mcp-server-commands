@@ -15,7 +15,7 @@
     "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
     "prepare": "npm run build",
     "watch": "npm run build && tsc --watch",
-    "inspector": "npx @modelcontextprotocol/inspector build/index.js",
+    "inspector": "npx @modelcontextprotocol/inspector build/index.js --verbose",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:integration": "jest tests/integration"
