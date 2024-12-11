@@ -15,7 +15,10 @@ import { ObjectEncodingOptions } from "node:fs";
 import { promisify } from "node:util";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { execFileWithInput, ExecResult } from "./exec-utils.js";
-//import os from "os";
+
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const pkg = require("../package.json");
 
 // TODO use .promises? in node api
 const execAsync = promisify(exec);
@@ -28,8 +31,8 @@ if (process.argv.includes("--verbose")) {
 
 const server = new Server(
     {
-        name: "mcp-server-commands",
-        version: "0.4.0",
+        name: pkg.name,
+        version: pkg.version,
         //description: "Run commands on this " + os.platform() + " machine",
     },
     {
