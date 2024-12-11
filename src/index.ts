@@ -19,10 +19,13 @@ import { execFileWithInput, ExecResult } from "./exec-utils.js";
 import { writeCommandNotes, readCommandNotes } from "./notes.js";
 
 import { createRequire } from "module";
-import { always_log,  verbose_log } from "./logs.js";
+import { always_log, verbose_log } from "./logs.js";
 
 const require = createRequire(import.meta.url);
-const { name: package_name, version: package_version } = require("../package.json");
+const {
+    name: package_name,
+    version: package_version,
+} = require("../package.json");
 
 // TODO use .promises? in node api
 const execAsync = promisify(exec);
@@ -45,11 +48,21 @@ const server = new Server(
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
     verbose_log("INFO: ListTools");
+    const notes: CallToolResult = await readCommandNotes();
+    verbose_log("INFO: notes", notes);
+    let include_nodes = "";
+    if (!notes.isError) {
+        include_nodes = notes.content.map((note) => note.text).join("\n");
+        verbose_log("INFO: notes", include_nodes);
+    }
     return {
         tools: [
             {
                 name: "run_command",
                 //description: "Run a command on this " + os.platform() + " machine",
+                description:
+                    "Here are some notes you left yourself from past usage:\n" +
+                    include_nodes, // TODO do I need to put this on run_script too or can Claude do the math?
                 inputSchema: {
                     type: "object",
                     properties: {
@@ -103,15 +116,17 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 },
             },
 
+            // TODO idea => include notes in tool specs, and rewrite to indicate that notes will show there for future tool users
             {
                 name: "write_command_notes",
-                description: "Use sparingly to record notes that you would benefit from knowing for future run_command/run_script tool use. For example, if you encounter an error with a command and find a workaround",
+                description:
+                    "Record important discoveries about run_command/run_script calls. For example, if you encounter an error with a command and find a workaround, store the workaround (please be as concise as possible). These notes also will appear in the description of run_command/run_script going forward, what would you like to tell your future self!?",
                 inputSchema: {
                     type: "object",
                     properties: {
                         all_notes: {
                             type: "string",
-                            description: "This replaces the entire notes file, it's not just appending"
+                            description: "Replaces entire notes file",
                         },
                     },
                     required: ["all_notes"],
@@ -120,11 +135,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             {
                 name: "read_command_notes",
                 description: "Reads all command notes",
-				inputSchema: {
-					type: "object",
-					properties: { },
-				},
-            }
+                inputSchema: {
+                    type: "object",
+                    properties: {},
+                },
+            },
         ],
     };
 });
@@ -136,7 +151,9 @@ server.setRequestHandler(
         switch (request.params.name) {
             case "write_command_notes": {
                 return {
-                    toolResult: await writeCommandNotes(request.params.arguments),
+                    toolResult: await writeCommandNotes(
+                        request.params.arguments
+                    ),
                 };
             }
             case "read_command_notes": {

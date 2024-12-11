@@ -51,7 +51,7 @@ export async function readCommandNotes(): Promise<CallToolResult> {
             file_exists
         );
         // IOTW NO FILE is not a FAILURE, it's simply EMPTY
-        return notesResult("No notes stored");
+        return notesResult("");
     }
 
     try {
