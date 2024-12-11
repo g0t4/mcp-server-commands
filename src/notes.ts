@@ -4,7 +4,14 @@ import { always_log, verbose_log } from "./logs.js";
 
 // TODO could I just inform Claude to store notes in a file on disk and let Claude handle that itself using run_command and run_script tools :)
 // somehow having two tools to read/write feels like overkill and I am wanting another for appending instead of rewriting entire file... ugh just use two for now and can optimize later
-const FILE_NAME = "notes.txt";
+//const FILE_NAME = "notes.txt";
+// TODO if notes prove useful, then add a path arg to the CLI args for this server
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const FILE_NAME = __dirname + "/notes.txt";
+verbose_log("INFO: notes file name", FILE_NAME);
 
 export async function writeCommandNotes(
     args: Record<string, unknown> | undefined
