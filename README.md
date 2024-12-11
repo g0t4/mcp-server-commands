@@ -2,7 +2,7 @@
 
 An MCP server to run commands.
 
-Published to npm as [mcp-server-commands](https://www.npmjs.com/package/mcp-server-commands).
+Published to npm as [mcp-server-commands](https://www.npmjs.com/package/mcp-server-commands) using this [workflow](https://github.com/g0t4/mcp-server-commands/actions)
 
 > [!WARNING]
 > Be careful what you ask this server to run!
