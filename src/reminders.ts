@@ -9,8 +9,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 let reminders_file_path = __dirname + "/reminders.txt";
 
+const requestedReminders = process.argv.includes("--reminders");
 // check for --reminders PATH in CLI args
-if (process.argv.includes("--reminders")) {
+if (requestedReminders) {
     // TODO add CLI arg parser instead of this hack
     const flag_index = process.argv.indexOf("--reminders");
     if (flag_index + 1 >= process.argv.length) {
@@ -22,6 +23,10 @@ if (process.argv.includes("--reminders")) {
 verbose_log("INFO: reminders file path", reminders_file_path);
 
 export async function readReminders(): Promise<String> {
+    // TODO only pass back reminders file if requested?
+    let file_reminder =
+        "Here is the reminders file if you want to add to it: " +
+        reminders_file_path;
     // if the file doesn't exist, treat that as NO reminders
     const file_exists = await fs
         .access(reminders_file_path, fs.constants.F_OK)
@@ -29,13 +34,15 @@ export async function readReminders(): Promise<String> {
         .catch(() => false); // error callback only invoked if does not exist
     if (!file_exists) {
         // dont wanna log failures when the file is just not there
-        return "";
+        return file_reminder;
     }
 
     try {
-        return (await fs.readFile(reminders_file_path, "utf8")) ?? "";
+        const reminders =
+            (await fs.readFile(reminders_file_path, "utf8")) ?? "";
+        return reminders + "\n" + file_reminder;
     } catch (error) {
         always_log("WARN: reading reminders failed", error);
-        return "";
+        return file_reminder;
     }
 }
