@@ -1,0 +1,5 @@
+use python3 (not python)
+
+Here is the reminders file if you want to add to it: /Users/wes/repos/github/g0t4/mcp-server-commands/build/reminders.txt
+
+This machine is macOS
