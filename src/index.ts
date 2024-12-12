@@ -60,7 +60,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             {
                 name: "run_command",
                 //description: "Run a command on this " + os.platform() + " machine",
-                description: reminders, // TODO do I need to put this on run_script too or can Claude do the math?
+                description: reminders, // Claude seems to be using these for run_script too (at least once it worked to use run_script to amend reminders file)
                 inputSchema: {
                     type: "object",
                     properties: {
@@ -88,15 +88,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
             // PRN tool to introspect the environment (i.e. windows vs linux vs mac, maybe default shell, etc?) - for now LLM can run commands and when they fail it can make adjustments accordingly - some cases where knowing this would help avoid dispatching erroneous commands (i.e. using free on linux, vm_stat on mac)
             {
-                // TODO is run_script even needed if I were to add STDIN support to run_command above?
                 name: "run_script",
                 // TODO is it useful to include OS type? I need to test this on a windows machine and see how Claude does w/ and w/o this os hint:
-                //description: "Run a script on this " + os.platform() + " machine",
+                description: reminders
+                    ? "The same reminders in run_command apply to run_script too."
+                    : "",
                 inputSchema: {
                     type: "object",
                     properties: {
                         interpreter: {
-                            // TODO use shebang on *nix?
                             type: "string",
                             description:
                                 "Command with arguments. Script will be piped to stdin. Examples: bash, fish, zsh, python, or: bash --norc",
