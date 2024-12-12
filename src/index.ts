@@ -60,6 +60,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             {
                 name: "run_command",
                 //description: "Run a command on this " + os.platform() + " machine",
+                // FYI what I am doing here is basically adding to the "system prompt" if you will with memory entries... another way might be to extract keywords from memory so Claude knows when to query it for more details (and for what search terms)... thats if the memory gets too large to include here
                 description: reminders, // Claude seems to be using these for run_script too (at least once it worked to use run_script to amend reminders file)
                 inputSchema: {
                     type: "object",
