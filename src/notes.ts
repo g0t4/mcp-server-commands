@@ -11,20 +11,20 @@ import { dirname } from "path";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const FILE_NAME = __dirname + "/notes.txt";
-verbose_log("INFO: notes file name", FILE_NAME);
+verbose_log("INFO: reminders file", FILE_NAME);
 
 export async function writeCommandNotes(
     args: Record<string, unknown> | undefined
 ): Promise<CallToolResult> {
-    const all_notes = args?.all_notes as string;
-    if (!all_notes) {
-        throw new Error("all_notes is required");
+    const message = args?.message as string;
+    if (!message) {
+        throw new Error("message is required");
     }
 
-    verbose_log("INFO: write_command_notes", all_notes);
+    verbose_log("INFO: add_reminder", message);
 
     try {
-        await fs.writeFile(FILE_NAME, all_notes);
+        await fs.writeFile(FILE_NAME, message);
         return {
             isError: false,
             content: [],
@@ -32,12 +32,12 @@ export async function writeCommandNotes(
     } catch (error) {
         // TODO test w/ lock file on macOS and try writing to it, it will fail
         //           "text": "Error writing notes: Error: EPERM: operation not permitted, open 'notes.txt'",
-        return notesFailure("Writing notes failed: " + error);
+        return notesFailure("Writing reminders failed: " + error);
     }
 }
 
 export async function readCommandNotes(): Promise<CallToolResult> {
-    verbose_log("INFO: read_command_notes");
+    verbose_log("INFO: get_reminders");
 
     // if the file doesn't exist, treat that as NO notes
     const file_exists = await fs
@@ -47,7 +47,7 @@ export async function readCommandNotes(): Promise<CallToolResult> {
     if (!file_exists) {
         // TODO write test case for this
         always_log(
-            "INFO: read_command_notes no notes file found " + FILE_NAME,
+            "INFO: get_reminders no file found " + FILE_NAME,
             file_exists
         );
         // IOTW NO FILE is not a FAILURE, it's simply EMPTY
@@ -55,10 +55,10 @@ export async function readCommandNotes(): Promise<CallToolResult> {
     }
 
     try {
-        const all_notes = (await fs.readFile(FILE_NAME, "utf8")) ?? "";
-        return notesResult(all_notes);
+        const reminders = (await fs.readFile(FILE_NAME, "utf8")) ?? "";
+        return notesResult(reminders);
     } catch (error) {
-        return notesFailure("Reading notes failed: " + error);
+        return notesFailure("Reading reminders failed: " + error);
     }
 }
 
@@ -69,7 +69,7 @@ function notesResult(notes: string): CallToolResult {
             {
                 type: "text",
                 text: notes,
-                name: "NOTES",
+                name: "REMINDERS",
             },
         ],
     };

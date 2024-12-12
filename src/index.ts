@@ -48,12 +48,12 @@ const server = new Server(
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
     verbose_log("INFO: ListTools");
-    const notes: CallToolResult = await readCommandNotes();
-    verbose_log("INFO: notes", notes);
-    let include_nodes = "";
-    if (!notes.isError) {
-        include_nodes = notes.content.map((note) => note.text).join("\n");
-        verbose_log("INFO: notes", include_nodes);
+    const reminders: CallToolResult = await readCommandNotes();
+    verbose_log("INFO: reminders", reminders);
+    let past_reminders = "";
+    if (!reminders.isError) {
+        past_reminders = reminders.content.map((c) => c.text).join("\n");
+        verbose_log("INFO: reminders", past_reminders);
     }
     return {
         tools: [
@@ -61,8 +61,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 name: "run_command",
                 //description: "Run a command on this " + os.platform() + " machine",
                 description:
-                    "Here are some notes you left yourself from past usage:\n" +
-                    include_nodes, // TODO do I need to put this on run_script too or can Claude do the math?
+                    "Here are some reminders you left yourself from past usage:\n" +
+                    past_reminders, // TODO do I need to put this on run_script too or can Claude do the math?
                 inputSchema: {
                     type: "object",
                     properties: {
@@ -117,25 +117,22 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
 
             {
-                name: "write_reminders",
+                name: "add_reminder",
                 description:
-                    "This is a text file to leave yourself notes if you encounter issues and want to avoid them with future tool use",
+                    "Leave yourself a reminder if you encounter issues and want to avoid them with future tool use",
                 inputSchema: {
                     type: "object",
                     properties: {
-                        all_notes: {
+                        message: {
                             type: "string",
-                            description:
-                                "Replaces entire notes file, so make sure to pass all previous notes too",
                         },
                     },
-                    required: ["all_notes"],
+                    required: ["message"],
                 },
             },
             {
-                name: "read_reminders",
-                description:
-                    "Reads your past notes to help with future tool use",
+                name: "get_reminders",
+                description: "Read all past reminders",
                 inputSchema: {
                     type: "object",
                     properties: {},
@@ -150,14 +147,14 @@ server.setRequestHandler(
     async (request): Promise<{ toolResult: CallToolResult }> => {
         verbose_log("INFO: ToolRequest", request);
         switch (request.params.name) {
-            case "write_reminders": {
+            case "add_reminder": {
                 return {
                     toolResult: await writeCommandNotes(
                         request.params.arguments
                     ),
                 };
             }
-            case "read_reminders": {
+            case "get_reminders": {
                 return {
                     toolResult: await readCommandNotes(),
                 };
@@ -260,8 +257,8 @@ function messagesFor(result: ExecResult): TextContent[] {
         });
         messages.push({
             type: "text",
-            text: "if you learn something substantial as a result of this error, that would help you avoid it in the future, leave a short note for future Claude!",
-            name: "REMINDER",
+            text: "if you learn something substantial as a result of this error, that would help you avoid it in the future, leave a short reminder for future Claude!",
+            name: "REMINDERS",
         });
     }
     if (result.stdout) {
