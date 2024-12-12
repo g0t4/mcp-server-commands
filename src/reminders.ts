@@ -4,7 +4,7 @@ import { always_log, verbose_log } from "./logs.js";
 // TODO add configurable path to this file (will fix pathing issues too)
 // FYI pathing is to workaround no support for a cwd in claude_desktop_config.json (yet?)
 import { fileURLToPath } from "url";
-import { dirname } from "path";
+import { dirname, resolve } from "path";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 let reminders_file_path = __dirname + "/reminders.txt";
@@ -19,6 +19,8 @@ if (requestedReminders) {
         process.exit(1);
     }
     reminders_file_path = process.argv[flag_index + 1];
+    // need absolute path:
+    reminders_file_path = resolve(process.cwd(), reminders_file_path);
 }
 verbose_log("INFO: reminders file path", reminders_file_path);
 
