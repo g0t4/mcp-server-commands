@@ -89,10 +89,6 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             // PRN tool to introspect the environment (i.e. windows vs linux vs mac, maybe default shell, etc?) - for now LLM can run commands and when they fail it can make adjustments accordingly - some cases where knowing this would help avoid dispatching erroneous commands (i.e. using free on linux, vm_stat on mac)
             {
                 name: "run_script",
-                // TODO is it useful to include OS type? I need to test this on a windows machine and see how Claude does w/ and w/o this os hint:
-                description: reminders
-                    ? "The same reminders in run_command apply to run_script too."
-                    : "",
                 inputSchema: {
                     type: "object",
                     properties: {
