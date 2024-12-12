@@ -7,13 +7,24 @@ import { fileURLToPath } from "url";
 import { dirname } from "path";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const FILE_NAME = __dirname + "/reminders.txt";
-verbose_log("INFO: reminders file", FILE_NAME);
+let reminders_file_path = __dirname + "/reminders.txt";
+
+// check for --reminders PATH in CLI args
+if (process.argv.includes("--reminders")) {
+    // TODO add CLI arg parser instead of this hack
+    const flag_index = process.argv.indexOf("--reminders");
+    if (flag_index + 1 >= process.argv.length) {
+        always_log("ERROR: reminders file path not specified");
+        process.exit(1);
+    }
+    reminders_file_path = process.argv[flag_index + 1];
+}
+verbose_log("INFO: reminders file path", reminders_file_path);
 
 export async function readReminders(): Promise<String> {
     // if the file doesn't exist, treat that as NO reminders
     const file_exists = await fs
-        .access(FILE_NAME, fs.constants.F_OK)
+        .access(reminders_file_path, fs.constants.F_OK)
         .then(() => true) // if does exist, set to true
         .catch(() => false); // error callback only invoked if does not exist
     if (!file_exists) {
@@ -22,7 +33,7 @@ export async function readReminders(): Promise<String> {
     }
 
     try {
-        return (await fs.readFile(FILE_NAME, "utf8")) ?? "";
+        return (await fs.readFile(reminders_file_path, "utf8")) ?? "";
     } catch (error) {
         always_log("WARN: reading reminders failed", error);
         return "";
