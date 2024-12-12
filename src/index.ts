@@ -16,7 +16,7 @@ import { ObjectEncodingOptions } from "node:fs";
 import { promisify } from "node:util";
 import { execFileWithInput, ExecResult } from "./exec-utils.js";
 
-import { writeCommandNotes, readCommandNotes } from "./notes.js";
+import { readReminders } from "./reminders.js";
 
 import { createRequire } from "module";
 import { always_log, verbose_log } from "./logs.js";
@@ -48,21 +48,19 @@ const server = new Server(
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
     verbose_log("INFO: ListTools");
-    const reminders: CallToolResult = await readCommandNotes();
+    let reminders = await readReminders();
     verbose_log("INFO: reminders", reminders);
-    let past_reminders = "";
-    if (!reminders.isError) {
-        past_reminders = reminders.content.map((c) => c.text).join("\n");
-        verbose_log("INFO: reminders", past_reminders);
+    if (reminders) {
+        reminders =
+            "Here are some reminders you left yourself from past usage:\n" +
+            reminders;
     }
     return {
         tools: [
             {
                 name: "run_command",
                 //description: "Run a command on this " + os.platform() + " machine",
-                description:
-                    "Here are some reminders you left yourself from past usage:\n" +
-                    past_reminders, // TODO do I need to put this on run_script too or can Claude do the math?
+                description: reminders, // TODO do I need to put this on run_script too or can Claude do the math?
                 inputSchema: {
                     type: "object",
                     properties: {
@@ -115,29 +113,6 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                     required: ["script"],
                 },
             },
-
-            {
-                name: "add_reminder",
-                description:
-                    "Leave yourself a reminder if you encounter issues and want to avoid them with future tool use",
-                inputSchema: {
-                    type: "object",
-                    properties: {
-                        message: {
-                            type: "string",
-                        },
-                    },
-                    required: ["message"],
-                },
-            },
-            {
-                name: "get_reminders",
-                description: "Read all past reminders",
-                inputSchema: {
-                    type: "object",
-                    properties: {},
-                },
-            },
         ],
     };
 });
@@ -147,18 +122,6 @@ server.setRequestHandler(
     async (request): Promise<{ toolResult: CallToolResult }> => {
         verbose_log("INFO: ToolRequest", request);
         switch (request.params.name) {
-            case "add_reminder": {
-                return {
-                    toolResult: await writeCommandNotes(
-                        request.params.arguments
-                    ),
-                };
-            }
-            case "get_reminders": {
-                return {
-                    toolResult: await readCommandNotes(),
-                };
-            }
             case "run_command": {
                 return {
                     toolResult: await runCommand(request.params.arguments),
@@ -254,11 +217,6 @@ function messagesFor(result: ExecResult): TextContent[] {
             type: "text",
             text: result.message,
             name: "ERROR",
-        });
-        messages.push({
-            type: "text",
-            text: "if you learn something substantial as a result of this error, that would help you avoid it in the future, leave a short reminder for future Claude!",
-            name: "REMINDERS",
         });
     }
     if (result.stdout) {
