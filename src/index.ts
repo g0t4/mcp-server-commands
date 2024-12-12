@@ -116,25 +116,26 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 },
             },
 
-            // TODO idea => include notes in tool specs, and rewrite to indicate that notes will show there for future tool users
             {
-                name: "write_command_notes",
+                name: "write_reminders",
                 description:
-                    "Record important discoveries about run_command/run_script calls. For example, if you encounter an error with a command and find a workaround, store the workaround (please be as concise as possible). These notes also will appear in the description of run_command/run_script going forward, what would you like to tell your future self!?",
+                    "This is a text file to leave yourself notes if you encounter issues and want to avoid them with future tool use",
                 inputSchema: {
                     type: "object",
                     properties: {
                         all_notes: {
                             type: "string",
-                            description: "Replaces entire notes file",
+                            description:
+                                "Replaces entire notes file, so make sure to pass all previous notes too",
                         },
                     },
                     required: ["all_notes"],
                 },
             },
             {
-                name: "read_command_notes",
-                description: "Reads all command notes",
+                name: "read_reminders",
+                description:
+                    "Reads your past notes to help with future tool use",
                 inputSchema: {
                     type: "object",
                     properties: {},
@@ -149,14 +150,14 @@ server.setRequestHandler(
     async (request): Promise<{ toolResult: CallToolResult }> => {
         verbose_log("INFO: ToolRequest", request);
         switch (request.params.name) {
-            case "write_command_notes": {
+            case "write_reminders": {
                 return {
                     toolResult: await writeCommandNotes(
                         request.params.arguments
                     ),
                 };
             }
-            case "read_command_notes": {
+            case "read_reminders": {
                 return {
                     toolResult: await readCommandNotes(),
                 };
@@ -256,6 +257,11 @@ function messagesFor(result: ExecResult): TextContent[] {
             type: "text",
             text: result.message,
             name: "ERROR",
+        });
+        messages.push({
+            type: "text",
+            text: "if you learn something substantial as a result of this error, that would help you avoid it in the future, leave a short note for future Claude!",
+            name: "REMINDER",
         });
     }
     if (result.stdout) {
