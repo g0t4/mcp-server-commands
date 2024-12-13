@@ -28,23 +28,6 @@ Prompts are for users to include in chat history, i.e. via `Zed`'s slash command
 
 - `run_command` - generate a prompt message with the command output
 
-## Development
-
-Install dependencies:
-```bash
-npm install
-```
-
-Build the server:
-```bash
-npm run build
-```
-
-For development with auto-rebuild:
-```bash
-npm run watch
-```
-
 ## Installation
 
 There are two ways to install mcp-server-commands. Using mcp-get provides a one-step installation:
@@ -105,3 +88,20 @@ npm run inspector
 ```
 
 The Inspector will provide a URL to access debugging tools in your browser.
+
+## Development
+
+Install dependencies:
+```bash
+npm install
+```
+
+Build the server:
+```bash
+npm run build
+```
+
+For development with auto-rebuild:
+```bash
+npm run watch
+```
