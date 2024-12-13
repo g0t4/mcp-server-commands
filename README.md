@@ -47,6 +47,14 @@ npm run watch
 
 ## Installation
 
+There are two ways to install mcp-server-commands. Using mcp-get provides a one-step installation:
+
+```bash
+npx @michaellatman/mcp-get@latest install mcp-server-commands
+```
+
+### Using npm directly
+
 To use with Claude Desktop, add the server config:
 
 On MacOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
