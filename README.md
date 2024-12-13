@@ -79,16 +79,6 @@ If you want to see more messages, add `--verbose` to the `args` when configuring
 By the way, logs are written to `STDERR` because that is what Claude Desktop routes to the log files.
 In the future, I expect well formatted log messages to be written over the `STDIO` transport to the MCP client (note: not Claude Desktop app).
 
-### Debugging
-
-Since MCP servers communicate over stdio, debugging can be challenging. We recommend using the [MCP Inspector](https://github.com/modelcontextprotocol/inspector), which is available as a package script:
-
-```bash
-npm run inspector
-```
-
-The Inspector will provide a URL to access debugging tools in your browser.
-
 ## Development
 
 Install dependencies:
@@ -105,3 +95,13 @@ For development with auto-rebuild:
 ```bash
 npm run watch
 ```
+
+### Debugging
+
+Since MCP servers communicate over stdio, debugging can be challenging. We recommend using the [MCP Inspector](https://github.com/modelcontextprotocol/inspector), which is available as a package script:
+
+```bash
+npm run inspector
+```
+
+The Inspector will provide a URL to access debugging tools in your browser.
