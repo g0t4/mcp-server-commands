@@ -1,10 +1,6 @@
-[![Claude + mcp-server-commands](https://img.youtube.com/vi/0-VPu1Pc18w/maxresdefault.jpg)](https://youtu.be/0-VPu1Pc18w)
+## Video walkthrough
 
-> [!WARNING]
-> Be careful what you ask this server to run!
-> In Claude Desktop app, use `Approve Once` (not `Allow for This Chat`) so you can review each command, use `Deny` if you don't trust the command.
-> Permissions are dictated by the user that runs the server.
-> DO NOT run with `sudo`.
+[![Claude + mcp-server-commands](https://img.youtube.com/vi/0-VPu1Pc18w/maxresdefault.jpg)](https://youtu.be/0-VPu1Pc18w)
 
 ## Tools
 
@@ -17,6 +13,12 @@ Tools are for LLMs to request, i.e. Claude Desktop app. Claude Sonnet 3.5 intell
   - script is passed over STDIN
   - `run_script` == `run_command` + script over STDIN
   - Claude has been pretty creative with this, i.e. using `cat` as the interpreter to create new files!
+
+> [!WARNING]
+> Be careful what you ask this server to run!
+> In Claude Desktop app, use `Approve Once` (not `Allow for This Chat`) so you can review each command, use `Deny` if you don't trust the command.
+> Permissions are dictated by the user that runs the server.
+> DO NOT run with `sudo`.
 
 ## Prompts
 
