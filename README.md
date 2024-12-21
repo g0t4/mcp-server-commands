@@ -10,6 +10,8 @@ Published to npm as [mcp-server-commands](https://www.npmjs.com/package/mcp-serv
 > Permissions are dictated by the user that runs the server.
 > DO NOT run with `sudo`.
 
+<a href="https://glama.ai/mcp/servers/4vlwa2czqa"><img width="380" height="200" src="https://glama.ai/mcp/servers/4vlwa2czqa/badge" alt="mcp-server-commands MCP server" /></a>
+
 ## Tools
 
 Tools are for LLMs to request, i.e. Claude Desktop app. Claude Sonnet 3.5 intelligently uses both tools, I was pleasantly surprised.
