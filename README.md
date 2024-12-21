@@ -1,7 +1,3 @@
-# mcp-server-commands
-
-An MCP server to run commands.
-
 [![Claude + mcp-server-commands](https://img.youtube.com/vi/0-VPu1Pc18w/maxresdefault.jpg)](https://youtu.be/0-VPu1Pc18w)
 
 > [!WARNING]
