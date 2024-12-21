@@ -1,7 +1,3 @@
-## Video walkthrough
-
-[![Claude + mcp-server-commands](https://img.youtube.com/vi/0-VPu1Pc18w/mqdefault.jpg)](https://youtu.be/0-VPu1Pc18w)
-
 ## Tools
 
 Tools are for LLMs to request, i.e. Claude Desktop app. Claude Sonnet 3.5 intelligently uses both tools, I was pleasantly surprised.
@@ -19,6 +15,10 @@ Tools are for LLMs to request, i.e. Claude Desktop app. Claude Sonnet 3.5 intell
 > In Claude Desktop app, use `Approve Once` (not `Allow for This Chat`) so you can review each command, use `Deny` if you don't trust the command.
 > Permissions are dictated by the user that runs the server.
 > DO NOT run with `sudo`.
+
+## Video walkthrough
+
+[![Claude + mcp-server-commands](https://img.youtube.com/vi/0-VPu1Pc18w/mqdefault.jpg)](https://youtu.be/0-VPu1Pc18w)
 
 ## Prompts
 
