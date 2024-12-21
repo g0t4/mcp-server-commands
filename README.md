@@ -18,7 +18,7 @@ Tools are for LLMs to request, i.e. Claude Desktop app. Claude Sonnet 3.5 intell
 
 ## Video walkthrough
 
-[![Claude + mcp-server-commands](https://img.youtube.com/vi/0-VPu1Pc18w/mqdefault.jpg)](https://youtu.be/0-VPu1Pc18w)
+<a href="https://youtu.be/0-VPu1Pc18w"><img src="https://img.youtube.com/vi/0-VPu1Pc18w/maxresdefault.jpg" width="480" alt="YouTube Thumbnail"></a>
 
 ## Prompts
 
