@@ -22,6 +22,10 @@ Tools are for LLMs to request, i.e. Claude Desktop app. Claude Sonnet 3.5 intell
   - `run_script` == `run_command` + script over STDIN
   - Claude has been pretty creative with this, i.e. using `cat` as the interpreter to create new files!
 
+## Videos
+
+[![Claude + mcp-server-commands](https://img.youtube.com/vi/0-VPu1Pc18w/maxresdefault.jpg)](https://youtu.be/0-VPu1Pc18w)
+
 ## Prompts
 
 Prompts are for users to include in chat history, i.e. via `Zed`'s slash commands (in its AI Chat panel)
