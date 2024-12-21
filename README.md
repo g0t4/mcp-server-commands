@@ -2,7 +2,7 @@
 
 An MCP server to run commands.
 
-Published to npm as [mcp-server-commands](https://www.npmjs.com/package/mcp-server-commands) using this [workflow](https://github.com/g0t4/mcp-server-commands/actions)
+[![Claude + mcp-server-commands](https://img.youtube.com/vi/0-VPu1Pc18w/maxresdefault.jpg)](https://youtu.be/0-VPu1Pc18w)
 
 > [!WARNING]
 > Be careful what you ask this server to run!
@@ -21,10 +21,6 @@ Tools are for LLMs to request, i.e. Claude Desktop app. Claude Sonnet 3.5 intell
   - script is passed over STDIN
   - `run_script` == `run_command` + script over STDIN
   - Claude has been pretty creative with this, i.e. using `cat` as the interpreter to create new files!
-
-## Videos
-
-[![Claude + mcp-server-commands](https://img.youtube.com/vi/0-VPu1Pc18w/maxresdefault.jpg)](https://youtu.be/0-VPu1Pc18w)
 
 ## Prompts
 
@@ -57,6 +53,8 @@ On MacOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
 On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 
 ### Use the published npm package
+
+Published to npm as [mcp-server-commands](https://www.npmjs.com/package/mcp-server-commands) using this [workflow](https://github.com/g0t4/mcp-server-commands/actions)
 
 ```json
 {
