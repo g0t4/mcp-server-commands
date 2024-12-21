@@ -1,6 +1,6 @@
 ## Video walkthrough
 
-[![Claude + mcp-server-commands](https://img.youtube.com/vi/0-VPu1Pc18w/hqdefault.jpg)](https://youtu.be/0-VPu1Pc18w)
+[![Claude + mcp-server-commands](https://img.youtube.com/vi/0-VPu1Pc18w/mqdefault.jpg)](https://youtu.be/0-VPu1Pc18w)
 
 ## Tools
 
