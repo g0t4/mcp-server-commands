@@ -26,24 +26,15 @@ Prompts are for users to include in chat history, i.e. via `Zed`'s slash command
 
 - `run_command` - generate a prompt message with the command output
 
-## Development
-
-Install dependencies:
-```bash
-npm install
-```
-
-Build the server:
-```bash
-npm run build
-```
-
-For development with auto-rebuild:
-```bash
-npm run watch
-```
-
 ## Installation
+
+There are two ways to install mcp-server-commands. Using mcp-get provides a one-step installation:
+
+```bash
+npx @michaellatman/mcp-get@latest install mcp-server-commands
+```
+
+### Using npm directly
 
 To use with Claude Desktop, add the server config:
 
@@ -87,6 +78,23 @@ If you want to see more messages, add `--verbose` to the `args` when configuring
 
 By the way, logs are written to `STDERR` because that is what Claude Desktop routes to the log files.
 In the future, I expect well formatted log messages to be written over the `STDIO` transport to the MCP client (note: not Claude Desktop app).
+
+## Development
+
+Install dependencies:
+```bash
+npm install
+```
+
+Build the server:
+```bash
+npm run build
+```
+
+For development with auto-rebuild:
+```bash
+npm run watch
+```
 
 ### Debugging
 
