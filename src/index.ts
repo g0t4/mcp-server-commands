@@ -164,12 +164,12 @@ server.setRequestHandler(
         switch (request.params.name) {
             case "run_command": {
                 return {
-                    toolResult: await runCommand(request.params.arguments),
+                    ...(await runCommand(request.params.arguments)),
                 };
             }
             case "run_script": {
                 return {
-                    toolResult: await runScript(request.params.arguments),
+                    ...(await runScript(request.params.arguments)),
                 };
             }
             default:
