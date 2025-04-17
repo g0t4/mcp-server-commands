@@ -6,6 +6,10 @@ describe("runCommand", () => {
     //   put all execution validations into lower level exec functions
     //   this is just to provide assertions that runCommand wires things together correctly
 
+    // FYI any uses of always_log will trigger warnings if using console.error! 
+    //    that's fine and to be expected... tests still pass... 
+    //    can I shut that off for a test?
+
     test("should execute command and return stdout", async () => {
         // This test verifies that a successful command execution returns stdout
         const result = await runCommand({
