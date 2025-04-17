@@ -15,6 +15,8 @@ import { ObjectEncodingOptions } from "node:fs";
 import { promisify } from "node:util";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { execFileWithInput, ExecResult } from "./exec-utils.js";
+import { runCommand } from "./run-command.js";
+import { messagesFor } from "./messages.js";
 
 import { createRequire } from "module";
 import { always_log } from "./always_log.js";
@@ -171,37 +173,6 @@ server.setRequestHandler(
     }
 );
 
-async function runCommand(
-    args: Record<string, unknown> | undefined
-): Promise<CallToolResult> {
-    const command = String(args?.command);
-    if (!command) {
-        throw new Error("Command is required");
-    }
-
-    const options: ExecOptions = {};
-    if (args?.cwd) {
-        options.cwd = String(args.cwd);
-        // ENOENT is thrown if the cwd doesn't exist, and I think LLMs can understand that?
-    }
-
-    try {
-        const result = await execAsync(command, options);
-        return {
-            isError: false,
-            content: messagesFor(result),
-        };
-    } catch (error) {
-        // TODO catch for other errors, not just ExecException
-        // FYI failure may not always be a bad thing if for example checking for a file to exist so just keep that in mind in terms of logging?
-        const response = {
-            isError: true,
-            content: messagesFor(error as ExecResult),
-        };
-        always_log("WARN: run_command failed", response);
-        return response;
-    }
-}
 
 async function runScript(
     args: Record<string, unknown> | undefined
@@ -240,34 +211,6 @@ async function runScript(
         always_log("WARN: run_script failed", response);
         return response;
     }
-}
-
-function messagesFor(result: ExecResult): TextContent[] {
-    const messages: TextContent[] = [];
-    if (result.message) {
-        messages.push({
-            // most of the time this is gonna match stderr, TODO do I want/need both error and stderr?
-            type: "text",
-            text: result.message,
-            name: "ERROR",
-        });
-    }
-    if (result.stdout) {
-        messages.push({
-            type: "text",
-            text: result.stdout,
-            name: "STDOUT",
-        });
-    }
-    if (result.stderr) {
-        messages.push({
-            type: "text",
-            text: result.stderr,
-            name: "STDERR",
-        });
-    }
-    return messages;
-}
 
 server.setRequestHandler(ListPromptsRequestSchema, async () => {
     verbose_log("INFO: ListPrompts");
