@@ -2,6 +2,10 @@ import { runCommand } from "../../src/run-command.js";
 import { TextContent } from "@modelcontextprotocol/sdk/types.js";
 
 describe("runCommand", () => {
+    // FYI! these are integration tests only (test the glue)
+    //   put all execution validations into lower level exec functions
+    //   this is just to provide assertions that runCommand wires things together correctly
+
     test("should execute command and return stdout", async () => {
         // This test verifies that a successful command execution returns stdout
         const result = await runCommand({
