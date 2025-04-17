@@ -151,20 +151,17 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     };
 });
 
+// TODO verify this is the proper new "not legacy" format (w/o embedded toolResult)
 server.setRequestHandler(
     CallToolRequestSchema,
-    async (request): Promise<{ toolResult: CallToolResult }> => {
+    async (request): Promise<CallToolResult> => {
         verbose_log("INFO: ToolRequest", request);
         switch (request.params.name) {
             case "run_command": {
-                return {
-                    toolResult: await runCommand(request.params.arguments),
-                };
+                return await runCommand(request.params.arguments)
             }
             case "run_script": {
-                return {
-                    toolResult: await runScript(request.params.arguments),
-                };
+                return await runScript(request.params.arguments)
             }
             default:
                 throw new Error("Unknown tool");
