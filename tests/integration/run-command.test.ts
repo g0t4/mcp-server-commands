@@ -11,7 +11,6 @@ describe('runCommand', () => {
       cwd: "/"
     });
     
-    // Check that the command was successful
     expect(result.isError).toBe(false);
     
     // Look for output message with name STDOUT
