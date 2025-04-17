@@ -10,12 +10,11 @@ import {
     ListPromptsRequestSchema,
     GetPromptRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { exec, ExecOptions } from "node:child_process";
-import { ObjectEncodingOptions } from "node:fs";
+import { exec } from "node:child_process";
 import { promisify } from "node:util";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { execFileWithInput, ExecResult } from "./exec-utils.js";
 import { runCommand } from "./run-command.js";
+import { runScript } from "./run-script.js";
 import { messagesFor } from "./messages.js";
 
 import { createRequire } from "module";
@@ -173,44 +172,6 @@ server.setRequestHandler(
     }
 );
 
-
-async function runScript(
-    args: Record<string, unknown> | undefined
-): Promise<CallToolResult> {
-    const interpreter = String(args?.interpreter);
-    if (!interpreter) {
-        throw new Error("Interpreter is required");
-    }
-
-    const options: ObjectEncodingOptions & ExecOptions = {
-        //const options = {
-        // constrains typescript too, to string based overload
-        encoding: "utf8",
-    };
-    if (args?.cwd) {
-        options.cwd = String(args.cwd);
-        // ENOENT is thrown if the cwd doesn't exist, and I think LLMs can understand that?
-    }
-
-    const script = String(args?.script);
-    if (!script) {
-        throw new Error("Script is required");
-    }
-
-    try {
-        const result = await execFileWithInput(interpreter, script, options);
-        return {
-            isError: false,
-            content: messagesFor(result),
-        };
-    } catch (error) {
-        const response = {
-            isError: true,
-            content: messagesFor(error as ExecResult),
-        };
-        always_log("WARN: run_script failed", response);
-        return response;
-    }
 
 server.setRequestHandler(ListPromptsRequestSchema, async () => {
     verbose_log("INFO: ListPrompts");
