@@ -1,6 +1,6 @@
 import { exec, ExecOptions } from "node:child_process";
 import { promisify } from "node:util";
-import { CallToolResult, TextContent } from "@modelcontextprotocol/sdk/types.js";
+import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { ExecResult } from "./exec-utils.js";
 import { always_log } from "./always_log.js";
 import { messagesFor } from "./messages.js";
