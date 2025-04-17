@@ -1,4 +1,3 @@
-import os from 'os'
 import { execFileWithInput } from '../../src/exec-utils.js';
 
 // FYI Claude generated most of these, by dog fooding the run_command/script tools!
