@@ -21,11 +21,11 @@
     "test:integration": "jest tests/integration"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "0.6.0"
+    "@modelcontextprotocol/sdk": "1.9.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
-    "@types/node": "^20.17.30",
+    "@types/node": "^22.14.1",
     "jest": "^29.7.0",
     "ts-jest": "^29.3.2",
     "typescript": "^5.8.3"
