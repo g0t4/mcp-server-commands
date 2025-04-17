@@ -151,7 +151,6 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     };
 });
 
-// TODO verify this is the proper new "not legacy" format (w/o embedded toolResult)
 server.setRequestHandler(
     CallToolRequestSchema,
     async (request): Promise<CallToolResult> => {
