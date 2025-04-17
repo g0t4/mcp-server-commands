@@ -17,6 +17,7 @@ import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { execFileWithInput, ExecResult } from "./exec-utils.js";
 
 import { createRequire } from "module";
+import { always_log } from "./always_log.js";
 const require = createRequire(import.meta.url);
 const { name: package_name, version: package_version } = require("../package.json");
 
@@ -44,14 +45,6 @@ const server = new Server(
         },
     }
 );
-
-function always_log(message: string, data?: any) {
-    if (data) {
-        console.error(message + ": " + JSON.stringify(data));
-    } else {
-        console.error(message);
-    }
-}
 
 if (verbose) {
     always_log("INFO: verbose logging enabled");
