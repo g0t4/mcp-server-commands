@@ -29,12 +29,12 @@ describe("runCommand", () => {
         expect((stdout.text as string).trim()).toBe("Hello World");
     });
 
-    test("should change workdir based on cwd arg", async () => {
-        // This test verifies that the cwd parameter is properly used
+    test("should change workdir based on workdir arg", async () => {
+        // This test verifies that the workdir parameter is properly used
         // We run the pwd command in a specific directory to check if it works
         const result = await runCommand({
             command: "pwd",
-            cwd: "/",
+            workdir: "/",
         });
 
         expect(result.isError).toBe(false);

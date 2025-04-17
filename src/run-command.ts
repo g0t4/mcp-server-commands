@@ -19,8 +19,8 @@ export async function runCommand(
   }
 
   const options: ExecOptions = {};
-  if (args?.cwd) {
-    options.cwd = String(args.cwd);
+  if (args?.workdir) {
+    options.cwd = String(args.workdir);
   }
 
   try {

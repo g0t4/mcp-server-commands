@@ -100,7 +100,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                             type: "string",
                             description: "Command with args",
                         },
-                        cwd: {
+                        workdir: {
                             // previous run_command calls can probe the filesystem and find paths to change to
                             type: "string",
                             description:
@@ -137,7 +137,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                             type: "string",
                             description: "Script to run",
                         },
-                        cwd: {
+                        workdir: {
                             type: "string",
                             description: "Current working directory",
                         },
@@ -196,9 +196,9 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
     if (!command) {
         throw new Error("Command is required");
     }
-    // Is it possible/feasible to pass a path for the CWD when running the command?
+    // Is it possible/feasible to pass a path for the workdir when running the command?
     // - currently it uses / (yikez)
-    // - IMO makes more sense to have it be based on the Zed CWD of each project
+    // - IMO makes more sense to have it be based on the Zed workdir of each project
     // - Fallback could be to configure on server level (i.e. home dir of current user) - perhaps CLI arg? (thinking of zed's context_servers config section)
 
     const { stdout, stderr } = await execAsync(command);

@@ -17,8 +17,8 @@ export async function runScript(
   }
 
   const options: ObjectEncodingOptions & ExecOptions = { encoding: "utf8" };
-  if (args?.cwd) {
-    options.cwd = String(args.cwd);
+  if (args?.workdir) {
+    options.cwd = String(args.workdir);
   }
 
   const script = String(args?.script);
