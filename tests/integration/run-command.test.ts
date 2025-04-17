@@ -2,6 +2,25 @@ import { runCommand } from "../../src/run-command.js";
 import { TextContent } from "@modelcontextprotocol/sdk/types.js";
 
 describe("runCommand", () => {
+    test("should execute command and return stdout", async () => {
+        // This test verifies that a successful command execution returns stdout
+        const result = await runCommand({
+            command: "echo 'Hello World'",
+        });
+
+        // Check that the command was successful
+        expect(result.isError).toBe(false);
+
+        // Look for output message with name STDOUT
+        const stdout = result.content.find(
+            (msg) => msg.name === "STDOUT"
+        ) as TextContent;
+
+        // Verify the output contains the expected string
+        expect(stdout).toBeTruthy();
+        expect((stdout.text as string).trim()).toBe("Hello World");
+    });
+
     test("should change workdir based on cwd arg", async () => {
         // This test verifies that the cwd parameter is properly used
         // We run the pwd command in a specific directory to check if it works
@@ -56,24 +75,5 @@ describe("runCommand", () => {
         // Verify error message indicates undefined command
         expect(stderr).toBeTruthy();
         expect(stderr.text as string).toContain("undefined: command not found");
-    });
-
-    test("should execute command and return stdout", async () => {
-        // This test verifies that a successful command execution returns stdout
-        const result = await runCommand({
-            command: "echo 'Hello World'",
-        });
-
-        // Check that the command was successful
-        expect(result.isError).toBe(false);
-
-        // Look for output message with name STDOUT
-        const stdout = result.content.find(
-            (msg) => msg.name === "STDOUT"
-        ) as TextContent;
-
-        // Verify the output contains the expected string
-        expect(stdout).toBeTruthy();
-        expect((stdout.text as string).trim()).toBe("Hello World");
     });
 });
