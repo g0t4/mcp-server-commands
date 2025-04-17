@@ -5,7 +5,6 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import {
     CallToolRequestSchema,
     PromptMessage,
-    TextContent,
     ListToolsRequestSchema,
     ListPromptsRequestSchema,
     GetPromptRequestSchema,
@@ -15,7 +14,6 @@ import { promisify } from "node:util";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { runCommand } from "./run-command.js";
 import { runScript } from "./run-script.js";
-import { messagesFor } from "./messages.js";
 
 import { createRequire } from "module";
 import { always_log } from "./always_log.js";
