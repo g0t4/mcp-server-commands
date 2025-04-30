@@ -1,5 +1,5 @@
 import { runScript } from "../../src/run-script.js";
-import {getStderrText, getStdoutText} from "./helpers.js";
+import { getStderrText, getStdoutText } from "./helpers.js";
 
 describe("runScript", () => {
     // TODO rework runScript
@@ -64,6 +64,8 @@ describe("runScript", () => {
         // that way I don't have to hardcode the PWD expectation
         // and still trigger a failure if its ambiguous whether pwd was used below
         expect(defaultDirectory).not.toBe("/");
+        // just for the logs, lets print it out (obviously on a failure it will show)
+        console.info("defaultDirectory: " + defaultDirectory);
 
         // * test setting workdir
         const result = await runScript({
