@@ -1,8 +1,5 @@
 import { runCommand } from "../../src/run-command.js";
-import {
-    CallToolResult,
-    TextContent,
-} from "@modelcontextprotocol/sdk/types.js";
+import {getStderrText, getStdoutText} from "./helpers.js";
 
 describe("runCommand", () => {
     // FYI! these are integration tests only (test the glue)
@@ -37,20 +34,6 @@ describe("runCommand", () => {
             expect(stdout).toBe("Hello World");
         });
     });
-
-    function getStdoutText(result: CallToolResult) {
-        const stdout = result.content.find(
-            (content) => content.name === "STDOUT"
-        ) as TextContent;
-        return (stdout.text as string).trim();
-    }
-
-    function getStderrText(result: CallToolResult) {
-        const stderr = result.content.find(
-            (content) => content.name === "STDERR"
-        ) as TextContent;
-        return (stderr.text as string).trim();
-    }
 
     test("should change working directory based on workdir arg", async () => {
         const defaultResult = await runCommand({
