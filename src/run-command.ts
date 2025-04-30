@@ -11,30 +11,29 @@ const execAsync = promisify(exec);
  * Executes a command and returns the result as CallToolResult.
  */
 export async function runCommand(
-  args: Record<string, unknown> | undefined
+    args: Record<string, unknown> | undefined
 ): Promise<CallToolResult> {
-  const command = String(args?.command);
-  if (!command) {
-    throw new Error("Command is required");
-  }
+    const command = String(args?.command);
+    if (!command) {
+        throw new Error("Command is required");
+    }
 
-  const options: ExecOptions = {};
-  if (args?.workdir) {
-    options.cwd = String(args.workdir);
-  }
+    const options: ExecOptions = {};
+    if (args?.workdir) {
+        options.cwd = String(args.workdir);
+    }
 
-  try {
-    const result = await execAsync(command, options);
-    return {
-      content: messagesFor(result),
-    };
-  } catch (error) {
-    const response = {
-      isError: true,
-      content: messagesFor(error as ExecResult),
-    };
-    always_log("WARN: run_command failed", response);
-    return response;
-  }
+    try {
+        const result = await execAsync(command, options);
+        return {
+            content: messagesFor(result),
+        };
+    } catch (error) {
+        const response = {
+            isError: true,
+            content: messagesFor(error as ExecResult),
+        };
+        always_log("WARN: run_command failed", response);
+        return response;
+    }
 }
-
