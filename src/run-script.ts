@@ -25,14 +25,10 @@ export async function runScript(
         options.cwd = String(args.workdir);
     }
 
-    const script = String(args?.script);
-    // TODO if I keep this, rewrite this as tool failure like interpreter above
-    if (!script) {
-        throw new Error("Script is required");
-    }
+    const stdin_text = String(args?.script);
 
     try {
-        const result = await execFileWithInput(interpreter, script, options);
+        const result = await execFileWithInput(interpreter, stdin_text, options);
         return {
             content: messagesFor(result),
         };
