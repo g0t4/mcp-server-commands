@@ -1,3 +1,4 @@
+import os from 'os'
 #!/usr/bin/env node
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
@@ -13,7 +14,6 @@ import { exec } from "node:child_process";
 import { promisify } from "node:util";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { runCommand } from "./run-command.js";
-import { runScript } from "./run-script.js";
 
 import { createRequire } from "module";
 import { always_log } from "./always_log.js";
@@ -36,7 +36,7 @@ const server = new Server(
     {
         name: package_name,
         version: package_version,
-        //description: "Run commands on this " + os.platform() + " machine",
+        description: "Run commands on this " + os.platform() + " machine",
     },
     {
         capabilities: {
@@ -95,7 +95,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         tools: [
             {
                 name: "run_command",
-                //description: "Run a command on this " + os.platform() + " machine",
+                description: "Run a command on this " + os.platform() + " machine",
                 inputSchema: {
                     type: "object",
                     properties: {
@@ -106,17 +106,16 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                         workdir: {
                             // previous run_command calls can probe the filesystem and find paths to change to
                             type: "string",
-                            description:
-                                "Current working directory, leave empty in most cases",
+                            description: "Optional, current working directory",
                         },
-                        // FYI using child_process.exec runs command in a shell, so you can pass a script here too but I still think separate tools would be helpful?
-                        //   FYI gonna use execFile for run_script
-                        // - env - obscure cases where command takes a param only via an env var?
+                        stdin: {
+                            type: "string",
+                            description:
+                                "Optional, text to pipe into the command's STDIN. For example, pass a python script to python3. Or, pass text for a new file to the cat command to create it!",
+                        },
                         // args to consider:
+                        // - env - obscure cases where command takes a param only via an env var?
                         // - timeout - lets just hard code this for now
-                        // - shell - (cmd/args) - for now use run_script for this case, also can just pass "fish -c 'command'" or "sh ..."
-                        // - stdin? though this borders on the run_script below
-                        // - capture_output (default true) - for now can just redirect to /dev/null - perhaps capture_stdout/capture_stderr
                     },
                     required: ["command"],
                 },
@@ -132,9 +131,6 @@ server.setRequestHandler(
         switch (request.params.name) {
             case "run_command": {
                 return await runCommand(request.params.arguments);
-            }
-            case "run_script": {
-                return await runScript(request.params.arguments);
             }
             default:
                 throw new Error("Unknown tool");
@@ -155,6 +151,7 @@ server.setRequestHandler(ListPromptsRequestSchema, async () => {
                         name: "command",
                         required: true,
                     },
+                    // if I care to keep the prompt tools then add stdin?
                 ],
             },
         ],

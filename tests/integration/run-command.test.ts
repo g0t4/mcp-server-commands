@@ -1,5 +1,5 @@
 import { runCommand } from "../../src/run-command.js";
-import {getStderrText, getStdoutText} from "./helpers.js";
+import { getStderrText, getStdoutText } from "./helpers.js";
 
 describe("runCommand", () => {
     // FYI! these are integration tests only (test the glue)
@@ -80,5 +80,25 @@ describe("runCommand", () => {
         const stderr = getStderrText(result);
         // Verify error message indicates undefined command
         expect(stderr).toContain("undefined: command not found");
+    });
+
+    describe("when stdin passed and command succeeds", () => {
+        const request = runCommand({
+            command: "cat",
+            stdinText: "Hello World",
+        });
+
+        test("should not set isError", async () => {
+            const result = await request;
+
+            expect(result.isError).toBeUndefined();
+        });
+
+        test("should include STDOUT from command", async () => {
+            const result = await request;
+
+            const stdout = getStdoutText(result);
+            expect(stdout).toBe("Hello World");
+        });
     });
 });
