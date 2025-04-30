@@ -28,7 +28,9 @@ export async function runScript(
 
     try {
         const result = await execFileWithInput(interpreter, script, options);
-        return { isError: false, content: messagesFor(result) };
+        return {
+            content: messagesFor(result),
+        };
     } catch (error) {
         const response = {
             isError: true,

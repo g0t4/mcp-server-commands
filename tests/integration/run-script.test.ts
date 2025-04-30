@@ -53,7 +53,7 @@ describe("runScript", () => {
 
     test("should change working directory based on workdir arg", async () => {
         const defaultResult = await runScript({
-            command: "pwd",
+            interpreter: "pwd",
         });
 
         // * ensure default dir is not /
@@ -67,7 +67,7 @@ describe("runScript", () => {
 
         // * test setting workdir
         const result = await runScript({
-            command: "pwd",
+            interpreter: "pwd",
             workdir: "/",
         });
         // ensure setting workdir doesn't fail:
@@ -77,7 +77,7 @@ describe("runScript", () => {
 
     test("should return isError and STDERR on a failure (nonexistentcommand)", async () => {
         const result = await runScript({
-            command: "nonexistentcommand",
+            interpreter: "nonexistentcommand",
         });
 
         expect(result.isError).toBe(true);
