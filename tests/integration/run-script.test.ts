@@ -1,33 +1,49 @@
-import { runCommand } from "../../src/run-command.js";
+import { runScript } from "../../src/run-script.js";
 import {
     CallToolResult,
     TextContent,
 } from "@modelcontextprotocol/sdk/types.js";
 
-describe("runCommand", () => {
+describe("runScript", () => {
+    // TODO rework runScript
+    //  fold it into runCommand? with STDIN?
+    //  add instructions to suggest:
+    //    use `cat` to create files
+    //    use `python` to run python script?
+    //  if I keep run_script
+    //    rename interpreter to command?
+    //
+    // TODO how to handle blocking and/or background jobs?
+    //   OR maybe just warn not to start stuff that is blocking :)
+    //   AND say its ok to start non-blocking daemons, but to clean them up when done
+    //   this applies to more than just run_script, probably moreso to run command
+    //   I might need to create system messages/prompt boilerplate PER model that I want to use
+    //   I noticed llama4 was not nearly as creative as Claude at using run_script with cat to create a file...
+    //     that said my param names don't suggest that
+    //     BUT, Claude figured it out just fine (that was my lightbulb moment)
+    //   OR I need more capable tool model than llama, i.e. Qwen?
+    //   TODO try other groq models for tool use?
+
     // FYI! these are integration tests only (test the glue)
     //   put all execution validations into lower level exec functions
-    //   this is just to provide assertions that runCommand wires things together correctly
+    //   this is just to provide assertions that runScript wires things together correctly
 
     // FYI any uses of always_log will trigger warnings if using console.error!
     //    that's fine and to be expected... tests still pass...
     //    can I shut that off for a test?
 
-    describe("when command is successful", () => {
-        const request = runCommand({
-            command: "echo 'Hello World'",
+    // TODO test passing args w/ command (not just command)
+
+    describe("when script is successful", () => {
+        const request = runScript({
+            interpreter: "cat",
+            script: "Hello World",
         });
 
         test("should not set isError", async () => {
             const result = await request;
 
             expect(result.isError).toBeUndefined();
-
-            // *** tool response format  (isError only set if failure)
-            //  https://modelcontextprotocol.io/docs/concepts/tools#error-handling-2
-            //  FYI for a while I used isError: false for success and it never caused issues with Claude
-            //  but, seeing isError could be confusing
-            //  and, why waste tokens!
         });
 
         test("should include STDOUT from command", async () => {
@@ -53,7 +69,7 @@ describe("runCommand", () => {
     }
 
     test("should change working directory based on workdir arg", async () => {
-        const defaultResult = await runCommand({
+        const defaultResult = await runScript({
             command: "pwd",
         });
 
@@ -67,7 +83,7 @@ describe("runCommand", () => {
         expect(defaultDirectory).not.toBe("/");
 
         // * test setting workdir
-        const result = await runCommand({
+        const result = await runScript({
             command: "pwd",
             workdir: "/",
         });
@@ -77,7 +93,7 @@ describe("runCommand", () => {
     });
 
     test("should return isError and STDERR on a failure (nonexistentcommand)", async () => {
-        const result = await runCommand({
+        const result = await runScript({
             command: "nonexistentcommand",
         });
 
@@ -90,7 +106,7 @@ describe("runCommand", () => {
 
     test("should handle missing command parameter", async () => {
         // This test verifies how the function handles a missing command parameter
-        const result = await runCommand({});
+        const result = await runScript({});
 
         expect(result.isError).toBe(true);
 
