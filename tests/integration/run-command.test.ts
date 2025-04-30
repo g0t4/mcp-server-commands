@@ -54,6 +54,13 @@ describe("runCommand", () => {
         return (stdout.text as string).trim();
     }
 
+    function getStderrText(result: CallToolResult) {
+        const stderr = result.content.find(
+            (content) => content.name === "STDERR"
+        ) as TextContent;
+        return (stderr.text as string).trim();
+    }
+
     test("should change working directory based on workdir arg", async () => {
         const defaultResult = await runCommand({
             command: "pwd",
@@ -84,33 +91,21 @@ describe("runCommand", () => {
             command: "nonexistentcommand",
         });
 
-        // Check that the command returned an error
         expect(result.isError).toBe(true);
 
-        // Look for error output message with name STDERR
-        const stderr = result.content.find(
-            (msg) => msg.name === "STDERR"
-        ) as TextContent;
-
+        const stderr = getStderrText(result);
         // Verify error message contains the command name
-        expect(stderr).toBeTruthy();
-        expect(stderr.text as string).toContain("nonexistentcommand");
+        expect(stderr).toContain("nonexistentcommand");
     });
 
     test("should handle missing command parameter", async () => {
         // This test verifies how the function handles a missing command parameter
         const result = await runCommand({});
 
-        // Check that the command returned an error
         expect(result.isError).toBe(true);
 
-        // Look for error output message with name STDERR
-        const stderr = result.content.find(
-            (msg) => msg.name === "STDERR"
-        ) as TextContent;
-
+        const stderr = getStderrText(result);
         // Verify error message indicates undefined command
-        expect(stderr).toBeTruthy();
-        expect(stderr.text as string).toContain("undefined: command not found");
+        expect(stderr).toContain("undefined: command not found");
     });
 });
