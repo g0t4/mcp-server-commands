@@ -28,9 +28,7 @@ const server = new Server(
         },
     }
 );
-
 reisterTools(server);
-
 registerPrompts(server);
 
 async function main() {
