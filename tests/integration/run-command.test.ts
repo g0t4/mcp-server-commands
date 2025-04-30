@@ -1,5 +1,5 @@
 import { runCommand } from "../../src/run-command.js";
-import { TextContent } from "@modelcontextprotocol/sdk/types.js";
+import { CallToolResult, TextContent } from "@modelcontextprotocol/sdk/types.js";
 
 describe("runCommand", () => {
     // FYI! these are integration tests only (test the glue)
@@ -46,24 +46,36 @@ describe("runCommand", () => {
 
     });
 
-    test("should change workdir based on workdir arg", async () => {
-        // This test verifies that the workdir parameter is properly used
-        // We run the pwd command in a specific directory to check if it works
+    function getStdoutText(result: CallToolResult){
+        const stdout = result.content.find(
+            content => content.name === "STDOUT"
+        ) as TextContent;
+        return (stdout.text as string).trim()
+    }
+
+    test("should change working directory based on workdir arg", async () => {
+
+        const defaultResult = await runCommand({
+            command: "pwd",
+        });
+
+        // * ensure default dir is not /
+        // make sure command succeeded so I can make assumption about default directory
+        expect(defaultResult.isError).toBeUndefined();
+        const defaultDirectory = getStdoutText(defaultResult)
+        // fail the test if the default is the same as /
+        // that way I don't have to hardcode the PWD expectation
+        // and still trigger a failure if its ambiguous whether pwd was used below
+        expect(defaultDirectory).not.toBe("/")
+ 
+        // * test setting workdir
         const result = await runCommand({
             command: "pwd",
             workdir: "/",
         });
-
+        // ensure setting workdir doesn't fail:
         expect(result.isError).toBeUndefined();
-
-        // Look for output message with name STDOUT
-        const stdout = result.content.find(
-            (msg) => msg.name === "STDOUT"
-        ) as TextContent;
-
-        // Verify the working directory was set to the root directory
-        expect(stdout).toBeTruthy();
-        expect((stdout.text as string).trim()).toBe("/");
+        expect(getStdoutText(result)).toBe("/")
     });
 
     test("should handle command execution errors", async () => {
