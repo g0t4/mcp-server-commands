@@ -14,13 +14,9 @@ describe("runCommand", () => {
     //    can I shut that off for a test?
 
     describe("when command is successful", () => {
-        // This test verifies that a successful command execution returns stdout
         const request = runCommand({
             command: "echo 'Hello World'",
         });
-
-        // TODO any issues using describe to setup scenario?
-        //  I wanted to make explicit both conditions (not set isError and get STDOUT)
 
         test("should not set isError", async () => {
             const result = await request;
@@ -30,20 +26,15 @@ describe("runCommand", () => {
             // *** tool response format  (isError only set if failure)
             //  https://modelcontextprotocol.io/docs/concepts/tools#error-handling-2
             //  FYI for a while I used isError: false for success and it never caused issues with Claude
-            //  but I don't wanna waste tokens AND seeing isError could be confusing
+            //  but, seeing isError could be confusing
+            //  and, why waste tokens!
         });
 
         test("should include STDOUT from command", async () => {
             const result = await request;
 
-            // Look for output message with name STDOUT
-            const stdout = result.content.find(
-                (msg) => msg.name === "STDOUT"
-            ) as TextContent;
-
-            // Verify the output contains the expected string
-            expect(stdout).toBeTruthy();
-            expect((stdout.text as string).trim()).toBe("Hello World");
+            const stdout = getStdoutText(result);
+            expect(stdout).toBe("Hello World");
         });
     });
 
@@ -85,8 +76,7 @@ describe("runCommand", () => {
         expect(getStdoutText(result)).toBe("/");
     });
 
-    test("should handle command execution errors", async () => {
-        // This test verifies that errors are properly handled
+    test("should return isError and STDERR on a failure (nonexistentcommand)", async () => {
         const result = await runCommand({
             command: "nonexistentcommand",
         });
