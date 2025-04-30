@@ -1,17 +1,19 @@
 import { runCommand } from "../../src/run-command.js";
-import { CallToolResult, TextContent } from "@modelcontextprotocol/sdk/types.js";
+import {
+    CallToolResult,
+    TextContent,
+} from "@modelcontextprotocol/sdk/types.js";
 
 describe("runCommand", () => {
     // FYI! these are integration tests only (test the glue)
     //   put all execution validations into lower level exec functions
     //   this is just to provide assertions that runCommand wires things together correctly
 
-    // FYI any uses of always_log will trigger warnings if using console.error! 
-    //    that's fine and to be expected... tests still pass... 
+    // FYI any uses of always_log will trigger warnings if using console.error!
+    //    that's fine and to be expected... tests still pass...
     //    can I shut that off for a test?
 
     describe("when command is successful", () => {
-
         // This test verifies that a successful command execution returns stdout
         const request = runCommand({
             command: "echo 'Hello World'",
@@ -43,18 +45,16 @@ describe("runCommand", () => {
             expect(stdout).toBeTruthy();
             expect((stdout.text as string).trim()).toBe("Hello World");
         });
-
     });
 
-    function getStdoutText(result: CallToolResult){
+    function getStdoutText(result: CallToolResult) {
         const stdout = result.content.find(
-            content => content.name === "STDOUT"
+            (content) => content.name === "STDOUT"
         ) as TextContent;
-        return (stdout.text as string).trim()
+        return (stdout.text as string).trim();
     }
 
     test("should change working directory based on workdir arg", async () => {
-
         const defaultResult = await runCommand({
             command: "pwd",
         });
@@ -62,12 +62,12 @@ describe("runCommand", () => {
         // * ensure default dir is not /
         // make sure command succeeded so I can make assumption about default directory
         expect(defaultResult.isError).toBeUndefined();
-        const defaultDirectory = getStdoutText(defaultResult)
+        const defaultDirectory = getStdoutText(defaultResult);
         // fail the test if the default is the same as /
         // that way I don't have to hardcode the PWD expectation
         // and still trigger a failure if its ambiguous whether pwd was used below
-        expect(defaultDirectory).not.toBe("/")
- 
+        expect(defaultDirectory).not.toBe("/");
+
         // * test setting workdir
         const result = await runCommand({
             command: "pwd",
@@ -75,7 +75,7 @@ describe("runCommand", () => {
         });
         // ensure setting workdir doesn't fail:
         expect(result.isError).toBeUndefined();
-        expect(getStdoutText(result)).toBe("/")
+        expect(getStdoutText(result)).toBe("/");
     });
 
     test("should handle command execution errors", async () => {
