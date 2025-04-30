@@ -22,7 +22,7 @@
     - Or, should I have some static mappings of common commands that fail and when they do, use the fallback? And find a way to tell the LLM? Or,
     - Or would some sort of command lookup mechanism be useful? i.e. python3 instead of python
 - Add windows tests, linux tests and macOS tests for nuances of each. i.e. pwsh, pwsh-core, cmd.exe on Windows.
-- Add a server side request to score risk of a tool request (specific to run_command/run_script?) - this wouldn't be a tool the LLM uses, but rather the client.
+- Add a server side request to score risk of a tool request (specific to run_command) - this wouldn't be a tool the LLM uses, but rather the client.
     - Claude makes tool request, client passes it to server for scoring, server returns risk, client decides to prompt (or not) and then client sends tool request to server...
     - Or, have client use another LLM score it?
     - I chimed in about this on this discussion: https://github.com/orgs/modelcontextprotocol/discussions/69 

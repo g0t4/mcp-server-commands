@@ -3,12 +3,10 @@
 Tools are for LLMs to request, i.e. Claude Desktop app. Claude Sonnet 3.5 intelligently uses both tools, I was pleasantly surprised.
 
 - `run_command` - run a command, i.e. `hostname` or `ls -al` or `echo "hello world"` etc
-  - Returns STDOUT and STDERR as text
-- `run_script` - run a script! (i.e. `fish`, `bash`, `zsh`, `python`)
-  - Let your LLM run the code it writes!
-  - script is passed over STDIN
-  - `run_script` == `run_command` + script over STDIN
-  - Claude has been pretty creative with this, i.e. using `cat` as the interpreter to create new files!
+  - Returns `STDOUT` and `STDERR` as text
+  - Optional `stdin` parameter means your LLM can
+    - pass code in `stdin` to commands like `fish`, `bash`, `zsh`, `python`
+    - create files with `cat >> foo/bar.txt` from the text in `stdin`
 
 > [!WARNING]
 > Be careful what you ask this server to run!
