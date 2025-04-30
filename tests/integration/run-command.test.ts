@@ -10,23 +10,40 @@ describe("runCommand", () => {
     //    that's fine and to be expected... tests still pass... 
     //    can I shut that off for a test?
 
-    test("should execute command and return stdout", async () => {
+    describe("when command is successful", () => {
+
         // This test verifies that a successful command execution returns stdout
-        const result = await runCommand({
+        const request = runCommand({
             command: "echo 'Hello World'",
         });
 
-        // Check that the command was successful
-        expect(result.isError).toBe(false);
+        // TODO any issues using describe to setup scenario?
+        //  I wanted to make explicit both conditions (not set isError and get STDOUT)
 
-        // Look for output message with name STDOUT
-        const stdout = result.content.find(
-            (msg) => msg.name === "STDOUT"
-        ) as TextContent;
+        test("should not set isError", async () => {
+            const result = await request;
 
-        // Verify the output contains the expected string
-        expect(stdout).toBeTruthy();
-        expect((stdout.text as string).trim()).toBe("Hello World");
+            expect(result.isError).toBeUndefined();
+
+            // *** tool response format  (isError only set if failure)
+            //  https://modelcontextprotocol.io/docs/concepts/tools#error-handling-2
+            //  FYI for a while I used isError: false for success and it never caused issues with Claude
+            //  but I don't wanna waste tokens AND seeing isError could be confusing
+        });
+
+        test("should include STDOUT from command", async () => {
+            const result = await request;
+
+            // Look for output message with name STDOUT
+            const stdout = result.content.find(
+                (msg) => msg.name === "STDOUT"
+            ) as TextContent;
+
+            // Verify the output contains the expected string
+            expect(stdout).toBeTruthy();
+            expect((stdout.text as string).trim()).toBe("Hello World");
+        });
+
     });
 
     test("should change workdir based on workdir arg", async () => {
@@ -37,7 +54,7 @@ describe("runCommand", () => {
             workdir: "/",
         });
 
-        expect(result.isError).toBe(false);
+        expect(result.isError).toBeUndefined();
 
         // Look for output message with name STDOUT
         const stdout = result.content.find(

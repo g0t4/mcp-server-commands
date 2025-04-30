@@ -26,7 +26,6 @@ export async function runCommand(
   try {
     const result = await execAsync(command, options);
     return {
-      isError: false,
       content: messagesFor(result),
     };
   } catch (error) {
