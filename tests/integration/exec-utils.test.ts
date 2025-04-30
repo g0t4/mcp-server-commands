@@ -69,13 +69,13 @@ describe("execFileWithInput integration tests", () => {
     });
 
     test("should handle multiline scripts in zsh", async () => {
-        const script = `
+        const stdinText = `
       echo "Line 1 from Zsh"
       for i in 1 2 3; do
         echo "Number $i"
       done
     `;
-        const result = await execFileWithInput("zsh", script, {});
+        const result = await execFileWithInput("zsh", stdinText, {});
         //expect(lines[0]).toContain('Line 1 from Zsh');
         //expect(lines[1]).toContain('Number 1');
         //expect(lines[2]).toContain('Number 2');
@@ -97,12 +97,12 @@ Number 3
     });
 
     test("should handle bash multiline scripts", async () => {
-        const script = `
+        const stdinText = `
       echo "Line 1"
       echo "Line 2"
       echo "Line 3"
     `;
-        const result = await execFileWithInput("bash", script, {});
+        const result = await execFileWithInput("bash", stdinText, {});
         // validate all of output:
         expect(result.stdout).toContain(`Line 1
 Line 2

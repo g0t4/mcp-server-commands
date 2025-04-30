@@ -25,10 +25,10 @@ export async function runScript(
         options.cwd = String(args.workdir);
     }
 
-    const stdin_text = String(args?.script);
+    const stdinText = args?.stdinText as string;
 
     try {
-        const result = await execFileWithInput(interpreter, stdin_text, options);
+        const result = await execFileWithInput(interpreter, stdinText, options);
         return {
             content: messagesFor(result),
         };

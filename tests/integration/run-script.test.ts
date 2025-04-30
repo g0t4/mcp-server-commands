@@ -34,7 +34,7 @@ describe("runScript", () => {
     describe("when script is successful", () => {
         const request = runScript({
             interpreter: "cat",
-            script: "Hello World",
+            stdinText: "Hello World",
         });
 
         test("should not set isError", async () => {

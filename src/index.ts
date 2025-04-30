@@ -134,18 +134,17 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                             // TODO use shebang on *nix?
                             type: "string",
                             description:
-                                "Command with arguments. Script will be piped to stdin. Examples: bash, fish, zsh, python, or: bash --norc",
+                                "Command with arguments. stdinText is piped to this command",
                         },
-                        script: {
+                        stdinText: {
                             type: "string",
-                            description: "Script to run",
+                            description: "Text that is piped into the command. Examples: pass a script to the python3 command, cat command to create a file stdinText.",
                         },
                         workdir: {
                             type: "string",
                             description: "Current working directory",
                         },
                     },
-                    required: ["script"],
                 },
             },
         ],
