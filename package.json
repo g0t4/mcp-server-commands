@@ -1,33 +1,33 @@
 {
-  "name": "mcp-server-commands",
-  "version": "0.4.2",
-  "description": "An MCP server to run arbitrary commands",
-  "private": false,
-  "type": "module",
-  "bin": {
-    "mcp-server-commands": "./build/index.js"
-  },
-  "files": [
-    "build"
-  ],
-  "scripts": {
-    "clean": "rm -rf build",
-    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
-    "prepare": "npm run build",
-    "watch": "npm run build && tsc --watch",
-    "inspector": "npx @modelcontextprotocol/inspector build/index.js",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:integration": "jest tests/integration"
-  },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "1.9.0"
-  },
-  "devDependencies": {
-    "@types/jest": "^29.5.14",
-    "@types/node": "^22.14.1",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.3.2",
-    "typescript": "^5.8.3"
-  }
+    "name": "mcp-server-commands",
+    "version": "0.4.2",
+    "description": "An MCP server to run arbitrary commands",
+    "private": false,
+    "type": "module",
+    "bin": {
+        "mcp-server-commands": "./build/index.js"
+    },
+    "files": [
+        "build"
+    ],
+    "scripts": {
+        "clean": "rm -rf build",
+        "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
+        "prepare": "npm run build",
+        "watch": "npm run build && tsc --watch",
+        "inspector": "npx @modelcontextprotocol/inspector build/index.js",
+        "test": "jest",
+        "test:watch": "jest --watch",
+        "test:integration": "jest tests/integration"
+    },
+    "dependencies": {
+        "@modelcontextprotocol/sdk": "1.9.0"
+    },
+    "devDependencies": {
+        "@types/jest": "^29.5.14",
+        "@types/node": "^22.14.1",
+        "jest": "^29.7.0",
+        "ts-jest": "^29.3.2",
+        "typescript": "^5.8.3"
+    }
 }
