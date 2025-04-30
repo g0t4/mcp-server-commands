@@ -11,9 +11,13 @@ import { always_log } from "./always_log.js";
 export async function runScript(
     args: Record<string, unknown> | undefined
 ): Promise<CallToolResult> {
-    const interpreter = String(args?.interpreter);
+    const interpreter = args?.interpreter as string;
     if (!interpreter) {
-        throw new Error("Interpreter is required");
+        const message = "Interpreter is missing, passed value: " + interpreter;
+        return {
+            isError: true,
+            content: [{ type: "text", text: message }],
+        };
     }
 
     const options: ObjectEncodingOptions & ExecOptions = { encoding: "utf8" };
@@ -22,6 +26,7 @@ export async function runScript(
     }
 
     const script = String(args?.script);
+    // TODO if I keep this, rewrite this as tool failure like interpreter above
     if (!script) {
         throw new Error("Script is required");
     }

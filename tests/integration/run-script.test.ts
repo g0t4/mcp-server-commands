@@ -1,5 +1,5 @@
 import { runScript } from "../../src/run-script.js";
-import { getStderrText, getStdoutText } from "./helpers.js";
+import { getFirstText, getStderrText, getStdoutText } from "./helpers.js";
 
 describe("runScript", () => {
     // TODO rework runScript
@@ -89,14 +89,14 @@ describe("runScript", () => {
         expect(stderr).toContain("nonexistentcommand");
     });
 
-    test("should handle missing command parameter", async () => {
+    test("should handle missing interpreter parameter", async () => {
         // This test verifies how the function handles a missing command parameter
         const result = await runScript({});
 
         expect(result.isError).toBe(true);
 
-        const stderr = getStderrText(result);
+        const text = getFirstText(result);
         // Verify error message indicates undefined command
-        expect(stderr).toContain("undefined: command not found");
+        expect(text).toContain("Interpreter is missing, passed value: undefined");
     });
 });

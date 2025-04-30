@@ -17,4 +17,10 @@ function getStderrText(result: CallToolResult) {
     return (stderr.text as string).trim();
 }
 
-export { getStdoutText, getStderrText };
+function getFirstText(result: CallToolResult) {
+    // TODO throw if none? more than 1?
+    const first = result.content[0] as TextContent;
+    return (first.text as string).trim();
+}
+
+export { getStdoutText, getStderrText, getFirstText };
