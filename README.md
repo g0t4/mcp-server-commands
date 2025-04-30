@@ -69,6 +69,8 @@ Published to npm as [mcp-server-commands](https://www.npmjs.com/package/mcp-serv
 
 ### Use a local build (repo checkout)
 
+Make sure to run `npm run build`
+
 ```json
 {
   "mcpServers": {
