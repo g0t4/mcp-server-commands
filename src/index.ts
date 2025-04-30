@@ -18,7 +18,10 @@ import { runScript } from "./run-script.js";
 import { createRequire } from "module";
 import { always_log } from "./always_log.js";
 const require = createRequire(import.meta.url);
-const { name: package_name, version: package_version } = require("../package.json");
+const {
+    name: package_name,
+    version: package_version,
+} = require("../package.json");
 
 // TODO use .promises? in node api
 const execAsync = promisify(exec);
@@ -155,17 +158,16 @@ server.setRequestHandler(
         verbose_log("INFO: ToolRequest", request);
         switch (request.params.name) {
             case "run_command": {
-                return await runCommand(request.params.arguments)
+                return await runCommand(request.params.arguments);
             }
             case "run_script": {
-                return await runScript(request.params.arguments)
+                return await runScript(request.params.arguments);
             }
             default:
                 throw new Error("Unknown tool");
         }
     }
 );
-
 
 server.setRequestHandler(ListPromptsRequestSchema, async () => {
     verbose_log("INFO: ListPrompts");

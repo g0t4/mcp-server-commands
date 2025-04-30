@@ -5,4 +5,3 @@ export function always_log(message: string, data?: any) {
         console.error(message);
     }
 }
-
