@@ -1,11 +1,19 @@
 import { exec, ExecOptions } from "node:child_process";
 import { promisify } from "node:util";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { ExecResult } from "./exec-utils.js";
+import { execFileWithInput, ExecResult } from "./exec-utils.js";
 import { always_log } from "./always_log.js";
 import { messagesFor } from "./messages.js";
+import { ObjectEncodingOptions } from "node:fs";
 
 const execAsync = promisify(exec);
+
+async function execute(command: string, stdin: string, options: ExecOptions) {
+    if (!stdin) {
+        return await execAsync(command, options);
+    }
+    return await execFileWithInput(command, stdin, options);
+}
 
 /**
  * Executes a command and returns the result as CallToolResult.
@@ -22,13 +30,15 @@ export async function runCommand(
         };
     }
 
-    const options: ExecOptions = {};
+    const options: ObjectEncodingOptions & ExecOptions = { encoding: "utf8" };
     if (args?.workdir) {
         options.cwd = String(args.workdir);
     }
 
+    const stdin = args?.stdin as string;
+
     try {
-        const result = await execAsync(command, options);
+        const result = await execute(command, stdin, options);
         return {
             content: messagesFor(result),
         };
@@ -41,14 +51,3 @@ export async function runCommand(
         return response;
     }
 }
-
-// const options: ObjectEncodingOptions & ExecOptions = { encoding: "utf8" };
-// if (args?.workdir) {
-//     options.cwd = String(args.workdir);
-// }
-//
-// const stdinText = args?.stdinText as string;
-//
-// try {
-//     const result = await execFileWithInput(interpreter, stdinText, options);
-//

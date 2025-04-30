@@ -15,12 +15,12 @@ type ExecResult = {
 /**
  * Executes a file with the given arguments, piping input to stdin.
  * @param {string} interpreter - The file to execute.
- * @param {string} stdinText - The string to pipe to stdin.
+ * @param {string} stdin - The string to pipe to stdin.
  * @returns {Promise<ExecResult>} A promise that resolves with the stdout and stderr of the command. `message` is provided on a failure to explain the error.
  */
 function execFileWithInput(
     interpreter: string,
-    stdinText: string,
+    stdin: string,
     options: ObjectEncodingOptions & ExecOptions
 ): Promise<ExecResult> {
     // FYI for now, using `exec()` so the interpreter can have cmd+args AIO
@@ -28,7 +28,7 @@ function execFileWithInput(
     // TODO starts with fish too? "fish -..." PRN use a library to parse the command and determine this?
     if (interpreter.split(" ")[0] === "fish") {
         // PRN also check error from fish and add possible clarification to error message though there are legit ways to trigger that same error message! i.e. `fish .` which is not the same issue!
-        return fishWorkaround(interpreter, stdinText, options);
+        return fishWorkaround(interpreter, stdin, options);
     }
 
     return new Promise((resolve, reject) => {
@@ -40,12 +40,12 @@ function execFileWithInput(
             }
         });
 
-        if (stdinText) {
+        if (stdin) {
             if (child.stdin === null) {
                 reject(new Error("Unexpected failure: child.stdin is null"));
                 return;
             }
-            child.stdin.write(stdinText);
+            child.stdin.write(stdin);
             child.stdin.end();
         }
     });
@@ -53,14 +53,14 @@ function execFileWithInput(
 
 async function fishWorkaround(
     interpreter: string,
-    stdinText: string,
+    stdin: string,
     options: ObjectEncodingOptions & ExecOptions
 ): Promise<ExecResult> {
     // fish right now chokes on piped input (STDIN) + node's exec/spawn/etc, so lets use a workaround to echo the input
     // base64 encode thee input, then decode in pipeline
-    const base64StdinText = Buffer.from(stdinText).toString("base64");
+    const base64stdin = Buffer.from(stdin).toString("base64");
 
-    const command = `${interpreter} -c "echo ${base64StdinText} | base64 -d | fish"`;
+    const command = `${interpreter} -c "echo ${base64stdin} | base64 -d | fish"`;
 
     return new Promise((resolve, reject) => {
         // const child = ... // careful with refactoring not to return that unused child

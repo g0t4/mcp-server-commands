@@ -12,7 +12,8 @@ describe("runCommand", () => {
 
     describe("when command is successful", () => {
         const request = runCommand({
-            command: "echo 'Hello World'",
+            command: "cat",
+            stdin: "Hello World",
         });
 
         test("should not set isError", async () => {
@@ -87,7 +88,7 @@ describe("runCommand", () => {
     describe("when stdin passed and command succeeds", () => {
         const request = runCommand({
             command: "cat",
-            stdinText: "Hello World",
+            stdin: "Hello World",
         });
 
         test("should not set isError", async () => {
