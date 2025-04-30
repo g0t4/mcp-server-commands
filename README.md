@@ -50,6 +50,8 @@ To use with Claude Desktop, add the server config:
 On MacOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
 On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 
+Groq Desktop (beta, macOS) uses `~/Library/Application Support/groq-desktop-app/settings.json`
+
 ### Use the published npm package
 
 Published to npm as [mcp-server-commands](https://www.npmjs.com/package/mcp-server-commands) using this [workflow](https://github.com/g0t4/mcp-server-commands/actions)
