@@ -1,6 +1,8 @@
 ## Tools
 
-Tools are for LLMs to request, i.e. Claude Desktop app. Claude Sonnet 3.5 intelligently uses both tools, I was pleasantly surprised.
+Tools are for LLMs to request. Claude Sonnet 3.5 intelligently uses `run_command`. And, initial testing shows promising results with [Groq Desktop with MCP](https://github.com/groq/groq-desktop-beta) and `llama4` models.
+
+Currently, just one command to rule them all!
 
 - `run_command` - run a command, i.e. `hostname` or `ls -al` or `echo "hello world"` etc
   - Returns `STDOUT` and `STDERR` as text
