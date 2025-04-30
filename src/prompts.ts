@@ -23,9 +23,16 @@ export function registerPrompts(server: Server) {
                 //  special instructions and yeah... I think that's a use case for these prompts
                 //  /prompt llama4 ?
                 {
+                    name: "examples",
+                    description:
+                        "Novel examples of run_command tool use to nudge models to the possibilities. " +
+                        "Based on assumption that most models understand shell commands/scripts very well.",
+                },
+                {
                     name: "run_command",
                     description:
-                        "Include command output in the prompt. Instead of a tool call, the user decides what commands are relevant.",
+                        "Include command output in the prompt. " +
+                        "This is effectively a user tool call.",
                     arguments: [
                         {
                             name: "command",
