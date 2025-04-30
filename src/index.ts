@@ -121,32 +121,6 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                     required: ["command"],
                 },
             },
-            // PRN tool to introspect the environment (i.e. windows vs linux vs mac, maybe default shell, etc?) - for now LLM can run commands and when they fail it can make adjustments accordingly - some cases where knowing this would help avoid dispatching erroneous commands (i.e. using free on linux, vm_stat on mac)
-            {
-                // TODO is run_script even needed if I were to add STDIN support to run_command above?
-                name: "run_script",
-                // TODO is it useful to include OS type? I need to test this on a windows machine and see how Claude does w/ and w/o this os hint:
-                //description: "Run a script on this " + os.platform() + " machine",
-                inputSchema: {
-                    type: "object",
-                    properties: {
-                        command: {
-                            // TODO use shebang on *nix?
-                            type: "string",
-                            description:
-                                "Command with arguments. stdinText is piped to this command",
-                        },
-                        stdinText: {
-                            type: "string",
-                            description: "Text that is piped into the command. Examples: pass a script to the python3 command, cat command to create a file stdinText.",
-                        },
-                        workdir: {
-                            type: "string",
-                            description: "Current working directory",
-                        },
-                    },
-                },
-            },
         ],
     };
 });
