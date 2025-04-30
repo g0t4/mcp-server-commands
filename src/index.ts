@@ -96,6 +96,12 @@ server.setRequestHandler(ListPromptsRequestSchema, async () => {
     verbose_log("INFO: ListPrompts");
     return {
         prompts: [
+            // TODO! add prompts for various LLMs that tailor instructions to make them optimize use of run_command tool
+            //  idea is, users could insert those manually, or perhaps automatically if necessary, depending on context
+            //  that way you don't need one prompt for everything and certain models won't need any help (i.e. Claude) vs 
+            //  llama4 which struggled with old run_script tool (now just stdin on run_command) so it might need some 
+            //  special instructions and yeah... I think that's a use case for these prompts
+            //  /prompt llama4 ?
             {
                 name: "run_command",
                 description:
