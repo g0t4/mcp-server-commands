@@ -13,10 +13,13 @@ const execAsync = promisify(exec);
 export async function runCommand(
     args: Record<string, unknown> | undefined
 ): Promise<CallToolResult> {
-    const command = String(args?.command);
-    // TODO fix command not set => return isError/content (not throw)
+    const command = args?.command as string;
     if (!command) {
-        throw new Error("Command is required");
+        const message = "Command is required, current value: " + command;
+        return {
+            isError: true,
+            content: [{ type: "text", text: message }],
+        };
     }
 
     const options: ExecOptions = {};
@@ -39,17 +42,6 @@ export async function runCommand(
     }
 }
 
-
-// TODO merge key parts of run_script into above
-// const interpreter = args?.interpreter as string;
-// if (!interpreter) {
-//     const message = "Interpreter is missing, passed value: " + interpreter;
-//     return {
-//         isError: true,
-//         content: [{ type: "text", text: message }],
-//     };
-// }
-//
 // const options: ObjectEncodingOptions & ExecOptions = { encoding: "utf8" };
 // if (args?.workdir) {
 //     options.cwd = String(args.workdir);
