@@ -46,13 +46,19 @@ export function registerPrompts(server: Server) {
     });
 
     server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+        // if (request.params.name == "examples") {
+        //     return GetExamplePromptMessages();
+        // } else
         if (request.params.name !== "run_command") {
-            throw new Error("Unknown prompt");
+            throw new Error(
+                "Unknown or not implemented prompt: " + request.params.name
+            );
         }
         verbose_log("INFO: PromptRequest", request);
 
         const command = String(request.params.arguments?.command);
         if (!command) {
+            // TODO is there a format to follow for reporting failure like isError for tools?
             throw new Error("Command is required");
         }
         // Is it possible/feasible to pass a path for the workdir when running the command?
@@ -95,4 +101,7 @@ export function registerPrompts(server: Server) {
         verbose_log("INFO: PromptResponse", messages);
         return { messages };
     });
+}
+function GetExamplePromptMessages(): PromptMessage[] {
+    throw new Error("Function not implemented.");
 }
