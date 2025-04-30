@@ -130,7 +130,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 inputSchema: {
                     type: "object",
                     properties: {
-                        interpreter: {
+                        command: {
                             // TODO use shebang on *nix?
                             type: "string",
                             description:
