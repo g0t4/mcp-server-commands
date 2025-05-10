@@ -75,12 +75,20 @@ Make sure to run `npm run build`
 {
   "mcpServers": {
     "mcp-server-commands": {
-      // works b/c of shebang in index.js
-      "command": "/path/to/mcp-server-commands/build/index.js"
+      "command": "node",
+      "args": [
+        "/path/to/mcp-server-commands/build/index.js",
+        "--verbose"
+      ],
+      "env": {
+        "NODE_PATH": "/path/to/mcp-server-commands/node_modules"
+      }
     }
   }
 }
 ```
+
+Note: Replace `/path/to/mcp-server-commands` with your actual path to the repository.
 
 ### Logging
 
