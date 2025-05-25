@@ -6,8 +6,6 @@ if (process.argv.includes("--verbose")) {
 
 if (verbose) {
     always_log("INFO: verbose logging enabled");
-} else {
-    always_log("INFO: verbose logging disabled, enable it with --verbose");
 }
 
 export function verbose_log(message: string, data?: any) {
