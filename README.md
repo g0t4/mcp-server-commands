@@ -82,6 +82,22 @@ Make sure to run `npm run build`
 }
 ```
 
+### HTTP / OpenAPI
+
+The server is implemented with the `STDIO` transport.
+For `HTTP`, use [`mcpo`](https://github.com/open-webui/mcpo) for an `OpenAPI` compatible web server interface.
+This works with [`Open-WebUI`](https://github.com/open-webui/open-webui)
+
+```bash
+uvx mcpo --port 3010 --api-key "supersecret" -- npx mcp-server-commands
+
+# uvx runs mcpo => mcpo run npx => npx runs mcp-server-commands
+# then, mcpo bridges STDIO <=> HTTP
+```
+
+> [!WARNING]
+> I briefly used `mcpo` with `open-webui`, make sure to vet it for security concerns.
+
 ### Logging
 
 Claude Desktop app writes logs to `~/Library/Logs/Claude/mcp-server-mcp-server-commands.log`
