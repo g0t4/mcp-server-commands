@@ -82,6 +82,26 @@ Make sure to run `npm run build`
 }
 ```
 
+## Local Models
+
+- Most models are trained such that they don't think they can run commands for you.
+  - Sometimes, they use tools w/o hesitation... other times, I have to coax them.
+  - Use a system prompt or prompt template to instruct that they should follow user requests. Including to use `run_commands` without double checking.
+- Ollama is a great way to run a model locally (w/ Open-WebUI)
+
+```sh
+# NOTE: make sure to review variants and sizes, so the model fits in your VRAM to perform well!
+
+# Probably the best so far is [OpenHands LM](https://www.all-hands.dev/blog/introducing-openhands-lm-32b----a-strong-open-coding-agent-model)
+ollama pull https://huggingface.co/lmstudio-community/openhands-lm-32b-v0.1-GGUF
+
+# https://ollama.com/library/devstral
+ollama pull devstral
+
+# Qwen2.5-Coder has tool use but you have to coax it
+ollama pull qwen2.5-coder
+```
+
 ### HTTP / OpenAPI
 
 The server is implemented with the `STDIO` transport.
