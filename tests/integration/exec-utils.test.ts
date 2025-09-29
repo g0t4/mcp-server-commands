@@ -23,6 +23,7 @@ describe("execFileWithInput integration tests", () => {
             await execFileWithInput("bash", "nonexistentcommand", {});
             fail("Should have thrown an error");
         } catch (result: any) {
+            // FYI catch is so you can run assertions on the failed result, given the promise is rejected, it's then thrown here
             // console.log(result);
             expect(result.stderr).toContain("bash: line 1: nonexistentcommand: command not found");
             expect(result.message).toContain("Command failed: bash\nbash: line 1: nonexistentcommand: command not found\n");
