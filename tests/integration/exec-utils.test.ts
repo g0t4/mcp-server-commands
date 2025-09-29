@@ -22,10 +22,10 @@ describe("execFileWithInput integration tests", () => {
         try {
             await execFileWithInput("bash", "nonexistentcommand", {});
             fail("Should have thrown an error");
-        } catch (error: any) {
-            // console.log(error);
-            expect(error.stderr).toContain("bash: line 1: nonexistentcommand: command not found");
-            expect(error.message).toContain("Command failed: bash\nbash: line 1: nonexistentcommand: command not found\n");
+        } catch (result: any) {
+            // console.log(result);
+            expect(result.stderr).toContain("bash: line 1: nonexistentcommand: command not found");
+            expect(result.message).toContain("Command failed: bash\nbash: line 1: nonexistentcommand: command not found\n");
         }
     });
 
@@ -45,10 +45,10 @@ describe("execFileWithInput integration tests", () => {
         try {
             await execFileWithInput("fish", "totallynonexistentcommand", {});
             fail("Should have thrown an error");
-        } catch (error: any) {
-            // console.log(error)
-            expect(error.stderr).toContain("fish: Unknown command: totallynonexistentcommand\nfish: \ntotallynonexistentcommand\n^~~~~~~~~~~~~~~~~~~~~~~~^");
-            expect(error.message).toBeTruthy();
+        } catch (result: any) {
+            // console.log(result);
+            expect(result.stderr).toContain("fish: Unknown command: totallynonexistentcommand\nfish: \ntotallynonexistentcommand\n^~~~~~~~~~~~~~~~~~~~~~~~^");
+            expect(result.message).toBeTruthy();
         }
     });
 
@@ -67,12 +67,12 @@ describe("execFileWithInput integration tests", () => {
         try {
             await execFileWithInput("zsh", "completelynonexistentcommand", {});
             fail("Should have thrown an error");
-        } catch (error: any) {
-            // console.log(error)
+        } catch (result: any) {
+            // console.log(result);
             // TODO why am I not reporting the exit code?! ==> 127 here (and in other cases above for missing command)
-            expect(error.stderr).toContain("zsh: command not found: completelynonexistentcommand");
+            expect(result.stderr).toContain("zsh: command not found: completelynonexistentcommand");
             // TODO why am I bothering to return message... it seems to just duplicate STDERR?!
-            expect(error.message).toBeTruthy();
+            expect(result.message).toBeTruthy();
         }
     });
 
