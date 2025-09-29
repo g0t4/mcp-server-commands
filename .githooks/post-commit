@@ -1,0 +1,15 @@
+#!/usr/bin/env fish
+
+echo "$(status current-filename) $argv"
+
+if test -d "$(git rev-parse --git-dir)/rebase-merge"
+    or test -d "$(git rev-parse --git-dir)/rebase-apply"
+    or test -f "$(git rev-parse --git-dir)/MERGE_HEAD"
+    # skip for rebase/merge
+    exit
+    # by the way $1 seems to have # commits affected? during rebase?
+    #   3)  2)
+end
+
+# make clean && make tags
+rag_indexer --githook

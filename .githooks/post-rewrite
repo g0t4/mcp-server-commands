@@ -1,0 +1,14 @@
+#!/usr/bin/env fish
+
+echo "$(status current-filename) $argv"
+
+# $1 == amend/rebase
+# post-rewrite is called for amend and rebase
+if test $argv[1] = amend
+    # amend will also trigger post-commit
+    echo "  skipping '$argv[1]'"
+    exit
+end
+
+# make clean && make tags
+rag_indexer --githook
