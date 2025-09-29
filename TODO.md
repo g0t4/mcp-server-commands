@@ -1,15 +1,5 @@
 ## TODOs
 
-- Rename `cwd` to increase usage by Claude and other models?
-  - `workdir`, `workDir`, `workingDirectory` ??
-- Explicit return code on errors only (non-zero)
-  - do not show when zero
-  - separate content item?
-    "Exit code: -1"
-    or {"name": "exit code", text: "-1" }?
-- add `timeout` optional param
-
-
 - Every time Claude runs a python script, `python` is used as the interpreter. Which fails every time.
     - Thankfully, Claude retries with `python3` and uses that for the rest of the chat. 
         - Hence the idea to have some memory concept across chats! Very selective memory and very minimal.

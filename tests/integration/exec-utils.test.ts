@@ -1,11 +1,9 @@
 import { execFileWithInput } from "../../src/exec-utils.js";
 
-// FYI Claude generated most of these, by dog fooding the run_command/script tools!
-// I am going to keep asking Claude to add new tests to see how I feel about that workflow
+// FYI these tests are largely to make sure I understand how exec works
+// + my changes to exec (i.e. reject promise on failure in STDIN path)
 
 describe("execFileWithInput integration tests", () => {
-    // ok, impressive choice of "seam" to add testing of the most critical part, executing the command!
-    // this is EXACTLY what I had in mind and didn't even tell Claude I wanted.
 
     test("should execute a simple bash command", async () => {
         const result = await execFileWithInput(
@@ -16,6 +14,7 @@ describe("execFileWithInput integration tests", () => {
         // console.log(result);
         expect(result.stdout).toBe("Hello World\n");
         expect(result.stderr).toBe("");
+        expect(result.code).toBeUndefined();
     });
 
     test("should handle command errors properly in bash", async () => {
@@ -25,8 +24,11 @@ describe("execFileWithInput integration tests", () => {
         } catch (result: any) {
             // FYI catch is so you can run assertions on the failed result, given the promise is rejected, it's then thrown here
             // console.log(result);
-            expect(result.stderr).toContain("bash: line 1: nonexistentcommand: command not found");
-            expect(result.message).toContain("Command failed: bash\nbash: line 1: nonexistentcommand: command not found\n");
+            const expected_stderr = "bash: line 1: nonexistentcommand: command not found";
+            expect(result.stderr).toContain(expected_stderr);
+            const expected_message = "Command failed: bash\n" + expected_stderr + "\n";
+            expect(result.message).toContain(expected_message);
+            expect(result.code).toBe(127);
         }
     });
 
@@ -39,6 +41,7 @@ describe("execFileWithInput integration tests", () => {
         // console.log(result);
         expect(result.stdout).toBe("Hello from Fish\n");
         expect(result.stderr).toBe("");
+        expect(result.code).toBeUndefined();
     });
 
     // TODO make sure to cover the fish workaround logic, in all its edge cases and then can leave those tests when I remove that or just nuke them
@@ -48,8 +51,17 @@ describe("execFileWithInput integration tests", () => {
             fail("Should have thrown an error");
         } catch (result: any) {
             // console.log(result);
-            expect(result.stderr).toContain("fish: Unknown command: totallynonexistentcommand\nfish: \ntotallynonexistentcommand\n^~~~~~~~~~~~~~~~~~~~~~~~^");
-            expect(result.message).toBeTruthy();
+
+            const expected_stderr = "fish: Unknown command: totallynonexistentcommand\nfish: \ntotallynonexistentcommand\n^~~~~~~~~~~~~~~~~~~~~~~~^";
+            expect(result.stderr).toContain(expected_stderr);
+            // TODO! this is why I don't think I should return error.message... or at least not in many cases
+            //    OR strip off the stderr overlap?
+            const expected_message = 'Command failed: fish -c "echo dG90YWxseW5vbmV4aXN0ZW50Y29tbWFuZA== | base64 -d | fish"' +
+                "\n" + expected_stderr;
+            expect(result.message).toContain(expected_message);
+            expect(result.code).toBe(127);
+            expect(result.killed).toBe(false);
+            expect(result.signal).toBeNull();
         }
     });
 
@@ -62,6 +74,7 @@ describe("execFileWithInput integration tests", () => {
         // console.log(result);
         expect(result.stdout).toBe("Hello from Zsh\n");
         expect(result.stderr).toBe("");
+        expect(result.code).toBeUndefined();
     });
 
     test("should handle command errors properly in zsh", async () => {
@@ -70,10 +83,13 @@ describe("execFileWithInput integration tests", () => {
             fail("Should have thrown an error");
         } catch (result: any) {
             // console.log(result);
-            // TODO why am I not reporting the exit code?! ==> 127 here (and in other cases above for missing command)
-            expect(result.stderr).toContain("zsh: command not found: completelynonexistentcommand");
-            // TODO why am I bothering to return message... it seems to just duplicate STDERR?!
-            expect(result.message).toBeTruthy();
+            const expected_stderr = "zsh: command not found: completelynonexistentcommand";
+            expect(result.stderr).toContain(expected_stderr);
+            const expected_message = "Command failed: zsh\n" + expected_stderr + "\n";
+            expect(result.message).toBe(expected_message);
+            expect(result.code).toBe(127);
+            expect(result.killed).toBe(false);
+            expect(result.signal).toBeNull();
         }
     });
 
@@ -85,15 +101,14 @@ describe("execFileWithInput integration tests", () => {
       done
     `;
         const result = await execFileWithInput("zsh", stdin, {});
-        //expect(lines[0]).toContain('Line 1 from Zsh');
-        //expect(lines[1]).toContain('Number 1');
-        //expect(lines[2]).toContain('Number 2');
-        //expect(lines[3]).toContain('Number 3');
+        // console.log(result);
         expect(result.stdout).toContain(`Line 1 from Zsh
 Number 1
 Number 2
 Number 3
 `);
+        expect(result.stderr).toBe("");
+        expect(result.code).toBeUndefined();
     });
 
     test("should respect working directory option", async () => {
@@ -102,7 +117,10 @@ Number 3
         // TODO make sure cwd is not already / in the test?
         // PRN use multiple paths would be another way around checking cwd of test runner
         const result = await execFileWithInput("bash", "pwd", { cwd: "/" });
-        expect(result.stdout.trim()).toBe("/");
+        // console.log(result);
+        expect(result.stdout).toBe("/\n");
+        expect(result.stderr).toBe("");
+        expect(result.code).toBeUndefined();
     });
 
     test("should handle bash multiline scripts", async () => {
@@ -113,9 +131,12 @@ Number 3
     `;
         const result = await execFileWithInput("bash", stdin, {});
         // validate all of output:
+        // console.log(result);
         expect(result.stdout).toContain(`Line 1
 Line 2
 Line 3`);
+        expect(result.stderr).toBe("");
+        expect(result.code).toBeUndefined();
     });
 });
 

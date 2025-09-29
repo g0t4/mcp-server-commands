@@ -2,22 +2,26 @@ import { exec, ExecOptions } from "child_process";
 import { ObjectEncodingOptions } from "fs";
 
 type ExecResult = {
-    // FYI leave this type for now as a declaration of the expected shape of the result for BOTH success and failure (errors)
-    //   do not switch to using ExecException b/c that only applies to failures
+    // this is basically ExecException except I want my own type for it...
+    //   b/c I want this to represent all results
+    //   ... by the way throws put stdout/stderr on the error "result" object
+    //       hence I am replicating that here and in my promise reject calls
     stdout: string;
     stderr: string;
 
-    // TODO dear GOD... wes why the F did you call this message? error_message would've been better (at a minimum)
-    // message is the error message from the child process, not sure I like this naming
-    // - perhaps worth pushing the error logic out of messagesFor back into catch block above
-    message?: string;
+    // ONLY on errors:
+    message?: string; // FYI redundant b/c message ~= `Command failed: ${cmd}\n${stderr}\n`
+    code?: number;
+    killed?: boolean;
+    signal?: NodeJS.Signals | undefined;
+    cmd?: string; // FYI redundant
 };
 
 /**
  * Executes a file with the given arguments, piping input to stdin.
  * @param {string} interpreter - The file to execute.
  * @param {string} stdin - The string to pipe to stdin.
- * @returns {Promise<ExecResult>} A promise that resolves with the stdout and stderr of the command. `message` is provided on a failure to explain the error.
+ * @returns {Promise<ExecResult>}
  */
 function execFileWithInput(
     interpreter: string,
@@ -35,8 +39,13 @@ function execFileWithInput(
     return new Promise((resolve, reject) => {
         const child = exec(interpreter, options, (error, stdout, stderr) => {
             if (error) {
-                reject({ message: error.message, stdout, stderr });
+                // console.log("execFileWithInput ERROR:", error);
+                // mirror ExecException used by throws
+                error.stdout = stdout;
+                error.stderr = stderr;
+                reject(error);
             } else {
+                // I assume RC==0 else would trigger error?
                 resolve({ stdout, stderr });
             }
         });
@@ -68,7 +77,11 @@ async function fishWorkaround(
         exec(command, options, (error, stdout, stderr) => {
             // I like this style of error vs success handling! it's beautiful-est (prommises are underrated)
             if (error) {
-                reject({ message: error.message, stdout, stderr });
+                // console.log("fishWorkaround ERROR:", error);
+                // mirror ExecException used by throws
+                error.stdout = stdout;
+                error.stderr = stderr;
+                reject(error);
             } else {
                 resolve({ stdout, stderr });
             }
