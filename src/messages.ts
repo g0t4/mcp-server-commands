@@ -5,6 +5,7 @@ import { TextContent } from "@modelcontextprotocol/sdk/types.js";
  * Converts an ExecResult into an array of TextContent messages.
  */
 export function messagesFor(result: ExecResult): TextContent[] {
+    // TODO! RETURN CODE!!! add as RETURN_CODE and number type
     const messages: TextContent[] = [];
     if (result.message) {
         messages.push({
@@ -29,4 +30,3 @@ export function messagesFor(result: ExecResult): TextContent[] {
     }
     return messages;
 }
-
