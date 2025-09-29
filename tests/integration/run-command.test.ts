@@ -88,9 +88,9 @@ describe("runCommand", () => {
 
         const stderr = result.content[1];
         // Verify error message contains the command name
-        expect(stderr.text).toEqual(
-            expect.stringContaining("/bin/sh: nonexistentcommand: command not found\n")
-            || expect.stringContaining("/bin/sh: 1: nonexistentcommand: not found"));
+        expect(stderr.text).toMatch(/nonexistentcommand.*not found/i);
+        // gh actions:
+        //   /bin/sh: 1: nonexistentcommand: not found
 
         expect(stderr.name).toContain("STDERR");
     });
