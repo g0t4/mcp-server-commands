@@ -81,7 +81,7 @@ describe("runCommand", () => {
         const firstMessage = getFirstText(result);
         // Verify error message indicates undefined command
         expect(firstMessage).toContain(
-            "Command is required, current value: undefined"
+            "Command is required, current value: undefined",
         );
     });
 
