@@ -8,7 +8,7 @@ describe("runCommand", () => {
 
     // FYI any uses of always_log will trigger warnings if using console.error!
     //    that's fine and to be expected... tests still pass...
-    //    can I shut that off for a test?
+    //    TODO setup a way to bypass the error output for tests, unless troubleshooting the test
 
     describe("when command is successful", () => {
         const request = runCommand({
