@@ -23,7 +23,7 @@ describe("execFileWithInput integration tests", () => {
             fail("Should have thrown an error");
         } catch (error: any) {
             expect(error.stderr).toContain("bash: line 1: nonexistentcommand: command not found");
-            expect(error.message).toBeTruthy();
+            expect(error.message).toContain("Command failed: bash\nbash: line 1: nonexistentcommand: command not found\n");
         }
     });
 
