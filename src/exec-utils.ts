@@ -7,6 +7,7 @@ type ExecResult = {
     stdout: string;
     stderr: string;
 
+    // TODO dear GOD... wes why the F did you call this message? error_message would've been better (at a minimum)
     // message is the error message from the child process, not sure I like this naming
     // - perhaps worth pushing the error logic out of messagesFor back into catch block above
     message?: string;
