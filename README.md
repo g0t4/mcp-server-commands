@@ -1,4 +1,5 @@
 ## Tools
+[![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/g0t4/mcp-server-commands)](https://archestra.ai/mcp-catalog/g0t4__mcp-server-commands)
 
 Tools are for LLMs to request. Claude Sonnet 3.5 intelligently uses `run_command`. And, initial testing shows promising results with [Groq Desktop with MCP](https://github.com/groq/groq-desktop-beta) and `llama4` models.
 
