@@ -41,6 +41,11 @@ export function reisterTools(server: Server) {
                         },
                         required: ["command"],
                     },
+                    annotations: {
+                        title: "Run Command",
+                        destructiveHint: true,
+                        openWorldHint: true,
+                    },
                 },
             ],
         };
