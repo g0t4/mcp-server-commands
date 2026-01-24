@@ -26,11 +26,12 @@ async function runSyncWithStdio(stdioValue: StdioOptions) {
     console.log("\n## spawnSync COMPLETE\n");
     console.log("result", result);
 
-    if (result.stdout) {
-        console.log("stdout:", result.stdout);
+    if (result.stdout && result.stdout.byteLength > 0) {
+        console.log(`stdout (#${result.stdout.byteLength}):`, result.stdout.toString());
     }
-    if (result.stderr) {
-        console.log("stderr:", result.stderr);
+    if (result.stderr && result.stderr.byteLength > 0) {
+        // PRN look for diff .length vs .byteLength => see if can find scenarios where they aren't mismatched in my codebases (for other purposes, i.e. RAG matches column offset calculations)
+        console.log(`stderr (#${result.stderr.byteLength}):`, result.stderr.toString());
     }
 
     return result;
