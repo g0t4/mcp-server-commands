@@ -5,7 +5,13 @@
 # * make abbrs for npm run script keys! I like it!
 #  this can become a common convention to easily locate build steps 
 #  run_SCRIPT i.e. run_build, run_watch, etc
-set npm_scripts (cat package.json | jq ".scripts | keys | .[]" -r)
-for s in $npm_scripts
-    abbr "run_$s" "npm run $s"
-end
+
+set -l script_entries (jq -r '.scripts | to_entries[] | "\(.key)\t\(.value)"' package.json)
+
+for entry in $script_entries
+    set -l parts (string split (printf '\t') $entry)
+    set -l key $parts[1]
+    set -l cmd $parts[2]
+
+    abbr "run_$key" "$cmd"
+end | string split "\t"
