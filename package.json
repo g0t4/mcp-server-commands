@@ -18,7 +18,8 @@
         "inspector": "npx @modelcontextprotocol/inspector build/index.js",
         "test": "jest",
         "test:watch": "jest --watch",
-        "test:integration": "jest tests/integration"
+        "test:integration": "jest tests/integration",
+        "test:watch:integration": "jest --watch tests/integration"
     },
     "dependencies": {
         "@modelcontextprotocol/sdk": "1.9.0"
