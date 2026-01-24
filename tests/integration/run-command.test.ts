@@ -144,6 +144,11 @@ describe("runCommand", () => {
     //   AND common scenarios of each that materially are affected by how STDIO and process are setup
     // i.e. grep, sed, fd, ls, pwd, git (status,...?), ...
 
+    // TODO add tests of timeout parameter and implement it
+
+    // TODO other params I want to add with new STDIO approach?
+    // * shell - or at least show default shell (path/PATH) and run it to get its version and name info and add that to tool instructions?
+
     describe("when stdin passed and command succeeds", () => {
         const request = runCommand({
             command: "cat",
