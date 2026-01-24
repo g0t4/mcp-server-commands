@@ -107,6 +107,43 @@ describe("runCommand", () => {
         expect(firstMessage.text).toContain("Command is required, current value: undefined");
     });
 
+    test("reproduce hang rg - TODO then what to do about it?", async () => {
+        // FYI rg --debug  // shows what it searches
+        //  also, if rg hangs, either setup timeout OR kill process to see initial --debug output
+        //  i.e. to see its search heuristic decision
+        //
+        const request = runCommand({
+
+            // * issue:
+            // currently, exec inherits STDIN (all STIO actually) of parent process
+            // - parent is MCP _server_ process 
+            // - thus, STDIN is a socket (server socket)
+            // - so rg tries to search it, and nothing ever arrives, let alone EOF
+            // - therefore rg hangs indefinitely
+            command: "rg --debug foo"
+            // * --debug output, key part:
+            //   > for heuristic stdin detection on Unix, found that is_file=false, is_fifo=false and is_socket=true, 
+            //   > and thus concluded that is_stdin_readable=true\nrg: DEBUG|rg::flags::hiargs
+
+
+            // TODO! fix for rg socket detection, DO NOT INHERIT STDIO AT ALL
+            //   that means I cannot use child_process.exec()
+            //   tentative looks like I want to switch to `child_process.spawn()`
+        });
+
+        // TODO cleanup assertions once settled on solution 
+        const result = await request;
+        // expect(result.isError).toBeUndefined();
+        const stdout = result.content[0];
+        expect(result.content).toBe([]); // just to compare (log basically)
+        expect(stdout.name).toBe("STDOUT");
+        expect(stdout.text).toBe("Hello World");
+    });
+
+    // TODO! add integration tests of all the common commands you will use
+    //   AND common scenarios of each that materially are affected by how STDIO and process are setup
+    // i.e. grep, sed, fd, ls, pwd, git (status,...?), ...
+
     describe("when stdin passed and command succeeds", () => {
         const request = runCommand({
             command: "cat",
