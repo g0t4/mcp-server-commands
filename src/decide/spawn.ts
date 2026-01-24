@@ -25,21 +25,19 @@ await ls()
 
 
 async function cat_hello() {
-    const ls = spawn('ls', ['-lh', '/usr']);
+    const cat = spawn('cat');
 
-    // NOTES:
-    // - spawn/spawnSync are the foundation of all other methods
-    // - async, non-blocking (event loop)
-
-    ls.stdout.on('data', (data) => {
+    cat.stdout.on('data', (data) => {
         console.log(`stdout: ${data}`);
     });
 
-    ls.stderr.on('data', (data) => {
+    cat.stderr.on('data', (data) => {
         console.error(`stderr: ${data}`);
     });
 
-    const [code] = await once(ls, 'close');
+    cat.stdin.write("HEY FUCKTURD");
+    cat.stdin.end();
+    const [code] = await once(cat, 'close');
     console.log(`child process exited with code ${code}`);
 }
 
