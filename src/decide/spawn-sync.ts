@@ -5,7 +5,7 @@ import { setDefaultResultOrder } from 'node:dns';
 // NOTES:
 // - blocks event loop in exchange for convenience
 
-function runSyncWithStdio(stdioValue: StdioOptions) {
+async function runSyncWithStdio(stdioValue: StdioOptions) {
 
     console.log("\n\n" + "=".repeat(20) + " run " + "=".repeat(20) + "\n");
 
@@ -19,7 +19,7 @@ function runSyncWithStdio(stdioValue: StdioOptions) {
     const args = ["-lh", "/usr"];
     const result = spawnSync(command, args, options);
 
-    import chalk from 'chalk';
+    const chalk = (await import('chalk')).default
 
     console.log(chalk.green("\n## spawnSync COMPLETE\n"));
 
