@@ -19,6 +19,10 @@ function runSyncWithStdio(stdioValue: StdioOptions) {
     const args = ["-lh", "/usr"];
     const result = spawnSync(command, args, options);
 
+    import chalk from 'chalk';
+
+    console.log(chalk.green("\n## spawnSync COMPLETE\n"));
+
     console.log("\n## spawnSync COMPLETE\n");
     console.log("result", result);
 
