@@ -35,9 +35,12 @@ export function reisterTools(server: Server) {
                                 description:
                                     "Optional, text to pipe into the command's STDIN. For example, pass a python script to python3. Or, pass text for a new file to the cat command to create it!",
                             },
+                            timeout: {
+                                type: "number",
+                                description: "Optional, timeout in milliseconds, defaults to 1000 milliseconds.",
+                            },
                             // args to consider:
                             // - env - obscure cases where command takes a param only via an env var?
-                            // - timeout - lets just hard code this for now
                         },
                         required: ["command"],
                     },
