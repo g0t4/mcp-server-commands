@@ -1,5 +1,5 @@
 import { ExecResult } from "./exec-utils.js";
-import { TextContent } from "@modelcontextprotocol/sdk/types.js";
+import { CallToolResult, TextContent } from "@modelcontextprotocol/sdk/types.js";
 
 /**
  * Converts an ExecResult into an array of TextContent messages.
@@ -55,3 +55,11 @@ export function messagesFor(result: ExecResult): TextContent[] {
     }
     return messages;
 }
+
+export function errorResult(message: string): CallToolResult {
+    return {
+        isError: true,
+        content: [{ type: "text", text: message }],
+    };
+}
+

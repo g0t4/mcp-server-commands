@@ -3,7 +3,7 @@ import { promisify } from "node:util";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { execFileWithInput, ExecResult } from "./exec-utils.js";
 import { always_log } from "./always_log.js";
-import { messagesFor } from "./messages.js";
+import { errorResult, messagesFor } from "./messages.js";
 import { ObjectEncodingOptions } from "node:fs";
 
 const execAsync = promisify(exec);
@@ -30,18 +30,10 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
     const argv = args?.argv as string;
 
     if (!mode) {
-        const message = "Mode is required"
-        return {
-            isError: true,
-            content: [{ type: "text", text: message }],
-        };
+        return errorResult("Mode is required");
     }
     if (!command_line) {
-        const message = "command_line is required, current value: " + command_line;
-        return {
-            isError: true,
-            content: [{ type: "text", text: message }],
-        };
+        return errorResult("command_line is required, current value: " + command_line);
     }
 
     const options: ObjectEncodingOptions & ExecOptions = { encoding: "utf8" };
