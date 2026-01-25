@@ -25,6 +25,15 @@ async function execute(command: string, stdin: string, options: ExecOptions) {
 export type RunCommandArgs = Record<string, unknown> | undefined;
 export async function runCommand(args: RunCommandArgs): Promise<CallToolResult> {
 
+    const mode = args?.mode as string;
+    if (!mode) {
+        const message = "Mode is required"
+        return {
+            isError: true,
+            content: [{ type: "text", text: message }],
+        };
+    }
+
     const command = args?.command as string;
     if (!command) {
         const message = "Command is required, current value: " + command;
