@@ -22,8 +22,8 @@ async function execute(command: string, stdin: string, options: ExecOptions) {
 /**
  * Executes a command and returns the result as CallToolResult.
  */
-export type RunCommandArgs = Record<string, unknown> | undefined;
-export async function runCommand(args: RunCommandArgs): Promise<CallToolResult> {
+export type RunProcessArgs = Record<string, unknown> | undefined;
+export async function runCommand(args: RunProcessArgs): Promise<CallToolResult> {
 
     const mode = args?.mode as string;
     if (!mode) {
