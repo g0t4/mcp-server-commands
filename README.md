@@ -1,10 +1,10 @@
 ## Tools
 
-Tools are for LLMs to request. Claude Sonnet 3.5 intelligently uses `run_command`. And, initial testing shows promising results with [Groq Desktop with MCP](https://github.com/groq/groq-desktop-beta) and `llama4` models.
+Tools are for LLMs to request. Claude Sonnet 3.5 intelligently uses `run_process`. And, initial testing shows promising results with [Groq Desktop with MCP](https://github.com/groq/groq-desktop-beta) and `llama4` models.
 
 Currently, just one command to rule them all!
 
-- `run_command` - run a command, i.e. `hostname` or `ls -al` or `echo "hello world"` etc
+- `run_process` - run a command, i.e. `hostname` or `ls -al` or `echo "hello world"` etc
   - Returns `STDOUT` and `STDERR` as text
   - Optional `stdin` parameter means your LLM can
     - pass code in `stdin` to commands like `fish`, `bash`, `zsh`, `python`
@@ -24,7 +24,7 @@ Currently, just one command to rule them all!
 
 Prompts are for users to include in chat history, i.e. via `Zed`'s slash commands (in its AI Chat panel)
 
-- `run_command` - generate a prompt message with the command output
+- `run_process` - generate a prompt message with the command output
 
 ## Development
 
@@ -86,7 +86,7 @@ Make sure to run `npm run build`
 
 - Most models are trained such that they don't think they can run commands for you.
   - Sometimes, they use tools w/o hesitation... other times, I have to coax them.
-  - Use a system prompt or prompt template to instruct that they should follow user requests. Including to use `run_commands` without double checking.
+  - Use a system prompt or prompt template to instruct that they should follow user requests. Including to use `run_processs` without double checking.
 - Ollama is a great way to run a model locally (w/ Open-WebUI)
 
 ```sh

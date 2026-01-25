@@ -69,7 +69,7 @@ export async function runCommand(args: RunCommandArgs): Promise<CallToolResult> 
             isError: true,
             content: messagesFor(error as ExecResult),
         };
-        always_log("WARN: run_command failed", response);
+        always_log("WARN: run_process failed", response);
         return response;
     }
 }

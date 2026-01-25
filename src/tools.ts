@@ -59,7 +59,7 @@ export function reisterTools(server: Server) {
                                 type: "number",
                                 description: "Optional timeout in milliseconds, defaults to 1000 milliseconds.",
                             },
-                            dry_run: {
+                            dryRun: {
                                 type: "boolean",
                                 description: "If true, do not execute. Instead, explain what would be run (resolved paths, mode, argv/shell invocation)."
                                 // FYI this can help avoid the need for logging this information, I can call this as a user too!
@@ -96,7 +96,7 @@ export function reisterTools(server: Server) {
         async (request): Promise<CallToolResult> => {
             verbose_log("INFO: ToolRequest", request);
             switch (request.params.name) {
-                case "run_command": {
+                case "run_process": {
                     return await runCommand(request.params.arguments);
                 }
                 default:
