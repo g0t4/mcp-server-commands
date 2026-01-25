@@ -29,9 +29,9 @@ export function registerPrompts(server: Server) {
                         "This is effectively a user tool call.",
                     arguments: [
                         { name: "mode", },
-                        { name: "commandLine", },
+                        { name: "command_line", },
                         { name: "argv", },
-                        { name: "dryRun", },
+                        { name: "dry_run", },
                         // ? other args?
                     ],
                 },
@@ -51,17 +51,17 @@ export function registerPrompts(server: Server) {
         verbose_log("INFO: PromptRequest", request);
         throw new Error("run_process not yet ported to prompts");
 
-        const commandLine = String(request.params.arguments?.commandLine);
+        const command_line = String(request.params.arguments?.command_line);
         const argv = String(request.params.arguments?.argv);
         const mode = String(request.params.arguments?.mode);
-        const dryRun = Boolean(request.params.arguments?.dryRun);
+        const dry_run = Boolean(request.params.arguments?.dry_run);
         // Is it possible/feasible to pass a path for the workdir when running the command?
         // - currently it uses / (yikez)
         // - IMO makes more sense to have it be based on the Zed workdir of each project
         // - Fallback could be to configure on server level (i.e. home dir of current user) - perhaps CLI arg? (thinking of zed's context_servers config section)
 
         // TODO! finish rest of migrtation to run_process
-        const { stdout, stderr } = await execAsync(commandLine);
+        const { stdout, stderr } = await execAsync(command_line);
         // TODO gracefully handle errors and turn them into a prompt message that can be used by LLM to troubleshoot the issue, currently errors result in nothing inserted into the prompt and instead it shows the Zed's chat panel as a failure
 
         const messages: PromptMessage[] = [
@@ -71,7 +71,7 @@ export function registerPrompts(server: Server) {
                     type: "text",
                     text:
                         "I ran the following command, if there is any output it will be shown below:\n" +
-                        commandLine,
+                        command_line,
                 },
             },
         ];

@@ -30,11 +30,11 @@ export function reisterTools(server: Server) {
                             mode: {
                                 enum: ["shell", "executable"], // * I made this up
                                 description: "What are you running, two choices: 'shell' or 'executable' (required, no default)",
-                                // FYI only use default system shell, if the model wants a different shell, can explicitly run it with commandLine/argv
+                                // FYI only use default system shell, if the model wants a different shell, can explicitly run it with command_line/argv
                                 //   DO NOT duplicate the mechanism of specifying what runs by adding yet another executable field!
                                 //   spawn's options.shell is bool/string... string is command_name/path... that duplicates and complicates needlessly!
                             },
-                            commandLine: {
+                            command_line: {
                                 type: "string",
                                 description: "Shell command line. Required when mode='shell'. Forbidden when mode='executable'."
                             },
@@ -59,7 +59,7 @@ export function reisterTools(server: Server) {
                                 type: "number",
                                 description: "Optional timeout in milliseconds, defaults to 1000 milliseconds.",
                             },
-                            dryRun: {
+                            dry_run: {
                                 type: "boolean",
                                 description: "If true, do not execute. Instead, explain what would be run (resolved paths, mode, argv/shell invocation)."
                                 // FYI this can help avoid the need for logging this information, I can call this as a user too!
@@ -76,13 +76,13 @@ export function reisterTools(server: Server) {
                         // oneOf: [
                         //     {
                         //         properties: { mode: { const: "shell" } },
-                        //         required: ["commandLine"],
+                        //         required: ["command_line"],
                         //         not: { required: ["argv"] }
                         //     },
                         //     {
                         //         properties: { mode: { const: "executable" } },
                         //         required: ["argv"],
-                        //         not: { required: ["commandLine"] }
+                        //         not: { required: ["command_line"] }
                         //     }
                         // ]
                     },
