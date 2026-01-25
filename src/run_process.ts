@@ -6,18 +6,6 @@ import { always_log } from "./always_log.js";
 import { errorResult, messagesFor } from "./messages.js";
 import { ObjectEncodingOptions } from "node:fs";
 
-const execAsync = promisify(exec);
-
-async function execute(command: string, stdin: string, options: ExecOptions) {
-    // PRN merge calls to exec into one single paradigm with conditional STDIN handled in one spot?
-    //   right now no STDIN => exec directly and let it throw to catch failures
-    //   w/ STDIN => you manually glue together callbacks + promises (i.e. reject)
-    //     feels sloppy to say the least, notably the error handling with ExecExeption error that has stdin/stderr on it
-    if (!stdin) {
-        return await execAsync(command, options);
-    }
-    return await execFileWithInput(command, stdin, options);
-}
 
 /**
  * Executes a command and returns the result as CallToolResult.
@@ -78,13 +66,23 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
         // ... execute executable or dry‑run handling ...
     }
 
+    // TODO fallback needed?
     // fallback (should never reach here)
-    return errorResult("Unhandled mode configuration");
-
-
-
+    // return errorResult("Unhandled mode configuration");
 
     try {
+        async function execute(command: string, stdin: string, options: ExecOptions) {
+            // PRN merge calls to exec into one single paradigm with conditional STDIN handled in one spot?
+            //   right now no STDIN => exec directly and let it throw to catch failures
+            //   w/ STDIN => you manually glue together callbacks + promises (i.e. reject)
+            //     feels sloppy to say the least, notably the error handling with ExecExeption error that has stdin/stderr on it
+            if (!stdin) {
+                const execAsync = promisify(exec);
+                return await execAsync(command, options);
+            }
+            return await execFileWithInput(command, stdin, options);
+        }
+
         const result = await execute(command_line, stdin, spawn_options);
         return {
             content: messagesFor(result),
