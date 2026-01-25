@@ -87,9 +87,7 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
 
 
 
-    if (!command_line) {
-        return errorResult("command_line is required, current value: " + command_line);
-    }
+
 
     const options: ObjectEncodingOptions & ExecOptions = { encoding: "utf8" };
     if (args?.workdir) {
