@@ -1,4 +1,4 @@
-import { exec, ExecOptions } from "node:child_process";
+import { exec, ExecOptions, SpawnOptions } from "node:child_process";
 import { promisify } from "node:util";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { execFileWithInput, ExecResult } from "./exec-utils.js";
@@ -43,13 +43,18 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
         );
     }
 
-    // shared args
-    const cwd = args?.cwd ? String(args.cwd) : undefined;
+    // * shared args
+    const spawn_options: ObjectEncodingOptions & SpawnOptions = {
+        encoding: "utf8"
+    };
+    if (args?.cwd) {
+        spawn_options.cwd = String(args.cwd);
+    }
     const input = args?.input ? String(args.input) : undefined;
-    const timeoutMs = args?.timeout_ms
-        ? Number(args.timeout_ms)
-        : undefined;
-    const dryRun = Boolean(args?.dry_run);
+    if (args?.timeout_ms) {
+        spawn_options.timeout = Number(args.timeout_ms)
+    }
+    const dryRun = Boolean(args?.dry_run); // TODO
 
     if (isShell) {
         const commandLine = String(args?.command_line);
@@ -79,19 +84,8 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
 
 
 
-
-
-
-
-    const options: ObjectEncodingOptions & ExecOptions = { encoding: "utf8" };
-    if (args?.workdir) {
-        options.cwd = String(args.workdir);
-    }
-
-    const stdin = args?.stdin as string;
-
     try {
-        const result = await execute(command_line, stdin, options);
+        const result = await execute(command_line, stdin, spawn_options);
         return {
             content: messagesFor(result),
         };
