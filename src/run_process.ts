@@ -43,6 +43,14 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
         );
     }
 
+    // shared args
+    const cwd = args?.cwd ? String(args.cwd) : undefined;
+    const input = args?.input ? String(args.input) : undefined;
+    const timeoutMs = args?.timeout_ms
+        ? Number(args.timeout_ms)
+        : undefined;
+    const dryRun = Boolean(args?.dry_run);
+
     if (isShell) {
         const commandLine = String(args?.command_line);
         if (!commandLine) {
@@ -50,13 +58,6 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
                 "Mode 'shell' requires a non‑empty 'command_line' parameter."
             );
         }
-        // optional parameters for shell mode
-        const cwd = args?.cwd ? String(args.cwd) : undefined;
-        const input = args?.input ? String(args.input) : undefined;
-        const timeoutMs = args?.timeout_ms
-            ? Number(args.timeout_ms)
-            : undefined;
-        const dryRun = Boolean(args?.dry_run);
 
         // ... execute shell command or dry‑run handling ...
     }
@@ -68,13 +69,6 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
                 "Mode 'executable' requires a non‑empty 'argv' array."
             );
         }
-        // optional parameters for executable mode
-        const cwd = args?.cwd ? String(args.cwd) : undefined;
-        const input = args?.input ? String(args.input) : undefined;
-        const timeoutMs = args?.timeout_ms
-            ? Number(args.timeout_ms)
-            : undefined;
-        const dryRun = Boolean(args?.dry_run);
 
         // ... execute executable or dry‑run handling ...
     }
