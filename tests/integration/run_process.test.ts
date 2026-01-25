@@ -1,4 +1,4 @@
-import { runProcess } from "../../src/run-command.js";
+import { runProcess } from "../../src/run-process.js";
 
 describe("runCommand", () => {
     // FYI! these are integration tests only (test the glue)

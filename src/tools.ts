@@ -6,7 +6,7 @@ import {
     ListToolsResult
 } from "@modelcontextprotocol/sdk/types.js";
 import { verbose_log } from "./always_log.js";
-import { runProcess } from "./run-command.js";
+import { runProcess } from "./run_process.js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 
 export function reisterTools(server: Server) {
