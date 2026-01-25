@@ -26,6 +26,9 @@ export type RunProcessArgs = Record<string, unknown> | undefined;
 export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> {
 
     const mode = args?.mode as string;
+    const command_line = args?.command_line as string;
+    const argv = args?.argv as string;
+
     if (!mode) {
         const message = "Mode is required"
         return {
@@ -33,10 +36,8 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
             content: [{ type: "text", text: message }],
         };
     }
-
-    const command = args?.command as string;
-    if (!command) {
-        const message = "Command is required, current value: " + command;
+    if (!command_line) {
+        const message = "command_line is required, current value: " + command_line;
         return {
             isError: true,
             content: [{ type: "text", text: message }],
@@ -51,7 +52,7 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
     const stdin = args?.stdin as string;
 
     try {
-        const result = await execute(command, stdin, options);
+        const result = await execute(command_line, stdin, options);
         return {
             content: messagesFor(result),
         };
