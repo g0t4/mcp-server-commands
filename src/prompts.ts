@@ -60,7 +60,7 @@ export function registerPrompts(server: Server) {
         // - IMO makes more sense to have it be based on the Zed workdir of each project
         // - Fallback could be to configure on server level (i.e. home dir of current user) - perhaps CLI arg? (thinking of zed's context_servers config section)
 
-        // TODO! finish rest of migrtation to run_process
+        // TODO RUN_PROCESS MIGRATION - finish rest of migrtation to run_process
         const { stdout, stderr } = await execAsync(command_line);
         // TODO gracefully handle errors and turn them into a prompt message that can be used by LLM to troubleshoot the issue, currently errors result in nothing inserted into the prompt and instead it shows the Zed's chat panel as a failure
 

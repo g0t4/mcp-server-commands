@@ -19,7 +19,7 @@ export function reisterTools(server: Server) {
             //   servers: https://github.com/modelcontextprotocol/typescript-sdk/blob/main/docs/server.md
             tools: [
                 {
-                    // TODO! provide examples in system message, that way it is very clear how to use these!
+                    // TODO RUN_PROCESS MIGRATION! provide examples in system message, that way it is very clear how to use these!
                     name: "run_process",
                     description: "Run a process on this " + os.platform() + " machine",
                     inputSchema: {
