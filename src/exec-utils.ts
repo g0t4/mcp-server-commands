@@ -1,7 +1,8 @@
-import { exec, ExecOptions } from "child_process";
+// TODO cleanup exec usages once spawn is ready
+import { spawn, SpawnOptions } from "child_process";
 import { ObjectEncodingOptions } from "fs";
 
-type ExecResult = {
+export type SpawnResult = {
     // this is basically ExecException except I want my own type for it...
     //   b/c I want this to represent all results
     //   ... by the way throws put stdout/stderr on the error "result" object
@@ -9,63 +10,99 @@ type ExecResult = {
     stdout: string;
     stderr: string;
 
+    code?: number;
+    signal?: NodeJS.Signals | undefined;
+};
+
+export type SpawnFailure = SpawnResult & {
     // ONLY on errors:
     message?: string; // FYI redundant b/c message ~= `Command failed: ${cmd}\n${stderr}\n`
-    code?: number;
     killed?: boolean;
-    signal?: NodeJS.Signals | undefined;
     cmd?: string; // FYI redundant
 };
 
-/**
- * Executes a file with the given arguments, piping input to stdin.
- * @param {string} interpreter - The file to execute.
- * @param {string} stdin - The string to pipe to stdin.
- * @returns {Promise<ExecResult>}
- */
-function execFileWithInput(
-    interpreter: string,
-    stdin: string,
-    options: ObjectEncodingOptions & ExecOptions
-): Promise<ExecResult> {
-    // FYI for now, using `exec()` so the interpreter can have cmd+args AIO
-    //  could switch to `execFile()` to pass args array separately
-    // TODO starts with fish too? "fish -..." PRN use a library to parse the command and determine this?
-    if (interpreter.split(" ")[0] === "fish") {
-        // PRN also check error from fish and add possible clarification to error message though there are legit ways to trigger that same error message! i.e. `fish .` which is not the same issue!
-        return fishWorkaround(interpreter, stdin, options);
-    }
-
+export async function spawn_wrapped(
+    command: string,
+    args: string[],
+    stdin_input: string | undefined,
+    options: SpawnOptions
+): Promise<SpawnResult | SpawnFailure> {
     return new Promise((resolve, reject) => {
-        const child = exec(interpreter, options, (error, stdout, stderr) => {
-            if (error) {
-                // console.log("execFileWithInput ERROR:", error);
-                // mirror ExecException used by throws
-                error.stdout = stdout;
-                error.stderr = stderr;
-                reject(error);
-            } else {
-                // I assume RC==0 else would trigger error?
-                resolve({ stdout, stderr });
-            }
-        });
+        const child = spawn(command, args, options);
 
-        if (stdin) {
-            if (child.stdin === null) {
-                reject(new Error("Unexpected failure: child.stdin is null"));
-                return;
-            }
-            child.stdin.write(stdin);
+        //  TODO split out two result types? SpawnSuccess, SpawnFailure
+        let stdout = ""
+        let stderr = ""
+
+        // TODO STDIN
+        if (child.stdin && stdin_input) {
+            child.stdin.write(stdin_input);
             child.stdin.end();
         }
+
+        if (child.stdout) {
+            child.stdout.on("data", (chunk: Buffer | string) => {
+                stdout += chunk.toString();
+            });
+        }
+
+        if (child.stderr) {
+            child.stderr.on("data", (chunk: Buffer | string) => {
+                stderr += chunk.toString();
+            });
+        }
+
+        let errored = false;
+        child.on("error", (err: Error) => {
+            // ChildProcess 'error' docs: https://nodejs.org/api/child_process.html#event-error
+            // error running process
+            // IIUC not just b/c of command failed w/ non-zero exit code
+            const result: SpawnFailure = {
+                stdout: stdout,
+                stderr: stderr,
+                // TODO is this returning anything useful? (err as any).code ??
+                code: (err as any).code,
+                signal: (err as any).signal,
+                //
+                message: err.message,
+                killed: (err as any).killed,
+                cmd: command, // TODO does error have .cmd on it? is it the composite result of processing in spawn too? (or same as I passed)
+            };
+            // console.log("ON_ERROR", result);
+            errored = true;
+            reject(result);
+        });
+
+        child.on("close", (code: number | null, signal: NodeJS.Signals | null) => {
+            // ChildProcess 'close' docs: https://nodejs.org/api/child_process.html#event-close
+            //   'close' is after child process ends AND stdio streams are closed
+            //   - after 'exit' or 'error'
+            //
+            // * do not resolve if 'error' already called (promise is already resolved)
+            if (errored) return;
+
+            //   either code is set, or signal, but NOT BOTH
+            //   signal if process killed
+            // FYI close does not mean code==0
+            const result: SpawnResult = {
+                stdout: stdout,
+                stderr: stderr,
+                code: code ?? undefined,
+                signal: signal ?? undefined,
+            };
+            // console.log("ON_CLOSE", result);
+            resolve(result);
+        });
     });
 }
 
+// TODO nuke when fish shell is fully tested using spawn and then this is either ported or ideally not needed anymore
+import { exec, ExecException, ExecOptions } from "child_process";
 async function fishWorkaround(
     interpreter: string,
     stdin: string,
     options: ObjectEncodingOptions & ExecOptions
-): Promise<ExecResult> {
+): Promise<SpawnResult> {
     // TODO! was this related to the socket STDIN issue with ripgrep?
     // fish right now chokes on piped input (STDIN) + node's exec/spawn/etc, so lets use a workaround to echo the input
     // base64 encode thee input, then decode in pipeline
@@ -90,4 +127,3 @@ async function fishWorkaround(
     });
 }
 
-export { execFileWithInput, ExecResult };

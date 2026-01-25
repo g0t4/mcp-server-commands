@@ -1,11 +1,9 @@
-import { exec, ExecOptions, SpawnOptions } from "node:child_process";
-import { promisify } from "node:util";
+import { spawn, SpawnOptions } from "node:child_process";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { execFileWithInput, ExecResult } from "./exec-utils.js";
+import { spawn_wrapped, SpawnResult, SpawnFailure } from "./exec-utils.js";
 import { always_log } from "./always_log.js";
-import { errorResult, messagesFor } from "./messages.js";
+import { errorResult, messagesFor, resultFor } from "./messages.js";
 import { ObjectEncodingOptions } from "node:fs";
-
 
 /**
  * Executes a command and returns the result as CallToolResult.
@@ -13,7 +11,6 @@ import { ObjectEncodingOptions } from "node:fs";
 export type RunProcessArgs = Record<string, unknown> | undefined;
 export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> {
 
-    const mode = args?.mode as string;
     const command_line = args?.command_line as string;
     const argv = args?.argv as string;
 
@@ -33,84 +30,74 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
 
     // * shared args
     const spawn_options: ObjectEncodingOptions & SpawnOptions = {
+        // spawn options: https://nodejs.org/api/child_process.html#child_processspawncommand-args-options
         encoding: "utf8"
     };
     if (args?.cwd) {
         spawn_options.cwd = String(args.cwd);
     }
-    const input = args?.input ? String(args.input) : undefined;
+    // PRN args.env
     if (args?.timeout_ms) {
         spawn_options.timeout = Number(args.timeout_ms)
     }
+    // PRN windowsHide on Windows, signal, killSignal
+    // FYI spawn_options.stdio => default is perfect ['pipe', 'pipe', 'pipe'] https://nodejs.org/api/child_process.html#optionsstdio 
+    //   do not set inherit (this is what causes ripgrep to see STDIN socket and search it, thus hanging)
+    const stdin_input = args?.input ? String(args.input) : undefined; // TODO
     const dryRun = Boolean(args?.dry_run); // TODO
 
-    if (isShell) {
-        const commandLine = String(args?.command_line);
-        if (!commandLine) {
-            return errorResult(
-                "Mode 'shell' requires a non‑empty 'command_line' parameter."
-            );
-        }
-
-        // ... execute shell command or dry‑run handling ...
-    }
-
-    if (isExecutable) {
-        const argv = args?.argv;
-        if (!Array.isArray(argv) || argv.length === 0) {
-            return errorResult(
-                "Mode 'executable' requires a non‑empty 'argv' array."
-            );
-        }
-
-        // ... execute executable or dry‑run handling ...
-    }
-
-    // TODO fallback needed?
-    // fallback (should never reach here)
-    // return errorResult("Unhandled mode configuration");
-
     try {
-        async function execute(command: string, stdin: string, options: ExecOptions) {
-            // PRN merge calls to exec into one single paradigm with conditional STDIN handled in one spot?
-            //   right now no STDIN => exec directly and let it throw to catch failures
-            //   w/ STDIN => you manually glue together callbacks + promises (i.e. reject)
-            //     feels sloppy to say the least, notably the error handling with ExecExeption error that has stdin/stderr on it
-            if (!stdin) {
-                const execAsync = promisify(exec);
-                return await execAsync(command, options);
+        if (isShell) {
+            if (!args?.command_line) {
+                return errorResult(
+                    "Mode 'shell' requires a non‑empty 'command_line' parameter."
+                );
             }
-            return await execFileWithInput(command, stdin, options);
+            if (args?.argv) {
+                return errorResult(
+                    "Mode 'shell' does not accept an 'argv' parameter."
+                );
+            }
+
+            spawn_options.shell = true
+
+            const command_line = String(args?.command_line)
+            const result = await spawn_wrapped(command_line, [], stdin_input, spawn_options);
+            return resultFor(result);
+        }
+        if (isExecutable) {
+            const argv = args?.argv;
+            if (!Array.isArray(argv) || argv.length === 0) {
+                return errorResult(
+                    "Mode 'executable' requires a non‑empty 'argv' array."
+                );
+            }
+            if (args?.command_line) {
+                return errorResult(
+                    "Mode 'executable' does not accept a 'command_line' parameter."
+                );
+            }
+
+            spawn_options.shell = false
+
+            const command = argv[0]
+            const commandArgs = argv.slice(1);
+
+            const result = await spawn_wrapped(command, commandArgs, stdin_input, spawn_options);
+            return resultFor(result);
         }
 
-        const result = await execute(command_line, stdin, spawn_options);
-        return {
-            content: messagesFor(result),
-        };
+        // TODO... fish shell workaround (see exec-utils.ts) - ADD or FIX via a TEST FIRST
+
+        return errorResult("Unexpected execution path in runProcess, should not be possible");
     } catch (error) {
-        // PRN do I want to differentiate non-command related error (i.e. if messagesFor blows up
-        //   or presumably if smth else goes wrong with the node code in exec that isn't command related
-        //   if so, write a test first
-
-        // console.log("ERROR_runCommand", error);
-        // ExecException (error + stdout/stderr) merged
-        // - IIUC this happens on uncaught failures
-        // - but if you catch an exec() promise failure (or use exec's callback) => you get separated values: error, stdout, stderr
-        // - which is why I mirror this response type in my reject(error) calls
-        //
-        // 'error' example:
-        // code: 127,
-        // killed: false,
-        // signal: null,
-        // cmd: 'nonexistentcommand',
-        // stdout: '',
-        // stderr: '/bin/sh: nonexistentcommand: command not found\n'
-
+        // TODO check if not SpawnFailure => i.e. test aborting/killing
         const response = {
             isError: true,
-            content: messagesFor(error as ExecResult),
+            content: messagesFor(error as SpawnFailure),
         };
-        always_log("WARN: run_process failed", response);
+        always_log("WARN: run_process failed", error);
         return response;
     }
+
 }

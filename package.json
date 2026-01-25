@@ -19,6 +19,8 @@
         "test": "jest",
         "test:watch": "jest --watch",
         "test:integration": "jest tests/integration",
+        "test:watch:integration-run_process": "jest --watch tests/integration/run_process.test.ts",
+        "test:watch:integration-exec-utils": "jest --watch tests/integration/exec-utils.test.ts",
         "test:watch:integration": "jest --watch tests/integration"
     },
     "dependencies": {

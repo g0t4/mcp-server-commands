@@ -15,7 +15,7 @@ export function verbose_log(message: string, data?: any) {
     // https://modelcontextprotocol.io/docs/tools/debugging#implementing-logging
     //   mentions STDERR is captured by the host app (i.e. Claude Desktop app)
     //   server.sendLoggingMessage is captured by MCP client (not Claude Desktop app)
-    //   SO, IIUC use STDERR for logging into Claude Desktop app logs in:
+    //   * SO, IIUC use STDERR for logging into Claude Desktop app logs in:
     //      '~/Library/Logs/Claude/mcp.log'
     if (verbose) {
         always_log(message, data);

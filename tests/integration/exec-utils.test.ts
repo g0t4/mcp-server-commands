@@ -1,4 +1,5 @@
 import { execFileWithInput } from "../../src/exec-utils.js";
+// TODO! port these tests to using new spawn approach
 
 // FYI these tests are largely to make sure I understand how exec works
 // + my changes to exec (i.e. reject promise on failure in STDIN path)
