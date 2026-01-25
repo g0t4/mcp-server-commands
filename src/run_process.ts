@@ -29,9 +29,64 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
     const command_line = args?.command_line as string;
     const argv = args?.argv as string;
 
+    const mode = String(args?.mode);
     if (!mode) {
         return errorResult("Mode is required");
     }
+
+    const isShell = mode === "shell";
+    const isExecutable = mode === "executable";
+
+    if (!isShell && !isExecutable) {
+        return errorResult(
+            `Invalid mode '${mode}'. Allowed values are 'shell' or 'executable'.`
+        );
+    }
+
+    if (isShell) {
+        const commandLine = String(args?.command_line);
+        if (!commandLine) {
+            return errorResult(
+                "Mode 'shell' requires a non‑empty 'command_line' parameter."
+            );
+        }
+        // optional parameters for shell mode
+        const cwd = args?.cwd ? String(args.cwd) : undefined;
+        const input = args?.input ? String(args.input) : undefined;
+        const timeoutMs = args?.timeout_ms
+            ? Number(args.timeout_ms)
+            : undefined;
+        const dryRun = Boolean(args?.dry_run);
+
+        // ... execute shell command or dry‑run handling ...
+    }
+
+    if (isExecutable) {
+        const argv = args?.argv;
+        if (!Array.isArray(argv) || argv.length === 0) {
+            return errorResult(
+                "Mode 'executable' requires a non‑empty 'argv' array."
+            );
+        }
+        // optional parameters for executable mode
+        const cwd = args?.cwd ? String(args.cwd) : undefined;
+        const input = args?.input ? String(args.input) : undefined;
+        const timeoutMs = args?.timeout_ms
+            ? Number(args.timeout_ms)
+            : undefined;
+        const dryRun = Boolean(args?.dry_run);
+
+        // ... execute executable or dry‑run handling ...
+    }
+
+    // fallback (should never reach here)
+    return errorResult("Unhandled mode configuration");
+
+
+
+
+
+
     if (!command_line) {
         return errorResult("command_line is required, current value: " + command_line);
     }
