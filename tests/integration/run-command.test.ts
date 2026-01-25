@@ -1,4 +1,4 @@
-import { runCommand } from "../../src/run-command.js";
+import { runProcess } from "../../src/run-command.js";
 
 describe("runCommand", () => {
     // FYI! these are integration tests only (test the glue)
@@ -10,7 +10,7 @@ describe("runCommand", () => {
     //    TODO setup a way to bypass the error output for tests, unless troubleshooting the test
 
     describe("when command is successful", () => {
-        const request = runCommand({
+        const request = runProcess({
             command: "cat",
             stdin: "Hello World",
         });
@@ -39,7 +39,7 @@ describe("runCommand", () => {
     });
 
     test("should change working directory based on workdir arg", async () => {
-        const defaultResult = await runCommand({
+        const defaultResult = await runProcess({
             command: "pwd",
         });
         // console.log(defaultResult);
@@ -56,7 +56,7 @@ describe("runCommand", () => {
         // and still trigger a failure if its ambiguous whether pwd was used below
 
         // * test setting workdir
-        const result = await runCommand({
+        const result = await runProcess({
             command: "pwd",
             workdir: "/",
         });
@@ -70,7 +70,7 @@ describe("runCommand", () => {
     });
 
     test("should return isError and STDERR on a failure (nonexistentcommand)", async () => {
-        const result = await runCommand({
+        const result = await runProcess({
             command: "nonexistentcommand",
         });
         // console.log(result);
@@ -97,7 +97,7 @@ describe("runCommand", () => {
 
     test("should handle missing command parameter", async () => {
         // This test verifies how the function handles a missing command parameter
-        const result = await runCommand({});
+        const result = await runProcess({});
         // console.log(result);
 
         expect(result.isError).toBe(true);
@@ -112,7 +112,7 @@ describe("runCommand", () => {
         //  also, if rg hangs, either setup timeout OR kill process to see initial --debug output
         //  i.e. to see its search heuristic decision
         //
-        const request = runCommand({
+        const request = runProcess({
 
             // * issue:
             // currently, exec inherits STDIN (all STIO actually) of parent process
@@ -150,7 +150,7 @@ describe("runCommand", () => {
     // * shell - or at least show default shell (path/PATH) and run it to get its version and name info and add that to tool instructions?
 
     describe("when stdin passed and command succeeds", () => {
-        const request = runCommand({
+        const request = runProcess({
             command: "cat",
             stdin: "Hello World",
         });

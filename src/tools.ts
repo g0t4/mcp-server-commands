@@ -6,7 +6,7 @@ import {
     ListToolsResult
 } from "@modelcontextprotocol/sdk/types.js";
 import { verbose_log } from "./always_log.js";
-import { runCommand } from "./run-command.js";
+import { runProcess } from "./run-command.js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 
 export function reisterTools(server: Server) {
@@ -97,7 +97,7 @@ export function reisterTools(server: Server) {
             verbose_log("INFO: ToolRequest", request);
             switch (request.params.name) {
                 case "run_process": {
-                    return await runCommand(request.params.arguments);
+                    return await runProcess(request.params.arguments);
                 }
                 default:
                     throw new Error("Unknown tool");
