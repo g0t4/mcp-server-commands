@@ -3,16 +3,20 @@ import {
     CallToolRequestSchema,
     CallToolResult,
     ListToolsRequestSchema,
+    ListToolsResult
 } from "@modelcontextprotocol/sdk/types.js";
 import { verbose_log } from "./always_log.js";
 import { runCommand } from "./run-command.js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 
 export function reisterTools(server: Server) {
-    server.setRequestHandler(ListToolsRequestSchema, async () => {
+    server.setRequestHandler(ListToolsRequestSchema, async (): Promise<ListToolsResult> => {
         verbose_log("INFO: ListTools");
         return {
             tools: [
+                // https://modelcontextprotocol.io/specification/2025-06-18/server/tools#tool // tool definition
+                //   ts schema: https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/schema/2025-11-25/schema.ts
+                // https://modelcontextprotocol.io/docs/learn/architecture#understanding-the-tool-execution-request // tool request/response
                 {
                     name: "run_command",
                     description:
