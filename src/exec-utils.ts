@@ -66,6 +66,7 @@ async function fishWorkaround(
     stdin: string,
     options: ObjectEncodingOptions & ExecOptions
 ): Promise<ExecResult> {
+    // TODO! was this related to the socket STDIN issue with ripgrep?
     // fish right now chokes on piped input (STDIN) + node's exec/spawn/etc, so lets use a workaround to echo the input
     // base64 encode thee input, then decode in pipeline
     const base64stdin = Buffer.from(stdin).toString("base64");
