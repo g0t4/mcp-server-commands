@@ -1,20 +1,14 @@
 import { runProcess } from "../../src/run_process.js";
 
-describe("runCommand", () => {
-    // FYI! these are integration tests only (test the glue)
-    //   put all execution validations into lower level exec functions
-    //   this is just to provide assertions that runCommand wires things together correctly
+// NOTES:
+// ?? use JSONRPCError on errors? or some of them?
+//    https://modelcontextprotocol.io/specification/2025-06-18/schema#jsonrpcerror
+//    right now I include failure of a command in the result
+//      non-zero exit code, STDOUT/STDERR, etc...
+//      feels richer way to explain problem with a command
 
-    // FYI any uses of always_log will trigger warnings if using console.error!
-    //    that's fine and to be expected... tests still pass...
-    //    TODO setup a way to bypass the error output for tests, unless troubleshooting the test
-
-    // ?? use JSONRPCError on errors? or some of them?
-    //    https://modelcontextprotocol.io/specification/2025-06-18/schema#jsonrpcerror
-    //    right now I include failure of a command in the result
-    //      non-zero exit code, STDOUT/STDERR, etc...
-    //      feels richer way to explain problem with a command
-    //    TODO my initial thought is I might want JSONRPCError if say missing a required argument?
+describe("runProcess - validating argument parsing/validation and basic success/failure outputs", () => {
+    // FYI always_log uses console.error (ignore it, or use test.only... do not remove the logging)
 
     describe("when mode=shell+command_line is successful and using STDIN", () => {
         const request = runProcess({
@@ -23,7 +17,7 @@ describe("runCommand", () => {
             input: "Hello World",
         });
 
-        test("should not set isError", async () => {
+        test("should NOT set isError", async () => {
             const result = await request;
 
             // *** tool response format  (isError only set if failure)
@@ -33,7 +27,8 @@ describe("runCommand", () => {
 
         test("should include STDOUT from command (from STDIN)", async () => {
             const result = await request;
-            // console.log(result);
+            // console.log(result); // left these around as a convenience/reminder
+            //  console.log looks really nice with jest logging
 
             expect(result.content).toHaveLength(2);
             const first = result.content[0];
