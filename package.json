@@ -21,7 +21,7 @@
         "test:integration": "jest tests/integration",
         "test:watch:integration-run_process": "jest --watch tests/integration/run_process.test.ts",
         "test:watch:integration-exec-utils": "jest --watch tests/integration/exec-utils.test.ts",
-        "test:watch:integration": "jest --watch tests/integration"
+        "test:watch:integration-all": "jest --watch tests/integration"
     },
     "dependencies": {
         "@modelcontextprotocol/sdk": "1.9.0"
