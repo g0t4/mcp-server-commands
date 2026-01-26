@@ -325,38 +325,33 @@ describe("validate common commands work", () => {
     // * that way I can easily test commands a model sense (i.e. rg issue) 
     // * and I can easily assert the model sees what I think it sees!
 
-    test("reproduce hang rg - TODO then what to do about it?", async () => {
-        return;
-        // FYI rg --debug  // shows what it searches
-        //  also, if rg hangs, either setup timeout OR kill process to see initial --debug output
-        //  i.e. to see its search heuristic decision
+    test("ripgrep shouldn't hang on searching STDIN when there's no STDIN", async () => {
+        // previously using `child_process.exec()` resulted in `rg` hanging
+        //   b/c rg sees STDIN==socket => sets is_stdin_readable
+        //   => IIUC STDIN never closes => thus rg hangs until timeout
         //
+        // * `spawn` allows controlling STDIO (unlike `exec`)
+        //   spawn defaults to `pipe` which rg also sees as socket/searchable
+        //   * setting STDIN to `ignore` attaches /dev/null
+        //   => ripgrep doesn't hang now (and is_stdin_readable=false)
+
+        // * --debug output, key output 
+        //   > for heuristic stdin detection on Unix, found that is_file=false, is_fifo=false and is_socket=true, 
+        //   > and thus concluded that is_stdin_readable=true\nrg: DEBUG|rg::flags::hiargs
         const request = runProcess({
-
-            // * issue:
-            // currently, exec inherits STDIN (all STIO actually) of parent process
-            // - parent is MCP _server_ process 
-            // - thus, STDIN is a socket (server socket)
-            // - so rg tries to search it, and nothing ever arrives, let alone EOF
-            // - therefore rg hangs indefinitely
-            command: "rg --debug foo"
-            // * --debug output, key part:
-            //   > for heuristic stdin detection on Unix, found that is_file=false, is_fifo=false and is_socket=true, 
-            //   > and thus concluded that is_stdin_readable=true\nrg: DEBUG|rg::flags::hiargs
-
-
-            // TODO! fix for rg socket detection, DO NOT INHERIT STDIO AT ALL
-            //   that means I cannot use child_process.exec()
-            //   tentative looks like I want to switch to `child_process.spawn()`
+            mode: "executable",
+            argv: ["rg", "--debug", "foo"],
+            timeout_ms: 10, // FYI set timeout_ms so you get result object below
+            // if you let test itself timeout, you won't get result object to assert below
         });
 
-        // TODO cleanup assertions once settled on solution 
         const result = await request;
-        // expect(result.isError).toBeUndefined();
-        const stdout = result.content[0];
-        expect(result.content).toBe([]); // just to compare (log basically)
-        expect(stdout.name).toBe("STDOUT");
-        expect(stdout.text).toBe("Hello World");
+        console.log(result);
+        const stderr = result.content.find(c => c.name === "STDERR");
+        expect(stderr).toBeDefined();
+        expect(stderr!.text).not.toContain(
+            "concluded that is_stdin_readable=true"
+        );
     });
 
 });
