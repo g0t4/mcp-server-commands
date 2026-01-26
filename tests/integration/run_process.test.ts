@@ -4,7 +4,8 @@ import { once } from 'events';
 import { promisify } from "util";
 
 // NOTES:
-// ?? use JSONRPCError on errors? or some of them?
+// ? use JSONRPCError if it's not a command's failure?
+//   tool failures should be isError as below
 //    https://modelcontextprotocol.io/specification/2025-06-18/schema#jsonrpcerror
 //    right now I include failure of a command in the result
 //      non-zero exit code, STDOUT/STDERR, etc...
