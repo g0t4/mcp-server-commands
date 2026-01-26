@@ -32,12 +32,12 @@ describe("runProcess - validating argument parsing/validation and basic success/
 
             expect(result.content).toHaveLength(2);
             const first = result.content[0];
-            expect(first.text).toBe("0");
             expect(first.name).toBe("EXIT_CODE");
+            expect(first.text).toBe("0");
 
             const stdout = result.content[1];
-            expect(stdout.text).toBe("Hello World");
             expect(stdout.name).toBe("STDOUT");
+            expect(stdout.text).toBe("Hello World");
         });
     });
 
@@ -60,12 +60,12 @@ describe("runProcess - validating argument parsing/validation and basic success/
 
             expect(result.content).toHaveLength(2);
             const first = result.content[0];
-            expect(first.text).toBe("0");
             expect(first.name).toBe("EXIT_CODE");
+            expect(first.text).toBe("0");
 
             const stdout = result.content[1];
-            expect(stdout.text).toBe("Hello World");
             expect(stdout.name).toBe("STDOUT");
+            expect(stdout.text).toBe("Hello World");
         });
     });
 
@@ -80,8 +80,8 @@ describe("runProcess - validating argument parsing/validation and basic success/
         // make sure command succeeded so I can make assumption about default directory
         expect(pwd.content).toHaveLength(2);
         expect(pwd.isError).toBeUndefined();
-        expect(pwd.content[1].text).not.toBe("/\n");
         expect(pwd.content[1].name).toBe("STDOUT");
+        expect(pwd.content[1].text).not.toBe("/\n");
         // fail the test if the default is the same as /
         // that way I don't have to hardcode the PWD expectation
         // and still trigger a failure if its ambiguous whether pwd was used below
@@ -95,11 +95,11 @@ describe("runProcess - validating argument parsing/validation and basic success/
         // console.log(cwd);
         // ensure setting workdir doesn't fail:
         expect(cwd.content).toHaveLength(2);
-        expect(cwd.content[0].text).toBe("0");
         expect(cwd.content[0].name).toBe("EXIT_CODE");
+        expect(cwd.content[0].text).toBe("0");
         expect(cwd.isError).toBeUndefined();
-        expect(cwd.content[1].text).toBe("/\n");
         expect(cwd.content[1].name).toBe("STDOUT");
+        expect(cwd.content[1].text).toBe("/\n");
     });
 
     describe("failures set isError and explain why", () => {
@@ -126,8 +126,8 @@ describe("runProcess - validating argument parsing/validation and basic success/
                 //  do not put it after STDOUT/STDERR where it might be missed by me (when I do log reviews)
                 //  also I think its best for the model to see it first/early
                 const exit_code = result.content[0];
-                expect(exit_code.text).toContain("127");
                 expect(exit_code.name).toContain("EXIT_CODE");
+                expect(exit_code.text).toContain("127");
 
                 // * verify error explains (contains) nonexistentcommand
                 const stderr = result.content[1];
