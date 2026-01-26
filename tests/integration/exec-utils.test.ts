@@ -58,15 +58,18 @@ describe("test explicit shell use", () => {
         });
         // console.log(result);
         expect(result.isError).toBeFalsy();
-        expect(result.content).toHaveLength(2);
-
-        const stdoutMessage = result.content?.[1];
-        expect(stdoutMessage?.name).toBe("STDOUT");
-        expect(stdoutMessage?.text).toBe("Hello from Fish\n");
-
-        const exitMessage = result.content?.[0];
-        expect(exitMessage?.name).toBe("EXIT_CODE");
-        expect(exitMessage?.text).toBe("0");
+        expect(result.content).toEqual([
+            {
+                name: "EXIT_CODE",
+                type: "text",
+                text: "0",
+            },
+            {
+                name: "STDOUT",
+                type: "text",
+                text: "Hello from Fish\n",
+            },
+        ]);
     });
 
     // TODO make sure to cover the fish workaround logic, in all its edge cases and then can leave those tests when I remove that or just nuke them
@@ -78,18 +81,20 @@ describe("test explicit shell use", () => {
         });
 
         expect(result.isError).toBeTruthy();
-        expect(result.content).toHaveLength(2);
-
-        const exitMessage = result.content?.[0];
-        expect(exitMessage?.name).toContain("EXIT_CODE");
-        // fish returns 127 for command not found
-        expect(exitMessage?.text).toContain("127");
-
-        const stderrMessage = result.content?.[1];
-        expect(stderrMessage?.name).toContain("STDERR");
-        const expectedStderr =
-            "fish: Unknown command: totallynonexistentcommand\nfish: \ntotallynonexistentcommand\n^~~~~~~~~~~~~~~~~~~~~~~~^";
-        expect(stderrMessage?.text).toContain(expectedStderr);
+        expect(result.content).toEqual([
+            {
+                name: expect.stringContaining("EXIT_CODE"),
+                type: "text",
+                text: expect.stringContaining("127"),
+            },
+            {
+                name: expect.stringContaining("STDERR"),
+                type: "text",
+                text: expect.stringContaining(
+                    "fish: Unknown command: totallynonexistentcommand\nfish: \ntotallynonexistentcommand\n^~~~~~~~~~~~~~~~~~~~~~~~^"
+                ),
+            },
+        ]);
     });
 
     test("should execute zsh command", async () => {
@@ -100,15 +105,18 @@ describe("test explicit shell use", () => {
         });
         // console.log(result);
         expect(result.isError).toBeFalsy();
-        expect(result.content).toHaveLength(2);
-
-        const stdoutMessage = result.content?.[1];
-        expect(stdoutMessage?.name).toBe("STDOUT");
-        expect(stdoutMessage?.text).toBe("Hello from Zsh\n");
-
-        const exitMessage = result.content?.[0];
-        expect(exitMessage?.name).toBe("EXIT_CODE");
-        expect(exitMessage?.text).toBe("0");
+        expect(result.content).toEqual([
+            {
+                name: "EXIT_CODE",
+                type: "text",
+                text: "0",
+            },
+            {
+                name: "STDOUT",
+                type: "text",
+                text: "Hello from Zsh\n",
+            },
+        ]);
     });
 
     test("should handle command errors properly in zsh", async () => {
@@ -119,17 +127,20 @@ describe("test explicit shell use", () => {
         });
 
         expect(result.isError).toBeTruthy();
-        expect(result.content).toHaveLength(2);
-
-        const exitMessage = result.content?.[0];
-        expect(exitMessage?.name).toContain("EXIT_CODE");
-        expect(exitMessage?.text).toContain("127");
-
-        const stderrMessage = result.content?.[1];
-        expect(stderrMessage?.name).toContain("STDERR");
-        const expectedStderr =
-            "zsh: command not found: completelynonexistentcommand";
-        expect(stderrMessage?.text).toContain(expectedStderr);
+        expect(result.content).toEqual([
+            {
+                name: expect.stringContaining("EXIT_CODE"),
+                type: "text",
+                text: expect.stringContaining("127"),
+            },
+            {
+                name: expect.stringContaining("STDERR"),
+                type: "text",
+                text: expect.stringContaining(
+                    "zsh: command not found: completelynonexistentcommand"
+                ),
+            },
+        ]);
     });
 
     test("should handle multiline scripts in zsh", async () => {
@@ -146,21 +157,24 @@ describe("test explicit shell use", () => {
         });
         // console.log(result);
         expect(result.isError).toBeFalsy();
-        expect(result.content).toHaveLength(2);
-
-        const stdoutMessage = result.content?.[1];
-        expect(stdoutMessage?.name).toBe("STDOUT");
-        expect(stdoutMessage?.text).toContain(
-            `Line 1 from Zsh
+        expect(result.content).toEqual([
+            {
+                name: "EXIT_CODE",
+                type: "text",
+                text: "0",
+            },
+            {
+                name: "STDOUT",
+                type: "text",
+                text: expect.stringContaining(
+                    `Line 1 from Zsh
 Number 1
 Number 2
 Number 3
 `
-        );
-
-        const stderrMessage = result.content?.[0];
-        expect(stderrMessage?.name).toBe("EXIT_CODE");
-        expect(stderrMessage?.text).toBe("0");
+                ),
+            },
+        ]);
     });
 
     test("should respect working directory option", async () => {
@@ -176,15 +190,18 @@ Number 3
         });
         // console.log(result);
         expect(result.isError).toBeFalsy();
-        expect(result.content).toHaveLength(2);
-
-        const stdoutMessage = result.content?.[1];
-        expect(stdoutMessage?.name).toBe("STDOUT");
-        expect(stdoutMessage?.text).toBe("/\n");
-
-        const exitMessage = result.content?.[0];
-        expect(exitMessage?.name).toBe("EXIT_CODE");
-        expect(exitMessage?.text).toBe("0");
+        expect(result.content).toEqual([
+            {
+                name: "EXIT_CODE",
+                type: "text",
+                text: "0",
+            },
+            {
+                name: "STDOUT",
+                type: "text",
+                text: "/\n",
+            },
+        ]);
     });
 
     test("should handle bash multiline scripts", async () => {
@@ -201,18 +218,22 @@ Number 3
         // validate all of output:
         // console.log(result);
         expect(result.isError).toBeFalsy();
-        expect(result.content).toHaveLength(2);
-
-        const stdoutMessage = result.content?.[1];
-        expect(stdoutMessage?.name).toBe("STDOUT");
-        expect(stdoutMessage?.text).toContain(`Line 1
+        expect(result.content).toEqual([
+            {
+                name: "EXIT_CODE",
+                type: "text",
+                text: "0",
+            },
+            {
+                name: "STDOUT",
+                type: "text",
+                text: expect.stringContaining(`Line 1
 Line 2
-Line 3`);
-
-        const exitMessage = result.content?.[0];
-        expect(exitMessage?.name).toBe("EXIT_CODE");
-        expect(exitMessage?.text).toBe("0");
+Line 3`),
+            },
+        ]);
     });
+
 
 
 });
