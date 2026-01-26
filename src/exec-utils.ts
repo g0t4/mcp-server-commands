@@ -28,6 +28,12 @@ export async function spawn_wrapped(
     options: SpawnOptions
 ): Promise<SpawnResult | SpawnFailure> {
     return new Promise((resolve, reject) => {
+        if (!stdin_input) {
+            // FYI default is all 'pipe' (works when stdin_input is provided)
+            // 'ignore' attaches /dev/null
+            // order: [STDIN, STDOUT, STDERR]
+            options.stdio = ['ignore', 'pipe', 'pipe'];
+        }
         const child = spawn(command, args, options);
 
         //  TODO split out two result types? SpawnSuccess, SpawnFailure
