@@ -239,17 +239,16 @@ describe("runProcess - validating argument parsing/validation and basic success/
 
         test.each(scenarios)("$name", async ({ args, expectedMessage }) => {
             const result = await runProcess(args as any);
-
-            // Verify the result is an error with the expected message
             expect(result.isError).toBe(true);
-            expect(result.content).toHaveLength(1);
-            const first = result.content[0];
-            expect(first.name).toBe("ERROR");
-            expect(first.text).toContain(expectedMessage);
+            expect(result.content).toEqual([
+                {
+                    name: "ERROR",
+                    type: "text",
+                    text: expect.stringContaining(expectedMessage),
+                },
+            ]);
         });
     });
-
-    // TODO! add tests of timeout parameter and implement it
     // TODO! other params I want to add with new STDIO approach?
 });
 
