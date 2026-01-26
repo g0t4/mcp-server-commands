@@ -40,7 +40,6 @@ export async function spawn_wrapped(
         let stdout = ""
         let stderr = ""
 
-        // TODO STDIN
         if (child.stdin && stdin_input) {
             child.stdin.write(stdin_input);
             child.stdin.end();
