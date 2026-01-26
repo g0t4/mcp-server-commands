@@ -49,7 +49,7 @@ export function messagesFor(result: SpawnFailure | SpawnResult): TextContent[] {
         messages.push({
             name: "SIGNAL",
             type: "text",
-            text: `Signal: ${result.signal}`,
+            text: result.signal,
         });
     }
     // if (!!result.killed) {
