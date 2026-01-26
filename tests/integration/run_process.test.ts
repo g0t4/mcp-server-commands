@@ -348,11 +348,16 @@ describe("validate common commands work", () => {
 
             const result = await request;
             // console.log(result);
-            const stderr = result.content.find(c => c.name === "STDERR");
-            expect(stderr).toBeDefined();
-            expect(stderr!.text).not.toContain(
-                "concluded that is_stdin_readable=true"
+            expect(result.content).toEqual(
+                expect.arrayContaining([
+                    {
+                        name: "STDERR",
+                        type: "text",
+                        text: expect.not.stringContaining("concluded that is_stdin_readable=true")
+                    }
+                ])
             );
+
         });
         test("ripgrep can search over STDIN when STDIN is provided", async () => {
             const result = await runProcess({
