@@ -39,6 +39,7 @@ describe("test explicit shell use", () => {
                 name: "EXIT_CODE",
                 type: "text",
                 text: "127",
+                // FYI text: expect.stringContaining("127"),  // allows contains instead of exact
             },
             {
                 name: "STDERR",
