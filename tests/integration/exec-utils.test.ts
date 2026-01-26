@@ -38,12 +38,12 @@ describe("test explicit shell use", () => {
             {
                 name: "EXIT_CODE",
                 type: "text",
-                text: expect.stringContaining("127"),
+                text: "127",
             },
             {
                 name: "STDERR",
                 type: "text",
-                text: expect.stringContaining("bash: line 1: nonexistentcommand: command not found"),
+                text: "bash: line 1: nonexistentcommand: command not found\n",
             },
         ]);
 
