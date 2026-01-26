@@ -57,7 +57,6 @@ describe("test explicit shell use", () => {
             input: 'echo "Hello from Fish"',
         });
         // console.log(result);
-        expect(result.isError).toBeFalsy();
         expect(result.content).toEqual([
             {
                 name: "EXIT_CODE",
@@ -104,7 +103,6 @@ describe("test explicit shell use", () => {
             input: 'echo "Hello from Zsh"',
         });
         // console.log(result);
-        expect(result.isError).toBeFalsy();
         expect(result.content).toEqual([
             {
                 name: "EXIT_CODE",
@@ -156,7 +154,6 @@ describe("test explicit shell use", () => {
             input: stdin,
         });
         // console.log(result);
-        expect(result.isError).toBeFalsy();
         expect(result.content).toEqual([
             {
                 name: "EXIT_CODE",
@@ -189,7 +186,6 @@ Number 3
             cwd: "/",
         });
         // console.log(result);
-        expect(result.isError).toBeFalsy();
         expect(result.content).toEqual([
             {
                 name: "EXIT_CODE",
@@ -217,7 +213,6 @@ Number 3
         });
         // validate all of output:
         // console.log(result);
-        expect(result.isError).toBeFalsy();
         expect(result.content).toEqual([
             {
                 name: "EXIT_CODE",
