@@ -70,7 +70,6 @@ describe("test explicit shell use", () => {
         ]);
     });
 
-    // TODO make sure to cover the fish workaround logic, in all its edge cases and then can leave those tests when I remove that or just nuke them
     test("should handle command errors properly in fish", async () => {
         const result = await runProcess({
             mode: "executable",

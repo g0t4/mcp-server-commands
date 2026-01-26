@@ -100,35 +100,3 @@ export async function spawn_wrapped(
         });
     });
 }
-
-// TODO nuke when fish shell is fully tested using spawn and then this is either ported or ideally not needed anymore
-import { exec, ExecException, ExecOptions } from "child_process";
-async function fishWorkaround(
-    interpreter: string,
-    stdin: string,
-    options: ObjectEncodingOptions & ExecOptions
-): Promise<SpawnResult> {
-    // TODO! was this related to the socket STDIN issue with ripgrep?
-    // fish right now chokes on piped input (STDIN) + node's exec/spawn/etc, so lets use a workaround to echo the input
-    // base64 encode thee input, then decode in pipeline
-    const base64stdin = Buffer.from(stdin).toString("base64");
-
-    const command = `${interpreter} -c "echo ${base64stdin} | base64 -d | fish"`;
-
-    return new Promise((resolve, reject) => {
-        // const child = ... // careful with refactoring not to return that unused child
-        exec(command, options, (error, stdout, stderr) => {
-            // I like this style of error vs success handling! it's beautiful-est (prommises are underrated)
-            if (error) {
-                // console.log("fishWorkaround ERROR:", error);
-                // mirror ExecException used by throws
-                error.stdout = stdout;
-                error.stderr = stderr;
-                reject(error);
-            } else {
-                resolve({ stdout, stderr });
-            }
-        });
-    });
-}
-
