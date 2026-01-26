@@ -32,7 +32,7 @@ export function messagesFor(result: SpawnFailure | SpawnResult): TextContent[] {
     // maybe on errors I should? to make sure the command was as intended 
     //   much like "explain" but always shown on errors?
     //
-    // need error.message from spawn errors
+    // at least need error.message from spawn errors
     if ("message" in result && result.message) {
         messages.push({
             name: "MESSAGE",
