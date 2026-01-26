@@ -62,7 +62,7 @@ export function reisterTools(server: Server) {
                             },
                             dry_run: {
                                 type: "boolean",
-                                description: "If true, do not execute. Instead, explain what would be run (resolved paths, mode, argv/shell invocation)."
+                                description: "Optional explain what would run, defaults to False."
                                 // FYI this can help avoid the need for logging this information, I can call this as a user too!
                                 // TODO, dump info about shell (if applicable) and program versions!
                                 //  - explain the node calls too, i.e. spawn('echo foo')
