@@ -41,10 +41,6 @@ export function messagesFor(result: SpawnFailure | SpawnResult): TextContent[] {
         });
     }
 
-    // TODO! use a test to add signal/killed indicators
-    //  TODO only show when killed, do not mark not killed and/or no signal, right?
-    //  definitely could be useful to know if a command was killed
-    //  make sure signal is not null, which is what's used when no signal killed the process
     if (result.signal) {
         messages.push({
             name: "SIGNAL",
