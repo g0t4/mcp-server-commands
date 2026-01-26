@@ -303,11 +303,13 @@ describe("runProcess - signal handling", () => {
             const result = await runPromise;
             // console.log(result);
             expect(result.isError).toBe(true);
-            expect(result.content).toHaveLength(1);
-            const failure = result.content[0];
-            // expect(failure.killed).toBe(true);
-            expect(failure.name).toBe("SIGNAL");
-            expect(failure.text).toBe("SIGKILL");
+            expect(result.content).toEqual([
+                {
+                    name: "SIGNAL",
+                    type: "text",
+                    text: "SIGKILL",
+                },
+            ]);
         });
     });
 
