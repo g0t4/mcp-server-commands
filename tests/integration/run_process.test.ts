@@ -362,9 +362,14 @@ describe("validate common commands work", () => {
                 timeout_ms: 5000,
             });
             console.log(result);
-            const stdout = result.content.find(c => c.name === "STDOUT");
-            expect(stdout).toBeDefined();
-            expect(stdout!.text).toBe("2:1:bar\n");
+            expect(result.content).toEqual(
+                expect.arrayContaining([{
+                    name: "STDOUT",
+                    type: "text",
+                    text: "2:1:bar\n",
+                }])
+            );
+
         });
     });
 
