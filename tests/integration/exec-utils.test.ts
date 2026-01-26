@@ -34,16 +34,19 @@ describe("test explicit shell use", () => {
         });
 
         expect(result.isError).toBe(true);
-        expect(result.content).toHaveLength(2);
+        expect(result.content).toEqual([
+            {
+                name: "EXIT_CODE",
+                type: "text",
+                text: expect.stringContaining("127"),
+            },
+            {
+                name: "STDERR",
+                type: "text",
+                text: expect.stringContaining("bash: line 1: nonexistentcommand: command not found"),
+            },
+        ]);
 
-        const exitCode = result.content[0];
-        expect(exitCode.name).toContain("EXIT_CODE");
-        expect(exitCode.text).toContain("127");
-
-        const stderr = result.content[1];
-        expect(stderr.name).toContain("STDERR");
-        const expectedStderr = "bash: line 1: nonexistentcommand: command not found";
-        expect(stderr.text).toContain(expectedStderr);
     });
 
     test("should handle fish shell command", async () => {
