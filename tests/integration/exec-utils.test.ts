@@ -39,7 +39,6 @@ describe("test explicit shell use", () => {
                 name: "EXIT_CODE",
                 type: "text",
                 text: "127",
-                // FYI text: expect.stringContaining("127"),  // allows contains instead of exact
             },
             {
                 name: "STDERR",
@@ -82,12 +81,12 @@ describe("test explicit shell use", () => {
         expect(result.isError).toBeTruthy();
         expect(result.content).toEqual([
             {
-                name: expect.stringContaining("EXIT_CODE"),
+                name: "EXIT_CODE",
                 type: "text",
-                text: expect.stringContaining("127"),
+                text: "127",
             },
             {
-                name: expect.stringContaining("STDERR"),
+                name: "STDERR",
                 type: "text",
                 text: expect.stringContaining(
                     "fish: Unknown command: totallynonexistentcommand\nfish: \ntotallynonexistentcommand\n^~~~~~~~~~~~~~~~~~~~~~~~^"
@@ -127,16 +126,14 @@ describe("test explicit shell use", () => {
         expect(result.isError).toBeTruthy();
         expect(result.content).toEqual([
             {
-                name: expect.stringContaining("EXIT_CODE"),
+                name: "EXIT_CODE",
                 type: "text",
-                text: expect.stringContaining("127"),
+                text: "127",
             },
             {
-                name: expect.stringContaining("STDERR"),
+                name: "STDERR",
                 type: "text",
-                text: expect.stringContaining(
-                    "zsh: command not found: completelynonexistentcommand"
-                ),
+                text: expect.stringContaining("zsh: command not found: completelynonexistentcommand"),
             },
         ]);
     });
