@@ -145,24 +145,24 @@ describe("runProcess - validating argument parsing/validation and basic success/
                 // }
 
                 expect(result.isError).toBe(true);
-                expect(result.content).toHaveLength(2);
-
                 // FYI keep EXIT_CODE first, feels appropriate
                 //  do not put it after STDOUT/STDERR where it might be missed by me (when I do log reviews)
                 //  also I think its best for the model to see it first/early
-                const exit_code = result.content[0];
-                expect(exit_code.name).toContain("EXIT_CODE");
-                expect(exit_code.text).toContain("127");
-
-                // * verify error explains (contains) nonexistentcommand
-                const stderr = result.content[1];
-                expect(stderr.name).toContain("STDERR");
-                // FYI different shells will have different messages 
-                // - might need shell/os specific test case if that causes issues
-                expect(stderr.text).toMatch(/nonexistentcommand.*not found/i);
-                // gh actions:
-                //   /bin/sh: 1: nonexistentcommand: not found
-
+                expect(result.content).toEqual([
+                    // FYI use objectContaining for partial object match (i.e. in this case skip type: "text")
+                    expect.objectContaining({
+                        name: expect.stringContaining("EXIT_CODE"),
+                        text: expect.stringContaining("127"),
+                    }),
+                    expect.objectContaining({
+                        name: expect.stringContaining("STDERR"),
+                        // Different shells emit different messages, but all contain
+                        // the command name and a “not found” phrase.
+                        text: expect.stringMatching(/nonexistentcommand.*not found/i),
+                        // i.e. gh actions:
+                        //   /bin/sh: 1: nonexistentcommand: not found
+                    }),
+                ]);
             });
 
             test("executable+argv", async () => {
