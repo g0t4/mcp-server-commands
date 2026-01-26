@@ -1,4 +1,7 @@
 import { runProcess } from "../../src/run_process.js";
+import { exec, spawn } from 'child_process';
+import { once } from 'events';
+import { promisify } from "util";
 
 // NOTES:
 // ?? use JSONRPCError on errors? or some of them?
@@ -268,7 +271,46 @@ describe("runProcess - signal handling", () => {
         expect(signal?.name).toBe("SIGNAL");
         expect(signal?.text).toMatch(/SIG(TERM|KILL)/i);
     });
-    // TODO can I trigger kill too? kill command
+
+
+    describe('runProcess kill handling', () => {
+        it('should report killed when the child process is terminated externally', async () => {
+            // start a long‑running process (sleep 10 seconds)
+            //  FYI test will timeout at 5 seconds (before process finishes at 10 seconds)
+            const runPromise = runProcess({
+
+                // PRN also test for shell mode?
+                // mode: "shell"
+                // command_line: "sleep 10.5",
+
+                mode: 'executable',
+                argv: ['sleep', '10.5'],
+                // FYI 10.5 is "odd" number so it's less likely to kill smth important :)
+                // PRN I could find this otherwise to avoid killing smth else  
+                //   like check parent processes, or if multiple matches then fail this test
+
+                dry_run: false,
+            });
+
+            // * pgrep for the process
+            const { stdout } = await promisify(exec)('pgrep -f "sleep 10.5"');
+            const pid = Number(stdout.trim());
+            // console.log(pid);
+
+            await exec(`kill -9 ${pid}`);
+
+            // FYI interesting that killing the process doesn't result in "error" event?
+            const result = await runPromise;
+            // console.log(result);
+            expect(result.isError).toBe(true);
+            expect(result.content).toHaveLength(1);
+            const failure = result.content[0];
+            // expect(failure.killed).toBe(true);
+            expect(failure.name).toBe("SIGNAL");
+            expect(failure.text).toBe("SIGKILL");
+        });
+    });
+
 
     // TODO abort controller? if I add cooperative cancellation or smth like it
 });

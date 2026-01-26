@@ -24,7 +24,7 @@ export function messagesFor(result: SpawnFailure | SpawnResult): TextContent[] {
         messages.push({
             name: "EXIT_CODE",
             type: "text",
-            text: `${result.code}`,
+            text: String(result.code),
         });
     }
 
@@ -48,7 +48,9 @@ export function messagesFor(result: SpawnFailure | SpawnResult): TextContent[] {
             text: result.signal,
         });
     }
-    // if (!!result.killed) {
+
+    // // when is this set? what conditions? I tried `kill -9` and didn't trigger "error" event
+    // if ("killed" in result && result.killed) {
     //     // killed == true is the only time to include this
     //     messages.push({
     //         name: "KILLED",

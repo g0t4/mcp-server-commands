@@ -65,7 +65,7 @@ export async function spawn_wrapped(
                 signal: (err as any).signal,
                 //
                 message: err.message,
-                killed: (err as any).killed,
+                // killed: (err as any).killed,
                 cmd: command, // TODO does error have .cmd on it? is it the composite result of processing in spawn too? (or same as I passed)
             };
             // console.log("ON_ERROR", result);
