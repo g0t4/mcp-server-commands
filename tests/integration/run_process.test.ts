@@ -361,7 +361,7 @@ describe("validate common commands work", () => {
                 input: "foo\nbar\nbaz",
                 timeout_ms: 5000,
             });
-            console.log(result);
+            // console.log(result);
             expect(result.content).toEqual(
                 expect.arrayContaining([{
                     name: "STDOUT",
