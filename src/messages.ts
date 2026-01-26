@@ -11,9 +11,6 @@ export function resultFor(spawn_result: SpawnResult): CallToolResult {
     return result_obj
 }
 
-/**
- * Converts an SpawnResult into an array of TextContent messages.
- */
 export function messagesFor(result: SpawnFailure | SpawnResult): TextContent[] {
     const messages: TextContent[] = [];
 
@@ -28,12 +25,17 @@ export function messagesFor(result: SpawnFailure | SpawnResult): TextContent[] {
         });
     }
 
-    // TODO add .cmd and/or .message on failures? or always?
-    // maybe on errors I should? to make sure the command was as intended 
-    //   much like "explain" but always shown on errors?
-    //
-    // at least need error.message from spawn errors
+    // // PRN map COMMAND for failures so model can adjust what it passes vs what actually ran?
+    // if ("cmd" in result && result.cmd) {
+    //     messages.push({
+    //         name: "COMMAND",
+    //         type: "text",
+    //         text: result.cmd,
+    //     });
+    // }
+
     if ("message" in result && result.message) {
+        // at least need error.message from spawn errors
         messages.push({
             name: "MESSAGE",
             type: "text",

@@ -350,10 +350,6 @@ describe("validate common commands work", () => {
     //   AND common scenarios of each that materially are affected by how STDIO and process are setup
     // i.e. grep, sed, fd, ls, pwd, git (status,...?), ...
 
-    // TODO! MOVE exec-utils.test.ts here... just do all these as integration tests!
-    // * that way I can easily test commands a model sense (i.e. rg issue) 
-    // * and I can easily assert the model sees what I think it sees!
-
     describe("ripgrep", () => {
         test("ripgrep shouldn't hang on searching STDIN when there's no STDIN", async () => {
             // previously using `child_process.exec()` resulted in `rg` hanging

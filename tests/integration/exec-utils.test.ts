@@ -1,10 +1,6 @@
 import { runProcess } from "../../src/run_process.js";
 
-// FYI old impl before changes: 
-//    git show 394b8a9 src/exec-utils.ts
-//
 describe("test explicit shell use", () => {
-
     test("should execute a simple bash command over STDIN", async () => {
         const result = await runProcess({
             mode: "executable",
@@ -225,15 +221,4 @@ Line 3`),
         ]);
     });
 
-
-
 });
-
-// TODO add testing of try/catch in runScript block
-//   just make sure I cover failure cases through the catch blocks
-//   maybe, push the try/catch into a new, interim seam
-//   keep this testing separate of the lower level seam around execWithInput
-//   don't need a ton of tests, just an integration "glue" test of the try/catch impl (so if it changes I can validate it)
-//
-
-// TODO add tests for logging on failures?

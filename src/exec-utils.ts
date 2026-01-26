@@ -33,10 +33,10 @@ export async function spawn_wrapped(
             // 'ignore' attaches /dev/null
             // order: [STDIN, STDOUT, STDERR]
             options.stdio = ['ignore', 'pipe', 'pipe'];
+            // ? I wonder if this was related to fishWorkaround issue w/ STDIN (see commit history)... I was using base64 encoding to pass STDIN
         }
         const child = spawn(command, args, options);
 
-        //  TODO split out two result types? SpawnSuccess, SpawnFailure
         let stdout = ""
         let stderr = ""
 
@@ -65,7 +65,7 @@ export async function spawn_wrapped(
             const result: SpawnFailure = {
                 stdout: stdout,
                 stderr: stderr,
-                // TODO is this returning anything useful? (err as any).code ??
+                //
                 code: (err as any).code,
                 signal: (err as any).signal,
                 //
