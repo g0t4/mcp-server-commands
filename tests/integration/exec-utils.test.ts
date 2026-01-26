@@ -11,17 +11,19 @@ describe("command specific integration tests", () => {
             argv: ["bash"],
             input: 'echo "Hello World"', // STDIN
         });
-        // console.log(result);
 
-        expect(result.content).toHaveLength(2);
-        const stdoutMessage = result.content?.[1];
-        expect(stdoutMessage?.name).toBe("STDOUT");
-        expect(stdoutMessage?.text).toBe("Hello World\n");
-
-        const stderrMessage = result.content?.[0];
-        expect(stderrMessage?.name).toBe("EXIT_CODE");
-        expect(stderrMessage?.text).toBe("0");
-
+        expect(result.content).toEqual([
+            {
+                name: "EXIT_CODE",
+                type: "text",
+                text: "0",
+            },
+            {
+                name: "STDOUT",
+                type: "text",
+                text: "Hello World\n",
+            }
+        ]);
     });
 
     test("should handle command errors properly in bash", async () => {
