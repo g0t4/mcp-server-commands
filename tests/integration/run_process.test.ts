@@ -325,33 +325,35 @@ describe("validate common commands work", () => {
     // * that way I can easily test commands a model sense (i.e. rg issue) 
     // * and I can easily assert the model sees what I think it sees!
 
-    test("ripgrep shouldn't hang on searching STDIN when there's no STDIN", async () => {
-        // previously using `child_process.exec()` resulted in `rg` hanging
-        //   b/c rg sees STDIN==socket => sets is_stdin_readable
-        //   => IIUC STDIN never closes => thus rg hangs until timeout
-        //
-        // * `spawn` allows controlling STDIO (unlike `exec`)
-        //   spawn defaults to `pipe` which rg also sees as socket/searchable
-        //   * setting STDIN to `ignore` attaches /dev/null
-        //   => ripgrep doesn't hang now (and is_stdin_readable=false)
+    describe("ripgrep", () => {
+        test("ripgrep shouldn't hang on searching STDIN when there's no STDIN", async () => {
+            // previously using `child_process.exec()` resulted in `rg` hanging
+            //   b/c rg sees STDIN==socket => sets is_stdin_readable
+            //   => IIUC STDIN never closes => thus rg hangs until timeout
+            //
+            // * `spawn` allows controlling STDIO (unlike `exec`)
+            //   spawn defaults to `pipe` which rg also sees as socket/searchable
+            //   * setting STDIN to `ignore` attaches /dev/null
+            //   => ripgrep doesn't hang now (and is_stdin_readable=false)
 
-        // * --debug output, key output 
-        //   > for heuristic stdin detection on Unix, found that is_file=false, is_fifo=false and is_socket=true, 
-        //   > and thus concluded that is_stdin_readable=true\nrg: DEBUG|rg::flags::hiargs
-        const request = runProcess({
-            mode: "executable",
-            argv: ["rg", "--debug", "foo"],
-            timeout_ms: 10, // FYI set timeout_ms so you get result object below
-            // if you let test itself timeout, you won't get result object to assert below
+            // * --debug output, key output 
+            //   > for heuristic stdin detection on Unix, found that is_file=false, is_fifo=false and is_socket=true, 
+            //   > and thus concluded that is_stdin_readable=true\nrg: DEBUG|rg::flags::hiargs
+            const request = runProcess({
+                mode: "executable",
+                argv: ["rg", "--debug", "foo"],
+                timeout_ms: 10, // FYI set timeout_ms so you get result object below
+                // if you let test itself timeout, you won't get result object to assert below
+            });
+
+            const result = await request;
+            console.log(result);
+            const stderr = result.content.find(c => c.name === "STDERR");
+            expect(stderr).toBeDefined();
+            expect(stderr!.text).not.toContain(
+                "concluded that is_stdin_readable=true"
+            );
         });
-
-        const result = await request;
-        console.log(result);
-        const stderr = result.content.find(c => c.name === "STDERR");
-        expect(stderr).toBeDefined();
-        expect(stderr!.text).not.toContain(
-            "concluded that is_stdin_readable=true"
-        );
     });
 
 });
