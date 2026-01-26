@@ -9,8 +9,7 @@ include:
   - cjs
   - mjs
   - json
-ignores:
-  - "package-lock.json"
+# ignores:
 global_languages:
   # node related only for global search
   #  TODO maybe have a config global retrieval vs global search (can have diff filters, or actually global search could just always be everything)
