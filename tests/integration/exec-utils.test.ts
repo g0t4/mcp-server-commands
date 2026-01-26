@@ -3,7 +3,7 @@ import { runProcess } from "../../src/run_process.js";
 // FYI old impl before changes: 
 //    git show 394b8a9 src/exec-utils.ts
 //
-describe("command specific integration tests", () => {
+describe("test explicit shell use", () => {
 
     test("should execute a simple bash command over STDIN", async () => {
         const result = await runProcess({
