@@ -241,7 +241,7 @@ describe("runProcess - validating argument parsing/validation and basic success/
             expect(result.isError).toBe(true);
             expect(result.content).toHaveLength(1);
             const first = result.content[0];
-            expect(first.name).toBe("error");
+            expect(first.name).toBe("ERROR");
             expect(first.text).toContain(expectedMessage);
         });
     });

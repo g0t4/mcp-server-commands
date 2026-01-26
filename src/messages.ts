@@ -82,7 +82,7 @@ export function errorResult(message: string): CallToolResult {
     return {
         isError: true,
         content: [{
-            name: "error",
+            name: "ERROR",
             type: "text",
             text: message,
         }],
