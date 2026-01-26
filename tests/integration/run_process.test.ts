@@ -264,14 +264,14 @@ describe("runProcess - signal handling", () => {
         });
 
         expect(result.isError).toBe(true);
-
-        expect(result.content).toHaveLength(1);
-        // At least EXIT_CODE and SIGNAL should be present
-        const signal = result.content[0];
-        expect(signal?.name).toBe("SIGNAL");
-        expect(signal?.text).toMatch(/SIG(TERM|KILL)/i);
+        expect(result.content).toEqual([
+            {
+                name: "SIGNAL",
+                type: "text",
+                text: expect.stringMatching(/SIGTERM/i),
+            },
+        ]);
     });
-
 
     describe('runProcess kill handling', () => {
         it('should report killed when the child process is terminated externally', async () => {
@@ -312,7 +312,6 @@ describe("runProcess - signal handling", () => {
             ]);
         });
     });
-
 
     // TODO abort controller? if I add cooperative cancellation or smth like it
 });
