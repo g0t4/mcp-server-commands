@@ -45,13 +45,13 @@ export function messagesFor(result: SpawnFailure | SpawnResult): TextContent[] {
     //  TODO only show when killed, do not mark not killed and/or no signal, right?
     //  definitely could be useful to know if a command was killed
     //  make sure signal is not null, which is what's used when no signal killed the process
-    // if (result.signal) {
-    //     messages.push({
-    //         name: "SIGNAL",
-    //         type: "text",
-    //         text: `Signal: ${result.signal}`,
-    //     });
-    // } 
+    if (result.signal) {
+        messages.push({
+            name: "SIGNAL",
+            type: "text",
+            text: `Signal: ${result.signal}`,
+        });
+    }
     // if (!!result.killed) {
     //     // killed == true is the only time to include this
     //     messages.push({
