@@ -1,36 +1,47 @@
-import { execFileWithInput } from "../../src/exec-utils.js";
-// TODO! port these tests to using new spawn approach
+import { runProcess } from "../../src/run_process.js";
 
-// FYI these tests are largely to make sure I understand how exec works
-// + my changes to exec (i.e. reject promise on failure in STDIN path)
+// FYI old impl before changes: 
+//    git show 394b8a9 src/exec-utils.ts
+//
+describe("command specific integration tests", () => {
 
-describe("execFileWithInput integration tests", () => {
-
-    test("should execute a simple bash command", async () => {
-        const result = await execFileWithInput(
-            "bash",
-            'echo "Hello World"',
-            {}
-        );
+    test("should execute a simple bash command over STDIN", async () => {
+        const result = await runProcess({
+            mode: "executable",
+            argv: ["bash"],
+            input: 'echo "Hello World"', // STDIN
+        });
         // console.log(result);
-        expect(result.stdout).toBe("Hello World\n");
-        expect(result.stderr).toBe("");
-        expect(result.code).toBeUndefined();
+
+        expect(result.content).toHaveLength(2);
+        const stdoutMessage = result.content?.[1];
+        expect(stdoutMessage?.name).toBe("STDOUT");
+        expect(stdoutMessage?.text).toBe("Hello World\n");
+
+        const stderrMessage = result.content?.[0];
+        expect(stderrMessage?.name).toBe("EXIT_CODE");
+        expect(stderrMessage?.text).toBe("0");
+
     });
 
     test("should handle command errors properly in bash", async () => {
-        try {
-            await execFileWithInput("bash", "nonexistentcommand", {});
-            fail("Should have thrown an error");
-        } catch (result: any) {
-            // FYI catch is so you can run assertions on the failed result, given the promise is rejected, it's then thrown here
-            // console.log(result);
-            const expected_stderr = "bash: line 1: nonexistentcommand: command not found";
-            expect(result.stderr).toContain(expected_stderr);
-            const expected_message = "Command failed: bash\n" + expected_stderr + "\n";
-            expect(result.message).toContain(expected_message);
-            expect(result.code).toBe(127);
-        }
+        const result = await runProcess({
+            mode: "executable",
+            argv: ["bash"],
+            input: "nonexistentcommand",
+        });
+
+        expect(result.isError).toBe(true);
+        expect(result.content).toHaveLength(2);
+
+        const exitCode = result.content[0];
+        expect(exitCode.name).toContain("EXIT_CODE");
+        expect(exitCode.text).toContain("127");
+
+        const stderr = result.content[1];
+        expect(stderr.name).toContain("STDERR");
+        const expectedStderr = "bash: line 1: nonexistentcommand: command not found";
+        expect(stderr.text).toContain(expectedStderr);
     });
 
     test("should handle fish shell command", async () => {
