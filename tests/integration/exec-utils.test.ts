@@ -13,16 +13,8 @@ describe("command specific integration tests", () => {
         });
 
         expect(result.content).toEqual([
-            {
-                name: "EXIT_CODE",
-                type: "text",
-                text: "0",
-            },
-            {
-                name: "STDOUT",
-                type: "text",
-                text: "Hello World\n",
-            }
+            { name: "EXIT_CODE", type: "text", text: "0", },
+            { name: "STDOUT", type: "text", text: "Hello World\n", }
         ]);
     });
 
