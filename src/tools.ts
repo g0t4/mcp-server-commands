@@ -39,8 +39,9 @@ export function reisterTools(server: Server) {
                                 description: "Shell command line. Required when mode='shell'. Forbidden when mode='executable'."
                             },
                             argv: {
-                                type: "string[]", // * I made this up, b/c per the spec I can put w/e I want here on property definition objects
                                 minItems: 1, // * made up too
+                                type: "array",
+                                items: { type: "string" },
                                 description: "Executable and arguments. argv[0] is the executable. Required when mode='executable'. Forbidden when mode='shell'."
                             },
                             cwd: {
