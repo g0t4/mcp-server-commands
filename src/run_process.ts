@@ -44,9 +44,22 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
     // FYI spawn_options.stdio => default is perfect ['pipe', 'pipe', 'pipe'] https://nodejs.org/api/child_process.html#optionsstdio 
     //   do not set inherit (this is what causes ripgrep to see STDIN socket and search it, thus hanging)
     const stdin_input = args?.input ? String(args.input) : undefined; // TODO
-    const dryRun = Boolean(args?.dry_run); // TODO
+    const dryRun = Boolean(args?.dry_run);
 
-    try {
+        try {
+        if (dryRun) {
+            // Build a descriptive plan without executing anything
+            let plan = '';
+            if (isShell) {
+                const cmd = String(args?.command_line);
+                const shell = process.env.SHELL || (process.platform === 'win32' ? 'cmd.exe' : '/bin/sh');
+                plan = `Shell mode: will execute command_line via ${shell}: ${cmd}`;
+            } else if (isExecutable) {
+                const argv = args?.argv as string[];
+                plan = `Executable mode: will spawn '${argv[0]}' with arguments ${JSON.stringify(argv.slice(1))}`;
+            }
+            return { content: [{ name: "PLAN", type: "text", text: plan }] } as any;
+        }
         if (isShell) {
             if (!args?.command_line) {
                 return errorResult(
