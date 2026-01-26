@@ -250,6 +250,29 @@ describe("runProcess - validating argument parsing/validation and basic success/
     // TODO! other params I want to add with new STDIO approach?
 });
 
+describe("runProcess - signal handling", () => {
+
+    test("should set isError and include SIGNAL when aborted by timeout", async () => {
+
+        const result = await runProcess({
+            mode: "executable",
+            argv: ["sleep", "10"], // long enough to be killed by the timeout
+            timeout_ms: 100,      // 0.1 s timeout forces abort w/ minimal delay
+        });
+
+        expect(result.isError).toBe(true);
+
+        expect(result.content).toHaveLength(1);
+        // At least EXIT_CODE and SIGNAL should be present
+        const signal = result.content[0];
+        expect(signal?.name).toBe("SIGNAL");
+        expect(signal?.text).toMatch(/SIG(TERM|KILL)/i);
+    });
+    // TODO can I trigger kill too? kill command
+
+    // TODO abort controller? if I add cooperative cancellation or smth like it
+});
+
 describe("validate common commands work", () => {
 
     // TODO! add integration tests of all the common commands you will use
