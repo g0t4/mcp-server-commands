@@ -1,6 +1,12 @@
 import { runProcess } from "../../src/run_process.js";
 
-describe("test explicit shell use", () => {
+describe("test explicit shell use via mode=executable+argv", () => {
+    // in contrast to default shell on a system
+    // GOAL: ensure I can run other tests w/o hiccups
+    //   so, assert simple scenarios
+    //
+    // PRN try shells via mode=shell?... mostly going to duplicate the following
+
     test("should execute a simple bash command over STDIN", async () => {
         const result = await runProcess({
             mode: "executable",
