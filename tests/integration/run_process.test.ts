@@ -33,14 +33,18 @@ describe("runProcess - validating argument parsing/validation and basic success/
             // console.log(result); // left these around as a convenience/reminder
             //  console.log looks really nice with jest logging
 
-            expect(result.content).toHaveLength(2);
-            const first = result.content[0];
-            expect(first.name).toBe("EXIT_CODE");
-            expect(first.text).toBe("0");
-
-            const stdout = result.content[1];
-            expect(stdout.name).toBe("STDOUT");
-            expect(stdout.text).toBe("Hello World");
+            expect(result.content).toEqual([
+                {
+                    name: "EXIT_CODE",
+                    type: "text",
+                    text: "0",
+                },
+                {
+                    name: "STDOUT",
+                    type: "text",
+                    text: "Hello World",
+                },
+            ]);
         });
     });
 
@@ -61,14 +65,18 @@ describe("runProcess - validating argument parsing/validation and basic success/
             const result = await request;
             // console.log(result);
 
-            expect(result.content).toHaveLength(2);
-            const first = result.content[0];
-            expect(first.name).toBe("EXIT_CODE");
-            expect(first.text).toBe("0");
-
-            const stdout = result.content[1];
-            expect(stdout.name).toBe("STDOUT");
-            expect(stdout.text).toBe("Hello World");
+            expect(result.content).toEqual([
+                {
+                    name: "EXIT_CODE",
+                    type: "text",
+                    text: "0",
+                },
+                {
+                    name: "STDOUT",
+                    type: "text",
+                    text: "Hello World",
+                },
+            ]);
         });
     });
 
@@ -81,13 +89,20 @@ describe("runProcess - validating argument parsing/validation and basic success/
 
         // * ensure default CWD is not /
         // make sure command succeeded so I can make assumption about default directory
-        expect(pwd.content).toHaveLength(2);
+        expect(pwd.content).toEqual([
+            {
+                name: "EXIT_CODE",
+                type: "text",
+                text: "0",
+            },
+            {
+                name: "STDOUT",
+                type: "text",
+                // the exact output may vary, but we only need to ensure it is not "/\n"
+                text: expect.not.stringContaining("/\n"),
+            },
+        ]);
         expect(pwd.isError).toBeUndefined();
-        expect(pwd.content[1].name).toBe("STDOUT");
-        expect(pwd.content[1].text).not.toBe("/\n");
-        // fail the test if the default is the same as /
-        // that way I don't have to hardcode the PWD expectation
-        // and still trigger a failure if its ambiguous whether pwd was used below
 
         // * test setting CWD to /
         const cwd = await runProcess({
@@ -97,12 +112,19 @@ describe("runProcess - validating argument parsing/validation and basic success/
         });
         // console.log(cwd);
         // ensure setting workdir doesn't fail:
-        expect(cwd.content).toHaveLength(2);
-        expect(cwd.content[0].name).toBe("EXIT_CODE");
-        expect(cwd.content[0].text).toBe("0");
+        expect(cwd.content).toEqual([
+            {
+                name: "EXIT_CODE",
+                type: "text",
+                text: "0",
+            },
+            {
+                name: "STDOUT",
+                type: "text",
+                text: "/\n",
+            },
+        ]);
         expect(cwd.isError).toBeUndefined();
-        expect(cwd.content[1].name).toBe("STDOUT");
-        expect(cwd.content[1].text).toBe("/\n");
     });
 
     describe("failures set isError and explain why", () => {
