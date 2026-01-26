@@ -164,16 +164,19 @@ describe("runProcess - validating argument parsing/validation and basic success/
                 // console.log(result);
 
                 expect(result.isError).toBe(true);
-                expect(result.content).toHaveLength(2);
-                const exit_code = result.content[0];
-                expect(exit_code.name).toContain("EXIT_CODE");
-                expect(exit_code.text).toContain("ENOENT");
-                //
-                //  this error is raised by spawn, not my spawn_wrapped
-                //  therefore it has different fields, including message
-                const message = result.content[1];
-                expect(message.name).toContain("MESSAGE");
-                expect(message.text).toContain("spawn nonexistentcommand ENOENT");
+                expect(result.content).toEqual([
+                    {
+                        name: "EXIT_CODE",
+                        type: "text",
+                        text: expect.stringContaining("ENOENT"),
+                    },
+                    {
+                        name: "MESSAGE",
+                        type: "text",
+                        text: expect.stringContaining("spawn nonexistentcommand ENOENT"),
+                    },
+                ]);
+
             });
         });
 
@@ -188,10 +191,13 @@ describe("runProcess - validating argument parsing/validation and basic success/
                 // console.log(result);
                 // The process should be reported as an error because the exit code is non‑zero
                 expect(result.isError).toBe(true);
-                expect(result.content).toHaveLength(1);
-                const exit_code = result.content[0];
-                expect(exit_code.name).toContain("EXIT_CODE");
-                expect(exit_code.text).toContain("42");
+                expect(result.content).toEqual([
+                    {
+                        name: "EXIT_CODE",
+                        type: "text",
+                        text: expect.stringContaining("42"),
+                    },
+                ]);
             });
         });
 
