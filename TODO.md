@@ -1,3 +1,8 @@
+## Reject specific commands / arg combos
+- i.e `ls -R`, `grep -R`... and their ilk => fail and have suggestions instead... that way they never get to use a crappy command
+   - might want to have a way to modify default shell's startup and inject a script with customizations
+     i.e. that can hide `ls`/`grep`/etc commands
+
 ## TODOs
 
 - Every time Claude runs a python script, `python` is used as the interpreter. Which fails every time.
