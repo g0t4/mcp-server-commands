@@ -302,7 +302,6 @@ describe("runProcess - signal handling", () => {
         });
 
         test("should timeout with default timeout when running a long sleep", async () => {
-            jest.setTimeout(10000);
             const result = await runProcess({
                 mode: "executable",
                 argv: ["sleep", "7"],
