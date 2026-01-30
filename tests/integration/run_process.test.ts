@@ -1,4 +1,5 @@
 import { runProcess } from "../../src/run_process.js";
+jest.setTimeout(15000);
 import { exec, spawn } from 'child_process';
 import { once } from 'events';
 import { promisify } from "util";
@@ -11,7 +12,7 @@ import { promisify } from "util";
 //      non-zero exit code, STDOUT/STDERR, etc...
 //      feels richer way to explain problem with a command
 
-describe("runProcess - validating argument parsing/validation and basic success/failure outputs", () => {
+    describe("runProcess - validating argument parsing/validation and basic success/failure outputs", () => {
     // FYI always_log uses console.error (ignore it, or use test.only... do not remove the logging)
 
     describe("when mode=shell+command_line is successful and using STDIN", () => {
@@ -283,23 +284,40 @@ describe("runProcess - validating argument parsing/validation and basic success/
 
 describe("runProcess - signal handling", () => {
 
-    test("should set isError and include SIGNAL when aborted by timeout", async () => {
+        test("should set isError and include SIGNAL when aborted by timeout", async () => {
+            const result = await runProcess({
+                mode: "executable",
+                argv: ["sleep", "10"], // long enough to be killed by the timeout
+                timeout_ms: 100,      // 0.1 s timeout forces abort w/ minimal delay
+            });
 
-        const result = await runProcess({
-            mode: "executable",
-            argv: ["sleep", "10"], // long enough to be killed by the timeout
-            timeout_ms: 100,      // 0.1 s timeout forces abort w/ minimal delay
+            expect(result.isError).toBe(true);
+            expect(result.content).toEqual([
+                {
+                    name: "SIGNAL",
+                    type: "text",
+                    text: expect.stringMatching(/SIGTERM/i),
+                },
+            ]);
         });
 
-        expect(result.isError).toBe(true);
-        expect(result.content).toEqual([
-            {
-                name: "SIGNAL",
-                type: "text",
-                text: expect.stringMatching(/SIGTERM/i),
-            },
-        ]);
-    });
+        test("should timeout with default timeout when running a long sleep", async () => {
+            jest.setTimeout(10000);
+            const result = await runProcess({
+                mode: "executable",
+                argv: ["sleep", "7"],
+                // no timeout_ms provided, should use default (5 s) and abort
+            });
+
+            expect(result.isError).toBe(true);
+            expect(result.content).toEqual([
+                {
+                    name: "SIGNAL",
+                    type: "text",
+                    text: expect.stringMatching(/SIGTERM/i),
+                },
+            ]);
+        });
 
     describe('runProcess kill handling', () => {
         it('should report killed when the child process is terminated externally', async () => {
@@ -343,4 +361,3 @@ describe("runProcess - signal handling", () => {
 
     // TODO abort controller? if I add cooperative cancellation or smth like it
 });
-
