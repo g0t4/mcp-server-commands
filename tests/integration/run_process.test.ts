@@ -307,6 +307,7 @@ describe("runProcess - signal handling", () => {
                 mode: "executable",
                 argv: ["sleep", "7"],
                 // no timeout_ms provided, should use default (5 s) and abort
+                //  FYI if you change hardcoded default of 5s then this test has to be updated
             });
 
             expect(result.isError).toBe(true);

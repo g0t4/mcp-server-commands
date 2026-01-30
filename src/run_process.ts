@@ -41,7 +41,7 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
         spawn_options.timeout = Number(args.timeout_ms);
     } else {
         // default timeout after a minute (i.e. when doing stupid crap with `ls -R` or `find/grep`
-        spawn_options.timeout = 5000;
+        spawn_options.timeout = 3000;
     }
     // PRN windowsHide on Windows, signal, killSignal
     // FYI spawn_options.stdio => default is perfect ['pipe', 'pipe', 'pipe'] https://nodejs.org/api/child_process.html#optionsstdio 
