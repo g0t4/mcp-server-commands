@@ -58,7 +58,7 @@ export function reisterTools(server: Server) {
                             },
                             timeout_ms: {
                                 type: "number",
-                                description: "Optional timeout in milliseconds, defaults to 60000 milliseconds.",
+                                description: "Optional timeout in milliseconds, defaults to 30,000ms",
                             },
                             dry_run: {
                                 type: "boolean",
