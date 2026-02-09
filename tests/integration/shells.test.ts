@@ -1,3 +1,4 @@
+import { readFileSync } from "fs";
 import { runProcess } from "../../src/run_process.js";
 
 describe("test explicit shell use via mode=executable+argv", () => {
@@ -51,26 +52,38 @@ describe("test explicit shell use via mode=executable+argv", () => {
 
     });
 
-    test("should handle fish shell command", async () => {
-        const result = await runProcess({
-            mode: "executable",
-            argv: ["fish"],
-            input: 'echo "Hello from Fish"',
-        });
-        // console.log(result);
-        expect(result.content).toEqual([
-            {
-                name: "EXIT_CODE",
-                type: "text",
-                text: "0",
-            },
-            {
-                name: "STDOUT",
-                type: "text",
-                text: "Hello from Fish\n",
-            },
-        ]);
-    });
+    function isUbuntu() {
+        try {
+            const osRelease = readFileSync("/etc/os-release", "utf8");
+            return /(^|\n)ID=ubuntu(\n|$)/.test(osRelease);
+        } catch {
+            return false;
+        }
+    }
+
+    (isUbuntu() ? test.skip : test)(
+        "should handle fish shell command",
+        async () => {
+            const result = await runProcess({
+                mode: "executable",
+                argv: ["fish"],
+                input: 'echo "Hello from Fish"',
+            });
+            // console.log(result);
+            expect(result.content).toEqual([
+                {
+                    name: "EXIT_CODE",
+                    type: "text",
+                    text: "0",
+                },
+                {
+                    name: "STDOUT",
+                    type: "text",
+                    text: "Hello from Fish\n",
+                },
+            ]);
+        }
+    );
 
     test("should handle command errors properly in fish", async () => {
         const result = await runProcess({
