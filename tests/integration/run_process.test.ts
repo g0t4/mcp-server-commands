@@ -19,7 +19,7 @@ describe("runProcess - validating argument parsing/validation and basic success/
         const request = runProcess({
             mode: "shell",
             command_line: "cat",
-            input: "Hello World",
+            stdin: "Hello World",
         });
 
         test("should NOT set isError", async () => {
@@ -54,7 +54,7 @@ describe("runProcess - validating argument parsing/validation and basic success/
         const request = runProcess({
             mode: "executable",
             argv: ["cat"],
-            input: "Hello World",
+            stdin: "Hello World",
         });
 
         test("should not set isError", async () => {

@@ -12,7 +12,7 @@ describe("test explicit shell use via mode=executable+argv", () => {
         const result = await runProcess({
             mode: "executable",
             argv: ["bash"],
-            input: 'echo "Hello World"', // STDIN
+            stdin: 'echo "Hello World"', // STDIN
         });
 
         expect(result.content).toEqual([
@@ -33,7 +33,7 @@ describe("test explicit shell use via mode=executable+argv", () => {
         const result = await runProcess({
             mode: "executable",
             argv: ["bash"],
-            input: "nonexistentcommand",
+            stdin: "nonexistentcommand",
         });
 
         expect(result.isError).toBe(true);
@@ -59,7 +59,7 @@ describe("test explicit shell use via mode=executable+argv", () => {
             const result = await runProcess({
                 mode: "executable",
                 argv: ["fish"],
-                input: 'echo "Hello from Fish"',
+                stdin: 'echo "Hello from Fish"',
             });
             // console.log(result);
             expect(result.content).toEqual([
@@ -104,7 +104,7 @@ describe("test explicit shell use via mode=executable+argv", () => {
         const result = await runProcess({
             mode: "executable",
             argv: ["zsh"],
-            input: 'echo "Hello from Zsh"',
+            stdin: 'echo "Hello from Zsh"',
         });
         // console.log(result);
         expect(result.content).toEqual([
@@ -125,7 +125,7 @@ describe("test explicit shell use via mode=executable+argv", () => {
         const result = await runProcess({
             mode: "executable",
             argv: ["zsh"],
-            input: "completelynonexistentcommand",
+            stdin: "completelynonexistentcommand",
         });
 
         expect(result.isError).toBeTruthy();
@@ -153,7 +153,7 @@ describe("test explicit shell use via mode=executable+argv", () => {
         const result = await runProcess({
             mode: "executable",
             argv: ["zsh"],
-            input: stdin,
+            stdin: stdin,
         });
         // console.log(result);
         expect(result.content).toEqual([
@@ -184,7 +184,7 @@ Number 3
         const result = await runProcess({
             mode: "executable",
             argv: ["bash"],
-            input: "pwd",
+            stdin: "pwd",
             cwd: "/",
         });
         // console.log(result);
@@ -211,7 +211,7 @@ Number 3
         const result = await runProcess({
             mode: "executable",
             argv: ["bash"],
-            input: stdin,
+            stdin: stdin,
         });
         // validate all of output:
         // console.log(result);

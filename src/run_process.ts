@@ -46,7 +46,7 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
     // PRN windowsHide on Windows, signal, killSignal
     // FYI spawn_options.stdio => default is perfect ['pipe', 'pipe', 'pipe'] https://nodejs.org/api/child_process.html#optionsstdio 
     //   do not set inherit (this is what causes ripgrep to see STDIN socket and search it, thus hanging)
-    const stdin_input = args?.input ? String(args.input) : undefined; // TODO
+    const stdin = args?.stdin ? String(args.stdin) : undefined; // TODO
     const dryRun = Boolean(args?.dry_run);
 
     try {
@@ -78,7 +78,7 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
             spawn_options.shell = true
 
             const command_line = String(args?.command_line)
-            const result = await spawn_wrapped(command_line, [], stdin_input, spawn_options);
+            const result = await spawn_wrapped(command_line, [], stdin, spawn_options);
             return resultFor(result);
         }
         if (isExecutable) {
@@ -99,7 +99,7 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
             const command = argv[0]
             const commandArgs = argv.slice(1);
 
-            const result = await spawn_wrapped(command, commandArgs, stdin_input, spawn_options);
+            const result = await spawn_wrapped(command, commandArgs, stdin, spawn_options);
             return resultFor(result);
         }
 

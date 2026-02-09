@@ -24,12 +24,12 @@ export type SpawnFailure = SpawnResult & {
 export async function spawn_wrapped(
     command: string,
     args: string[],
-    stdin_input: string | undefined,
+    stdin: string | undefined,
     options: SpawnOptions
 ): Promise<SpawnResult | SpawnFailure> {
     return new Promise((resolve, reject) => {
-        if (!stdin_input) {
-            // FYI default is all 'pipe' (works when stdin_input is provided)
+        if (!stdin) {
+            // FYI default is all 'pipe' (works when stdin is provided)
             // 'ignore' attaches /dev/null
             // order: [STDIN, STDOUT, STDERR]
             options.stdio = ['ignore', 'pipe', 'pipe'];
@@ -42,8 +42,8 @@ export async function spawn_wrapped(
         let stdout = ""
         let stderr = ""
 
-        if (child.stdin && stdin_input) {
-            child.stdin.write(stdin_input);
+        if (child.stdin && stdin) {
+            child.stdin.write(stdin);
             child.stdin.end();
         }
 

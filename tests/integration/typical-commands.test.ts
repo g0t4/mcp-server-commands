@@ -44,7 +44,7 @@ describe("validate common commands work", () => {
             const result = await runProcess({
                 mode: "executable",
                 argv: ["rg", "--no-config", "bar"],
-                input: "foo\nbar\nbaz",
+                stdin: "foo\nbar\nbaz",
                 timeout_ms: 5000,
             });
             // console.log(result);

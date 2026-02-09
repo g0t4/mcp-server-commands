@@ -49,10 +49,7 @@ export function reisterTools(server: Server) {
                                 type: "string",
                                 description: "Optional to set working directory",
                             },
-                            input: {
-                                // execFileSync uses "input" and tool calls are sync by nature (in current incarnation, w.r.t. to the model its sync)
-                                // PRN or name it "stdin"?
-                                //   "stdin" is somewhat vague b/c it can be a toggle / config knob to specify pipe/inherit/overlapped/ignore/etc ...
+                            stdin: {
                                 type: "string",
                                 description: "Optional text written to STDIN (written fully, then closed). Useful for heredoc-style input or file contents."
                             },
