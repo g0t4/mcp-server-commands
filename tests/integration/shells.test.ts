@@ -75,8 +75,7 @@ describe("test explicit shell use via mode=executable+argv", () => {
     test("should handle command errors properly in fish", async () => {
         const result = await runProcess({
             mode: "executable",
-            argv: ["fish"],
-            input: "totallynonexistentcommand",
+            argv: ["fish", "-c", "totallynonexistentcommand"],
         });
 
         expect(result.isError).toBeTruthy();
