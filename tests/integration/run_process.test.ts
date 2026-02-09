@@ -319,15 +319,21 @@ describe("runProcess - signal handling", () => {
                 dry_run: false,
             });
 
+            console.log("post: initial runProcess");
+
             // * pgrep for the process
             const { stdout } = await promisify(exec)('pgrep -f "sleep 10.5"');
             const pid = Number(stdout.trim());
-            // console.log(pid);
+            console.log(`pid ${pid}`);
+
+            console.log("pre: kill");
 
             await exec(`kill -9 ${pid}`);
+            console.log("post: kill");
 
             // FYI interesting that killing the process doesn't result in "error" event?
             const result = await runPromise;
+            console.log("post: await runPromise");
             // console.log(result);
             expect(result.isError).toBe(true);
             expect(result.content).toEqual([
