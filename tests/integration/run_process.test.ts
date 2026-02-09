@@ -1,4 +1,5 @@
 import { runProcess } from "../../src/run_process.js";
+import process from "node:process"
 import { exec, spawn } from 'child_process';
 import { once } from 'events';
 import { promisify } from "util";
@@ -324,13 +325,15 @@ describe("runProcess - signal handling", () => {
             // * pgrep for the process
             const { stdout } = await promisify(exec)('pgrep -f "sleep 10.5" | head -1');
             const pid = Number(stdout.trim());
+            // FYI if you have issues w/ PID and kill here... consider passing child.pid out of spawn_wrapped
             console.log(`pid ${pid}`);
             expect(pid).toBeGreaterThan(0);
             expect(pid).not.toBeNaN();
 
             console.log("pre: kill");
 
-            await exec(`kill -9 ${pid}`);
+            process.kill(pid, 9);
+
             console.log("post: kill");
 
             // FYI interesting that killing the process doesn't result in "error" event?
