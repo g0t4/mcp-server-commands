@@ -1,5 +1,5 @@
-import { readFileSync } from "fs";
 import { runProcess } from "../../src/run_process.js";
+import { IS_UBUNTU } from "./is_ubuntu.js";
 
 describe("test explicit shell use via mode=executable+argv", () => {
     // in contrast to default shell on a system
@@ -52,16 +52,8 @@ describe("test explicit shell use via mode=executable+argv", () => {
 
     });
 
-    function isUbuntu() {
-        try {
-            const osRelease = readFileSync("/etc/os-release", "utf8");
-            return /(^|\n)ID=ubuntu(\n|$)/.test(osRelease);
-        } catch {
-            return false;
-        }
-    }
 
-    (isUbuntu() ? test.skip : test)(
+    (IS_UBUNTU ? test.skip : test)(
         "should handle fish shell command",
         async () => {
             const result = await runProcess({
