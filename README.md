@@ -7,7 +7,7 @@ Currently, just one command to rule them all!
 - `run_process` - run a command, i.e. `hostname` or `ls -al` or `echo "hello world"` etc
   - Returns `STDOUT` and `STDERR` as text
   - Optional `stdin` parameter means your LLM can
-    - pass code in `stdin` to commands like `fish`, `bash`, `zsh`, `python`
+    - pass scripts over `STDIN` to commands like `fish`, `bash`, `zsh`, `python`
     - create files with `cat >> foo/bar.txt` from the text in `stdin`
 
 > [!WARNING]
@@ -25,6 +25,8 @@ Currently, just one command to rule them all!
 Prompts are for users to include in chat history, i.e. via `Zed`'s slash commands (in its AI Chat panel)
 
 - `run_process` - generate a prompt message with the command output
+
+* FYI this was mostly a learning exercise... I see this as a user requested tool call. That's a fancy way to say, it's a template for running a command and passing the outputs to the model!
 
 ## Development
 
