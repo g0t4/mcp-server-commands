@@ -22,7 +22,7 @@ describe("validate common commands work", () => {
             //   > and thus concluded that is_stdin_readable=true\nrg: DEBUG|rg::flags::hiargs
             const request = runProcess({
                 mode: "executable",
-                argv: ["rg", "--debug", "foo"],
+                argv: ["rg", "--no-config", "--debug", "foo"],
                 timeout_ms: 10, // FYI set timeout_ms so you get result object below
                 // if you let test itself timeout, you won't get result object to assert below
             });
@@ -43,7 +43,7 @@ describe("validate common commands work", () => {
         test("ripgrep can search over STDIN when STDIN is provided", async () => {
             const result = await runProcess({
                 mode: "executable",
-                argv: ["rg", "bar"],
+                argv: ["rg", "--no-config", "bar"],
                 input: "foo\nbar\nbaz",
                 timeout_ms: 5000,
             });
@@ -52,7 +52,7 @@ describe("validate common commands work", () => {
                 expect.arrayContaining([{
                     name: "STDOUT",
                     type: "text",
-                    text: "2:1:bar\n",
+                    text: "bar\n",
                 }])
             );
 
