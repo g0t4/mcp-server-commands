@@ -37,7 +37,7 @@ export async function spawn_wrapped(
         }
         const child = spawn(command, args, options);
         // PRN return pid to callers?
-        console.log(`child.pid: ${child.pid}`);
+        // console.log(`child.pid: ${child.pid}`);
 
         let stdout = ""
         let stderr = ""
