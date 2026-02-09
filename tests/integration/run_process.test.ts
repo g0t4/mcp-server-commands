@@ -301,7 +301,7 @@ describe("runProcess - signal handling", () => {
     });
 
     describe('runProcess kill handling', () => {
-        it('should report killed when the child process is terminated externally', async () => {
+        test('should report killed when the child process is terminated externally', async () => {
             // start a long‑running process (sleep 10 seconds)
             //  FYI test will timeout at 5 seconds (before process finishes at 10 seconds)
             const runPromise = runProcess({
@@ -322,9 +322,11 @@ describe("runProcess - signal handling", () => {
             console.log("post: initial runProcess");
 
             // * pgrep for the process
-            const { stdout } = await promisify(exec)('pgrep -f "sleep 10.5"');
+            const { stdout } = await promisify(exec)('pgrep -f "sleep 10.5" | head -1');
             const pid = Number(stdout.trim());
             console.log(`pid ${pid}`);
+            expect(pid).toBeGreaterThan(0);
+            expect(pid).not.toBeNaN();
 
             console.log("pre: kill");
 

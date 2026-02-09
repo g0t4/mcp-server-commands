@@ -36,6 +36,8 @@ export async function spawn_wrapped(
             // ? I wonder if this was related to fishWorkaround issue w/ STDIN (see commit history)... I was using base64 encoding to pass STDIN
         }
         const child = spawn(command, args, options);
+        // PRN return pid to callers?
+        console.log(`child.pid: ${child.pid}`);
 
         let stdout = ""
         let stderr = ""
