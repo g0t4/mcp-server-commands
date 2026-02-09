@@ -49,7 +49,7 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
     const stdin_input = args?.input ? String(args.input) : undefined; // TODO
     const dryRun = Boolean(args?.dry_run);
 
-        try {
+    try {
         if (dryRun) {
             // Build a descriptive plan without executing anything
             let plan = '';
