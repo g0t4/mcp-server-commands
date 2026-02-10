@@ -1,3 +1,38 @@
+## 
+
+- `start_job`
+   - assumptions:
+       - agent exits => jobs are killed
+   - perhaps take one arg that takes all the same args as runProcess and then I can create siblings to this with any async specific args
+   - `max_runtime` - cap to say 1 hour or 1 day max? i.e. a dev web server you could otherwise forget about
+   - TODOs
+      - review `docker run` docs for ideas for other args that are essential (don't get carried away)
+         - https://docs.docker.com/engine/containers/run/
+      - PRN allow passing job id? so they can be named i.e. `web` and `db` etc? instead of generated ID? would that make it easier for agent to target jobs?
+- Conditional Tools?
+    - Only available w/ at least one job running?
+       - OR, *enter_job_manager_mode* where these tools become available!
+           that would allow fine grained tools w/o wasted tokens on most requests that would be unrelated
+           I like the idea of modes with different tool sets and constraints
+    - common args:
+       - `jobids` - `1` or `1,4,5` or `ALL`
+    - `list_jobs`
+       - if I go with log files on disk, show the path to the log file(s) per job
+    - `stop_job`
+       - `jobids` 
+       - `signal` to stop
+       - `timeout` after which it'll be killed
+    - `read_job_logs`
+       - `jobids`
+       - `query` (regex)
+       - `since`
+       - `max_lines`
+       - TODO, could I just use actual files and let the agent read those files like normal w/ ripgrep/sed/etc? why have a special tool when logs can and should go to disk!!
+    - `restart_job` - continuity to stop and start again, i.e. bouncing a web server after making changes (though ideally you'd be using hot reload capable web servers, though that is not always possible!)
+       - `jobids`
+    - `reset_job_logs` - think rotate logs in journalctl
+       - `jobids` - use `all` to reset all
+
 ## Reject specific commands / arg combos
 - i.e `ls -R`, `grep -R`... and their ilk => fail and have suggestions instead... that way they never get to use a crappy command
    - might want to have a way to modify default shell's startup and inject a script with customizations
