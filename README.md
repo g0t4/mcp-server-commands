@@ -4,6 +4,8 @@ Recently I renamed the tool to `runProcess` to better reflect that you can run m
 1. `mode=executable` where you pass `argv` with `argv[0]` representing the `executable` file and then the rest of the array contains args to it.
 2. `mode=shell` where you pass `command_line` (just like typing into `bash`/`fish`/`pwsh`/etc) which will use your system's default shell.
 
+I hate APIs that make ambiguous if you're executing something via a shell, or not. I hate it being a toggle b/c there's way more to running a shell command vs exec than just flipping a switch. So I made that explicit in the new tool's parameters
+
 If you want your model to use specific shell(s) on a system, I would list them in your system prompt. Or, maybe in your tool instructions, though models tend to pay better attention to examples in a system prompt.
 
 I've used this new design with `gptoss-120b` extensively and it went off without a hitch, no issues switching as the model doesn't care about names nor even the redesigned `mode` part, it all seems to "make sense" to gptoss. 
