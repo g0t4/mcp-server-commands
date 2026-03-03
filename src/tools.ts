@@ -26,23 +26,15 @@ export function reisterTools(server: Server) {
                         type: "object",
                         properties: {
                             // ListToolsResult => Tool type (in protocol) => https://modelcontextprotocol.io/specification/2025-06-18/schema#tool
-                            // * appears I can do w/e I want to describe properties (as long as give a string key (name)) => hence enum below
-                            mode: {
-                                enum: ["shell", "executable"], // * I made this up
-                                description: "What are you running, two choices: 'shell' or 'executable' (required, no default)",
-                                // FYI only use default system shell, if the model wants a different shell, can explicitly run it with command_line/argv
-                                //   DO NOT duplicate the mechanism of specifying what runs by adding yet another executable field!
-                                //   spawn's options.shell is bool/string... string is command_name/path... that duplicates and complicates needlessly!
-                            },
                             command_line: {
                                 type: "string",
-                                description: "Shell command line. Required when mode='shell'. Forbidden when mode='executable'."
+                                description: "Shell mode: a shell command line executed via the system's default shell. Supports pipes, redirects, globbing. Cannot be combined with 'argv'."
                             },
                             argv: {
                                 minItems: 1, // * made up too
                                 type: "array",
                                 items: { type: "string" },
-                                description: "Executable and arguments. argv[0] is the executable. Required when mode='executable'. Forbidden when mode='shell'."
+                                description: "Executable mode: directly spawn a process. argv[0] is the executable, followed by arguments passed verbatim (no shell interpretation). Cannot be combined with 'command_line'."
                             },
                             cwd: {
                                 // or "workdir" like before? => eval model behavior w/ each name?
@@ -69,20 +61,8 @@ export function reisterTools(server: Server) {
                             // MAYBEs:
                             // - env - obscure cases where command takes a param only via an env var?
                         },
-                        required: ["mode"],
-                        // PRN add proprietary constraints explanation? only if model seems to struggle and there isn't a better fix...
-                        // oneOf: [
-                        //     {
-                        //         properties: { mode: { const: "shell" } },
-                        //         required: ["command_line"],
-                        //         not: { required: ["argv"] }
-                        //     },
-                        //     {
-                        //         properties: { mode: { const: "executable" } },
-                        //         required: ["argv"],
-                        //         not: { required: ["command_line"] }
-                        //     }
-                        // ]
+                        // FYI no required arg top level and I am not gonna fret about specifiying one or the other, the tool definition is fine with that distinction in the descriptions, plus it is intuitive.
+                        //  and back when I had mode=shell/executable required, models would still forget to add it so why bother with a huge complexity in tool definition
                     },
                 },
             ],

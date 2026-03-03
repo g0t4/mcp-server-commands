@@ -1,16 +1,15 @@
 import { runProcess } from "../../src/run_process.js";
 import { IS_UBUNTU } from "./is_ubuntu.js";
 
-describe("test explicit shell use via mode=executable+argv", () => {
-    // in contrast to default shell on a system
+describe("test explicit shell use via executable mode (argv)", () => {
+    // in contrast to shell mode which uses the default system shell
     // GOAL: ensure I can run other tests w/o hiccups
     //   so, assert simple scenarios
     //
-    // PRN try shells via mode=shell?... mostly going to duplicate the following
+    // PRN try shell mode (command_line)? ... mostly going to duplicate the following
 
     test("should execute a simple bash command over STDIN", async () => {
         const result = await runProcess({
-            mode: "executable",
             argv: ["bash"],
             stdin: 'echo "Hello World"', // STDIN
         });
@@ -31,7 +30,6 @@ describe("test explicit shell use via mode=executable+argv", () => {
 
     test("should handle command errors properly in bash", async () => {
         const result = await runProcess({
-            mode: "executable",
             argv: ["bash"],
             stdin: "nonexistentcommand",
         });
@@ -57,7 +55,6 @@ describe("test explicit shell use via mode=executable+argv", () => {
         "should handle fish shell command",
         async () => {
             const result = await runProcess({
-                mode: "executable",
                 argv: ["fish"],
                 stdin: 'echo "Hello from Fish"',
             });
@@ -79,7 +76,6 @@ describe("test explicit shell use via mode=executable+argv", () => {
 
     test("should handle command errors properly in fish", async () => {
         const result = await runProcess({
-            mode: "executable",
             argv: ["fish", "-c", "totallynonexistentcommand"],
         });
 
@@ -102,7 +98,6 @@ describe("test explicit shell use via mode=executable+argv", () => {
 
     test("should execute zsh command", async () => {
         const result = await runProcess({
-            mode: "executable",
             argv: ["zsh"],
             stdin: 'echo "Hello from Zsh"',
         });
@@ -123,7 +118,6 @@ describe("test explicit shell use via mode=executable+argv", () => {
 
     test("should handle command errors properly in zsh", async () => {
         const result = await runProcess({
-            mode: "executable",
             argv: ["zsh"],
             stdin: "completelynonexistentcommand",
         });
@@ -151,7 +145,6 @@ describe("test explicit shell use via mode=executable+argv", () => {
       done
     `;
         const result = await runProcess({
-            mode: "executable",
             argv: ["zsh"],
             stdin: stdin,
         });
@@ -182,7 +175,6 @@ Number 3
         // TODO make sure cwd is not already / in the test?
         // PRN use multiple paths would be another way around checking cwd of test runner
         const result = await runProcess({
-            mode: "executable",
             argv: ["bash"],
             stdin: "pwd",
             cwd: "/",
@@ -209,7 +201,6 @@ Number 3
       echo "Line 3"
     `;
         const result = await runProcess({
-            mode: "executable",
             argv: ["bash"],
             stdin: stdin,
         });

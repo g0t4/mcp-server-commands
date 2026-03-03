@@ -15,9 +15,8 @@ import { promisify } from "util";
 describe("runProcess - validating argument parsing/validation and basic success/failure outputs", () => {
     // FYI always_log uses console.error (ignore it, or use test.only... do not remove the logging)
 
-    describe("when mode=shell+command_line is successful and using STDIN", () => {
+    describe("when shell mode (command_line) is successful and using STDIN", () => {
         const request = runProcess({
-            mode: "shell",
             command_line: "cat",
             stdin: "Hello World",
         });
@@ -50,9 +49,8 @@ describe("runProcess - validating argument parsing/validation and basic success/
         });
     });
 
-    describe("when mode=executable+argv is successful", () => {
+    describe("when executable mode (argv) is successful", () => {
         const request = runProcess({
-            mode: "executable",
             argv: ["cat"],
             stdin: "Hello World",
         });
@@ -84,7 +82,6 @@ describe("runProcess - validating argument parsing/validation and basic success/
 
     test("should change working directory based on workdir arg", async () => {
         const pwd = await runProcess({
-            mode: "shell",
             command_line: "pwd",
         });
         // console.log(pwd);
@@ -108,7 +105,6 @@ describe("runProcess - validating argument parsing/validation and basic success/
 
         // * test setting CWD to /
         const cwd = await runProcess({
-            mode: "shell",
             command_line: "pwd",
             cwd: "/",
         });
@@ -131,9 +127,8 @@ describe("runProcess - validating argument parsing/validation and basic success/
 
     describe("failures set isError and explain why", () => {
         describe("nonexistentcommand (failure in the command position)", () => {
-            test("shell+command_line", async () => {
+            test("shell mode (command_line)", async () => {
                 const result = await runProcess({
-                    mode: "shell",
                     command_line: "nonexistentcommand",
                 });
                 // console.log(result);
@@ -167,10 +162,10 @@ describe("runProcess - validating argument parsing/validation and basic success/
                 ]);
             });
 
-            test("executable+argv", async () => {
+            test("executable mode (argv)", async () => {
                 // * error is from spawn (not shell)
-                //   thus 'error' event returns this one 
-                // * not the same as with shell+command_line above
+                //   thus 'error' event returns this one
+                // * not the same as shell mode above
                 // ON_ERROR {
                 //   stdout: '',
                 //   stderr: '',
@@ -182,7 +177,6 @@ describe("runProcess - validating argument parsing/validation and basic success/
                 // }
 
                 const result = await runProcess({
-                    mode: "executable",
                     argv: ["nonexistentcommand"],
                 });
                 // console.log(result);
@@ -205,11 +199,10 @@ describe("runProcess - validating argument parsing/validation and basic success/
         });
 
         describe("valid command, fails", () => {
-            test("shell+command_line returning non‑zero exit code", async () => {
+            test("shell mode (command_line) returning non‑zero exit code", async () => {
                 // tests failing command through the 'close' event pathway
                 //  yes this couples to implementation, so be it!
                 const result = await runProcess({
-                    mode: "shell",
                     command_line: "exit 42",
                 });
                 // console.log(result);
@@ -230,41 +223,17 @@ describe("runProcess - validating argument parsing/validation and basic success/
     describe("simple runProcess argument validation failures", () => {
         const scenarios = [
             {
-                name: "missing mode",
+                name: "neither command_line nor argv provided",
                 args: {},
                 expectedMessage:
-                    "Invalid mode 'undefined'. Allowed values are 'shell' or 'executable'."
+                    "Either 'command_line' (string) or 'argv' (array) is required."
             },
             {
-                name: "invalid mode",
-                args: { mode: "unknown" },
+                name: "both command_line and argv provided",
+                args: { command_line: "echo hi", argv: ["date"] },
                 expectedMessage:
-                    "Invalid mode 'unknown'. Allowed values are 'shell' or 'executable'."
+                    "Cannot pass both 'command_line' and 'argv'. Use one or the other."
             },
-            {
-                name: "shell mode without command_line",
-                args: { mode: "shell" },
-                expectedMessage:
-                    "Mode 'shell' requires a non‑empty 'command_line' parameter."
-            },
-            {
-                name: "shell mode with argv (forbidden)",
-                args: { mode: "shell", argv: ["date"], command_line: "echo hi" },
-                expectedMessage:
-                    "Mode 'shell' does not accept an 'argv' parameter."
-            },
-            {
-                name: "executable mode without argv",
-                args: { mode: "executable" },
-                expectedMessage:
-                    "Mode 'executable' requires a non‑empty 'argv' array."
-            },
-            {
-                name: "executable mode with command_line (forbidden)",
-                args: { mode: "executable", argv: ["date"], command_line: "echo hi" },
-                expectedMessage:
-                    "Mode 'executable' does not accept a 'command_line' parameter."
-            }
         ];
 
         test.each(scenarios)("$name", async ({ args, expectedMessage }) => {
@@ -286,7 +255,6 @@ describe("runProcess - signal handling", () => {
 
     test("should set isError and include SIGNAL when aborted by timeout", async () => {
         const result = await runProcess({
-            mode: "executable",
             argv: ["sleep", "10"], // long enough to be killed by the timeout
             timeout_ms: 100,      // 0.1 s timeout forces abort w/ minimal delay
         });
@@ -308,10 +276,8 @@ describe("runProcess - signal handling", () => {
             const runPromise = runProcess({
 
                 // PRN also test for shell mode?
-                // mode: "shell"
                 // command_line: "sleep 10.5",
 
-                mode: 'executable',
                 argv: ['sleep', '10.5'],
                 // FYI 10.5 is "odd" number so it's less likely to kill smth important :)
                 // PRN I could find this otherwise to avoid killing smth else  

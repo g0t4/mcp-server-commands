@@ -1,14 +1,13 @@
-## `runProcess` renaming/redesign
+## `runProcess` tool
 
-Recently I renamed the tool to `runProcess` to better reflect that you can run more than just shell commands with it. There are two explicit modes now:
-1. `mode=executable` where you pass `argv` with `argv[0]` representing the `executable` file and then the rest of the array contains args to it.
-2. `mode=shell` where you pass `command_line` (just like typing into `bash`/`fish`/`pwsh`/etc) which will use your system's default shell.
+The `runProcess` tool runs processes on the host machine. There are two mutually exclusive ways to invoke it:
 
-I hate APIs that make ambiguous if you're executing something via a shell, or not. I hate it being a toggle b/c there's way more to running a shell command vs exec than just flipping a switch. So I made that explicit in the new tool's parameters
+1. **`command_line`** (string) — Executed via the system's default shell (just like typing into `bash`/`fish`/`pwsh`/etc). Shell features like pipes, redirects, and variable expansion all work.
+2. **`argv`** (string array) — Direct executable invocation. `argv[0]` is the executable, the rest are arguments. No shell interpretation.
+
+You cannot pass both. The tool infers whether to use a shell from which parameter you provide.
 
 If you want your model to use specific shell(s) on a system, I would list them in your system prompt. Or, maybe in your tool instructions, though models tend to pay better attention to examples in a system prompt.
-
-I've used this new design with `gptoss-120b` extensively and it went off without a hitch, no issues switching as the model doesn't care about names nor even the redesigned `mode` part, it all seems to "make sense" to gptoss. 
 
 Let me know if you encounter problems!
 
