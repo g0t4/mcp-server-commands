@@ -59,6 +59,10 @@ For development with auto-rebuild:
 npm run watch
 ```
 
+## Hosted deployment
+
+A hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/g0t4-mcp-server-commands).
+
 ## Installation
 
 To use with Claude Desktop, add the server config:
