@@ -24,8 +24,6 @@ export function verbose_log(message: string, data?: any) {
     }
     // inspector, catches these logs and shows them on left hand side of screen (sidebar)
 
-    // TODO add verbose parameter (CLI arg?)
-
     // IF I wanted to log via MCP client logs (not sure what those are/do):
     //  I do not see inspector catching these logs :(, there is a server notifications section and it remains empty
     //server.sendLoggingMessage({

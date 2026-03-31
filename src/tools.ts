@@ -75,7 +75,9 @@ export function registerTools(server: Server) {
             verbose_log("INFO: ToolRequest", request);
             switch (request.params.name) {
                 case "run_process": {
-                    return await runProcess(request.params.arguments);
+                    const result = await runProcess(request.params.arguments);
+                    verbose_log("INFO: ToolResponse", result);
+                    return result;
                 }
                 default:
                     throw new Error("Unknown tool");
