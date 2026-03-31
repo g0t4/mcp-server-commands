@@ -86,7 +86,7 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
             isError: true,
             content: messagesFor(error as SpawnFailure),
         };
-        // TODO likely breaking STDIO based clients (especially ones that aren't resilient :)... ), because it was using console.error() ... now this uses a log file... still concerned that failure here could block real reason a command failed
+        // TODO try catch inside always_log so log fail doesn't block returning error response
         always_log("WARN: run_process failed", error);
         return response;
     }
