@@ -76,6 +76,7 @@ export function registerTools(server: Server) {
             switch (request.params.name) {
                 case "run_process": {
                     const result = await runProcess(request.params.arguments);
+                    // FYI logging this response is INVALUABLE! found a problem with my neovim MCP STDIO client!
                     verbose_log("INFO: ToolResponse", result);
                     return result;
                 }
