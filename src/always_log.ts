@@ -1,9 +1,11 @@
+import fs from 'fs';
 let verbose = false;
 // check CLI args:
 if (process.argv.includes("--verbose")) {
     verbose = true;
 }
 
+always_log("INFO: starting mcp-server-commands");
 if (verbose) {
     always_log("INFO: verbose logging enabled");
 }
@@ -48,10 +50,13 @@ export function always_log(message: string, data?: any) {
     if (isJest) {
         return;
     }
-    if (data) {
-        console.error(message + ": " + JSON.stringify(data));
-    } else {
-        console.error(message);
-    }
+    // TODO review what I want logged
+    const timestamp = new Date().toISOString();
+    const logMessage = `[${timestamp}] ${message}${data ? ": " + JSON.stringify(data) : ""}`;
+    const shareDir= process.env.HOME + "/.local/share/mcp-server-commands/";
+    const logFile = shareDir + "/commands.log";
+    fs.mkdirSync(shareDir, { recursive: true });
+    fs.appendFileSync(logFile, logMessage + "\n");
 }
+
 
