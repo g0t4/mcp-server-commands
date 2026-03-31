@@ -9,7 +9,7 @@ import { verbose_log } from "./always_log.js";
 import { runProcess } from "./run_process.js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 
-export function reisterTools(server: Server) {
+export function registerTools(server: Server) {
     server.setRequestHandler(ListToolsRequestSchema, async (): Promise<ListToolsResult> => {
         verbose_log("INFO: ListTools");
         return {
