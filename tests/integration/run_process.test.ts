@@ -13,7 +13,6 @@ import { promisify } from "util";
 //      feels richer way to explain problem with a command
 
 describe("runProcess - validating argument parsing/validation and basic success/failure outputs", () => {
-    // FYI always_log uses console.error (ignore it, or use test.only... do not remove the logging)
 
     describe("when shell mode (command_line) is successful and using STDIN", () => {
         const request = runProcess({
