@@ -57,6 +57,8 @@ export function always_log(message: string, data?: any) {
     const logFile = shareDir + "/commands.log";
     fs.mkdirSync(shareDir, { recursive: true });
     fs.appendFileSync(logFile, logMessage + "\n");
+    // TODO any hail mary if this logging fails? just use console.error then?
+    //   else still can get seemingly hung tool calls
 }
 
 
