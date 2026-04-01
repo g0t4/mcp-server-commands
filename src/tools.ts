@@ -17,6 +17,8 @@ export function registerTools(server: Server) {
             // https://modelcontextprotocol.io/docs/learn/architecture#understanding-the-tool-execution-request // tool request/response
             // typescript SDK docs:
             //   servers: https://github.com/modelcontextprotocol/typescript-sdk/blob/main/docs/server.md
+            //   TODO upgrade to newer version AND check if STDIO delimiter style has changed to include content-length "header" before responses? 
+            //     OR is there an opt-in for this style vs what I get with my simple nvim uv.spawn nvim client... where \n terminates/delimits each message
             tools: [
                 {
                     // TODO RUN_PROCESS MIGRATION! provide examples in system message, that way it is very clear how to use these!
