@@ -31,7 +31,7 @@ describe("test explicit shell use via executable mode (argv)", () => {
     test("should handle command errors properly in bash", async () => {
         const result = await runProcess({
             argv: ["bash"],
-            stdin: "nonexistentcommand",
+            stdin: "othernonexistentcommand",
         });
 
         expect(result.isError).toBe(true);
@@ -44,7 +44,7 @@ describe("test explicit shell use via executable mode (argv)", () => {
             {
                 name: "STDERR",
                 type: "text",
-                text: "bash: line 1: nonexistentcommand: command not found\n",
+                text: "bash: line 1: othernonexistentcommand: command not found\n",
             },
         ]);
 

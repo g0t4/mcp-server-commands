@@ -111,17 +111,17 @@ describe("runProcess - validating argument parsing/validation and basic success/
     });
 
     describe("failures set isError and explain why", () => {
-        describe("nonexistentcommand (failure in the command position)", () => {
+        describe("shell_nonexistentcommand (failure in the command position)", () => {
             test("shell mode (command_line)", async () => {
                 const result = await runProcess({
-                    command_line: "nonexistentcommand",
+                    command_line: "shell_nonexistentcommand",
                 });
                 // console.log(result);
 
                 // * error is from shell, thus 'close' returns it
                 // ON_CLOSE {
                 //   stdout: '',
-                //   stderr: '/bin/sh: nonexistentcommand: command not found\n',
+                //   stderr: '/bin/sh: shell_nonexistentcommand: command not found\n',
                 //   code: 127,
                 //   signal: undefined
                 // }
@@ -140,9 +140,9 @@ describe("runProcess - validating argument parsing/validation and basic success/
                         name: expect.stringContaining("STDERR"),
                         // Different shells emit different messages, but all contain
                         // the command name and a “not found” phrase.
-                        text: expect.stringMatching(/nonexistentcommand.*not found/i),
+                        text: expect.stringMatching(/shell_nonexistentcommand.*not found/i),
                         // i.e. gh actions:
-                        //   /bin/sh: 1: nonexistentcommand: not found
+                        //   /bin/sh: 1: shell_nonexistentcommand: not found
                     }),
                 ]);
             });
@@ -156,13 +156,13 @@ describe("runProcess - validating argument parsing/validation and basic success/
                 //   stderr: '',
                 //   code: 'ENOENT',
                 //   signal: undefined,
-                //   message: 'spawn nonexistentcommand ENOENT',
+                //   message: 'spawn exec_nonexistentcommand ENOENT',
                 //   killed: undefined,
-                //   cmd: 'nonexistentcommand'
+                //   cmd: 'exec_nonexistentcommand'
                 // }
 
                 const result = await runProcess({
-                    argv: ["nonexistentcommand"],
+                    argv: ["exec_nonexistentcommand"],
                 });
                 // console.log(result);
 
@@ -176,7 +176,7 @@ describe("runProcess - validating argument parsing/validation and basic success/
                     {
                         name: "MESSAGE",
                         type: "text",
-                        text: expect.stringContaining("spawn nonexistentcommand ENOENT"),
+                        text: expect.stringContaining("spawn exec_nonexistentcommand ENOENT"),
                     },
                 ]);
 
