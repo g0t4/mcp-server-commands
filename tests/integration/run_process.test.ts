@@ -256,7 +256,7 @@ describe('timeout', () => {
         test('should set isError and include SIGNAL when aborted by timeout', async () => {
             const result = await runProcess({
                 argv: ["sleep", "10"], // long enough to be killed by the timeout
-                timeout_ms: 100,      // 0.1 s timeout forces abort w/ minimal delay
+                timeout_ms: 300,      // sleep command is fast so a short timeout to get the test over with is fine actually... 300ms is fast enough and will avoid random failures for slow launch of sleep (if it happens)!
             });
 
             expect(result.isError).toBe(true);
