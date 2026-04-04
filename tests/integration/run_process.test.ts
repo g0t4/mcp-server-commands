@@ -270,6 +270,12 @@ describe('timeout', () => {
         });
     });
 
+    // FYI `read foo` does not hang because STDIN is not a TTY and therefore read fails with RC=1 immediately
+    //   IOTW it is not a good test of hanging/timeout!
+    //   proof: `read foo </dev/null` and it will return RC=1
+    //   same thing happens when STDIN == "ignore" which is what is set in spawn options when not passing STDIN arg
+
+
 });
 
 describe("runProcess - signal handling", () => {
