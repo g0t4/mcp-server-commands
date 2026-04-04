@@ -319,6 +319,15 @@ describe('timeout', () => {
             });
 
             expect(result.isError).toBe(true);
+
+            // [1.025s] SIGNAL_EXIT {
+            //   stdout: '',
+            //   stderr: 'Vim: Warning: Output is not to a terminal\n' +
+            //     'Vim: Warning: Input is not from a terminal\n',
+            //   code: undefined,
+            //   signal: 'SIGTERM'
+            // }
+
             expect(result.content).toEqual([
                 expect.objectContaining({
                     name: "SIGNAL",
@@ -326,7 +335,11 @@ describe('timeout', () => {
                 }),
                 expect.objectContaining({
                     name: "STDERR",
-                    text: expect.stringContaining("Vim: Warning: Output is not to a terminal"),
+                    // FYI \s == whitespace (including \n)
+                    //     \S == not whitespace (everything else)
+                    //     * means basically any lines in between (or none)
+                    text: expect.stringMatching(/Vim: Warning: Output is not to a terminal[\s\S]*Vim: Warning: Input is not from a terminal/),
+
                 })
             ]);
         });
