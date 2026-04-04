@@ -51,21 +51,17 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
             const result = await spawn_wrapped(command_line, [], stdin, spawn_options);
             return resultFor(result);
         }
-        else if (isExecutableMode) {
-            // executable mode — argv[0] is spawned directly, no shell interpretation
-            spawn_options.shell = false
 
-            const argv = args?.argv as string[];
-            const command = argv[0]
-            const commandArgs = argv.slice(1);
+        // executable mode — argv[0] is spawned directly, no shell interpretation
+        spawn_options.shell = false
 
-            const result = await spawn_wrapped(command, commandArgs, stdin, spawn_options);
-            return resultFor(result);
-        }
+        const argv = args?.argv as string[];
+        const command = argv[0]
+        const commandArgs = argv.slice(1);
 
+        const result = await spawn_wrapped(command, commandArgs, stdin, spawn_options);
+        return resultFor(result);
         // TODO... fish shell workaround (see exec-utils.ts) - ADD or FIX via a TEST FIRST
-
-        return errorResult("Unexpected execution path in runProcess, should not be possible");
     } catch (error) {
         // TODO check if not SpawnFailure => i.e. test aborting/killing
         const response = {
