@@ -308,8 +308,22 @@ describe('timeout', () => {
     // });
     //
 
-    describe('spawn options timeout_ms is effectively ignored for this "hung?" process', () => {
+    describe('spawn options timeout_ms is effectively ignored for this "hung" process', () => {
         test.only('should be killed and not be a test level timeout', async () => {
+
+            // * here are the messages that indicate test level timeout:
+            //
+            //     thrown: "Exceeded timeout of 5000 ms for a test.
+            //     Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+            //
+            //       311 |     describe('spawn options timeout_ms is effectively ignored for this "hung?" process', () => {
+            //     > 312 |         test.only('should be killed and not be a test level timeout', async () => {
+            //           |              ^
+            //       313 |             const result = await runProcess({
+            //
+            // A worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.
+            //
+
             const result = await runProcess({
                 // candidates:
                 //  git commit --amend ... this works across mac/arch/ubuntu! and if the test is going to timeout then the commit is never actually modified (unless the test fails to fail ;)... and succeeds in amending somehow)
