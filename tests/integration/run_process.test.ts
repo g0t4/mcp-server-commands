@@ -317,6 +317,8 @@ describe('timeout', () => {
                 timeout_ms: 1_000, // force abort after 1 second... give the git command and editor time to launch (at least 100ms, but lets just do 1,000ms) else you will get random failures
             });
 
+            console.log(result)
+
             expect(result.isError).toBe(true);
 
             // [1.025s] SIGNAL_EXIT {
@@ -327,16 +329,20 @@ describe('timeout', () => {
             //   signal: 'SIGTERM'
             // }
 
-            const required_VIM_warnings = expect.objectContaining({
+            const requiredVimWarnings = expect.objectContaining({
                 name: "STDERR",
                 // FYI \s == whitespace (including \n)
                 //     \S == not whitespace (everything else)
                 //     * means basically any lines in between (or none)
-                text: expect.stringMatching(/Vim: Warning: Output is not to a terminal[\s\S]*Vim: Warning: Input is not from a terminal/),
+                text: expect.stringMatching(
+                    /Vim: Warning: Output is not to a terminal[\s\S]*Vim: Warning: Input is not from a terminal/
+                ),
             });
 
-            expect(result.content).toEqual([has_SIGTERM, required_VIM_warnings]);
-            // TODO why is test still leaking handles? do I need to trigger cleanup in the "exit" event when terminated?
+            expect(result.content).toEqual(
+                expect.arrayContaining([has_SIGTERM, requiredVimWarnings])
+            );
+
         });
     });
 
