@@ -1,8 +1,12 @@
 import fs from 'fs';
-export let is_verbose = false; 
-// check CLI args:
+
+export let is_verbose = false;
 if (process.argv.includes("--verbose")) {
     is_verbose = true;
+}
+const isJest = typeof process !== 'undefined' && !!process.env.JEST_WORKER_ID;
+if (isJest) {
+    is_verbose = true; // comment out to disable verbose logging in JEST test runner
 }
 
 always_log("INFO: starting mcp-server-commands");
@@ -37,7 +41,6 @@ export function always_log(message: string, data?: any) {
     //      },
     //   });
 
-    const isJest = typeof process !== 'undefined' && !!process.env.JEST_WORKER_ID;
     if (isJest) {
         // * JEST => log to console so I can see in test runner output
         console.log(`${message}${data ? ": " + JSON.stringify(data) : ""}`);
