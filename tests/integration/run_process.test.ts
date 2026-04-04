@@ -277,12 +277,7 @@ describe('timeout', () => {
 
     // describe('hang due to `vim` command', () => {
     //     // FYI this could be a brittle test (i.e. diff STDOUT/ERR messages based on OS/vim version/etc... so you can loosen the criteria... really only need to check for SIGNAL in result 
-    //     // yup... on ubuntu only this test times out overall... whereas on mac and arch... vim is timed out by my spawn options timeout_ms
-    //     // TODO find a different test case that acts consistently across platforms... I want one that has the ubuntu like behavior of vim... to basically ignore my timeout_ms spawn options (not ignore, but result in it not triggering timeout)...
-    //     //    TODO read might actually work for this consistently...
-    //     //    TODO then I imagine I need an overall timer that runs separate of spawned process, that can kill when past the timeout_ms and if process is still running...
-    //     //       like maybe timeout_ms*1.10 (10% past, maybe 20%... figure that out)
-    //     //       TODO AND/OR figure out why timeout isn't respected in some cases and see if I need to fix my usage of spawn
+    //     // yup... on ubuntu only this test times out overall (seemingly ignores spawn options timeout_ms)... whereas on mac and arch, vim is timed out by my spawn options timeout_ms
     //     test.only('should set isError and include SIGNAL when aborted by timeout', async () => {
     //         const result = await runProcess({
     //             command_line: "vim",
@@ -309,7 +304,7 @@ describe('timeout', () => {
     //
 
     describe('spawn options timeout_ms is effectively ignored for this "hung" process', () => {
-        test.only('should be killed and not be a test level timeout', async () => {
+        test('should be killed and not be a test level timeout', async () => {
 
             // * here are the messages that indicate test level timeout:
             //
