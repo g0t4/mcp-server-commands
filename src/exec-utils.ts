@@ -82,29 +82,9 @@ export async function spawn_wrapped(
         // child.on("disconnect", () => logWithTime("DISCONNECT")); // subprocess.disconnect() called by either parent/child process  
         child.on("exit", (code: number | null, signal: NodeJS.Signals | null) => {
             // child process streams MAY still be open when EXIT is emitted (use close if need to ensure they're closed)
-            // in my testing, CLOSE is not called after EXIT when a timeout occurs (due to spawn options timeout_ms)
-            // FYI IIUC from docs, if CLOSE is emitted, it is always after EXIT... but IIUC EXIT alone might be emitted and never a CLOSE
-            // PRN util.convertProcessSignalToExitCode() to go from signal => code
+            // "close" will come after "exit" once process is terminated + streams are closed
+            // so for now use "close" to determine if process was terminated too, that way you can access STDOUT/STDERR reliably for returning full output to agent
             logWithTime("EXIT", { code, signal });
-
-            // OK I am going out on a limb here, I think I only care to react here on EXIT... if signal is set (due to termination)
-            // if process exits normally then CLOSE should always be called.. which is the safe time to get stdout/stderr
-            // but if terminated due to timeout, IIUC in my testing, CLOSE is never called then (or not in all cases)
-
-            // const not_terminated = signal === null;
-            // if (not_terminated) {
-            //     // TODO also check code is null/undefined?
-            //     // can I have both signal and code set? I don't think so... IIAC code wins if process already exited when smth tries to terminate it (signal) 
-            //     return;
-            // }
-            // const result: SpawnFailure = {
-            //     stdout,
-            //     stderr,
-            //     code: code ?? undefined, // s/b always undefined here
-            //     signal: signal ?? undefined,
-            // };
-            // logWithTime("SIGNAL_EXIT", result);
-            // reject(result);
         });
         // child.on("message", (message: Serializable, sendHandle: SendHandle) => {
         //     // when child uses process.send() => not applicable in my use case
