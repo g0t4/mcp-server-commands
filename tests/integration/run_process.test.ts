@@ -369,10 +369,8 @@ describe("runProcess - signal handling", () => {
 
             console.log("post: initial runProcess");
 
-            // * pgrep for the process
-            const { stdout } = await promisify(exec)('pgrep -f "sleep 10.5" | head -1');
-            const pid = Number(stdout.trim());
-            // FYI if you have issues w/ PID and kill here... consider passing child.pid out of spawn_wrapped
+            // Use the pid returned directly from the spawn promise
+            const pid = runPromise.pid!;
             console.log(`pid ${pid}`);
             expect(pid).toBeGreaterThan(0);
             expect(pid).not.toBeNaN();
