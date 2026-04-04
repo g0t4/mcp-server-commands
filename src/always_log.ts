@@ -1,5 +1,6 @@
 import fs from 'fs';
-export let is_verbose = false;
+// export let is_verbose = false; 
+export let is_verbose = true;  // override in testing to force verbose
 // check CLI args:
 if (process.argv.includes("--verbose")) {
     is_verbose = true;
