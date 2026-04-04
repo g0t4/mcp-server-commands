@@ -1,7 +1,7 @@
 import { SpawnOptions } from "node:child_process";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { spawn_wrapped, SpawnResult, SpawnFailure } from "./exec-utils.js";
-import { always_log } from "./always_log.js";
+import { always_log } from "./logging.js";
 import { errorResult, messagesFor, resultFor } from "./messages.js";
 import { ObjectEncodingOptions } from "node:fs";
 

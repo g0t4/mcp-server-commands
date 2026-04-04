@@ -4,7 +4,7 @@ import {
     ListPromptsRequestSchema,
     PromptMessage,
 } from "@modelcontextprotocol/sdk/types.js";
-import { verbose_log } from "./always_log.js";
+import { verbose_log } from "./logging.js";
 
 import { exec } from "node:child_process";
 import { promisify } from "node:util";

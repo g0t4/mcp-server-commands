@@ -5,7 +5,7 @@ import {
     ListToolsRequestSchema,
     ListToolsResult
 } from "@modelcontextprotocol/sdk/types.js";
-import { verbose_log } from "./always_log.js";
+import { verbose_log } from "./logging.js";
 import { runProcess } from "./run_process.js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 

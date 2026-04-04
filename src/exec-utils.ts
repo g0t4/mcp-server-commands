@@ -2,7 +2,7 @@
 import { SendHandle, Serializable, spawn, SpawnOptions } from "child_process";
 import { ObjectEncodingOptions } from "fs";
 import { performance } from "perf_hooks";
-import { is_verbose, verbose_log } from "./always_log.js";
+import { is_verbose, verbose_log } from "./logging.js";
 
 export type SpawnResult = {
     // this is basically ExecException except I want my own type for it...
