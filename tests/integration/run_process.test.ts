@@ -327,18 +327,15 @@ describe('timeout', () => {
             //   signal: 'SIGTERM'
             // }
 
+            const required_VIM_warnings = expect.objectContaining({
+                name: "STDERR",
+                // FYI \s == whitespace (including \n)
+                //     \S == not whitespace (everything else)
+                //     * means basically any lines in between (or none)
+                text: expect.stringMatching(/Vim: Warning: Output is not to a terminal[\s\S]*Vim: Warning: Input is not from a terminal/),
+            });
 
-            expect(result.content).toEqual([
-                has_SIGTERM,
-                expect.objectContaining({
-                    name: "STDERR",
-                    // FYI \s == whitespace (including \n)
-                    //     \S == not whitespace (everything else)
-                    //     * means basically any lines in between (or none)
-                    text: expect.stringMatching(/Vim: Warning: Output is not to a terminal[\s\S]*Vim: Warning: Input is not from a terminal/),
-
-                })
-            ]);
+            expect(result.content).toEqual([has_SIGTERM, required_VIM_warnings]);
         });
     });
 
