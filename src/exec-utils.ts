@@ -79,19 +79,21 @@ export async function spawn_wrapped(
             // OK I am going out on a limb here, I think I only care to react here on EXIT... if signal is set (due to termination)
             // if process exits normally then CLOSE should always be called.. which is the safe time to get stdout/stderr
             // but if terminated due to timeout, IIUC in my testing, CLOSE is never called then (or not in all cases)
-            if (signal !== null) {
+
+            const not_terminated = signal === null;
+            if (not_terminated) {
                 // TODO also check code is null/undefined?
-                //  can I have both signal and code set? I don't think so... IIAC code wins if process already exited when smth tries to terminate it (signal) 
-                logWithTime("SIGNAL_EXIT", { signal });
-                const result: SpawnFailure = {
-                    stdout,
-                    stderr,
-                    code: code ?? undefined, // s/b always undefined here
-                    signal: signal ?? undefined,
-                };
-                reject(result);
+                // can I have both signal and code set? I don't think so... IIAC code wins if process already exited when smth tries to terminate it (signal) 
                 return;
             }
+            logWithTime("SIGNAL_EXIT", { signal });
+            const result: SpawnFailure = {
+                stdout,
+                stderr,
+                code: code ?? undefined, // s/b always undefined here
+                signal: signal ?? undefined,
+            };
+            reject(result);
         });
         // child.on("message", (message: Serializable, sendHandle: SendHandle) => {
         //     // when child uses process.send() => not applicable in my use case
