@@ -60,8 +60,12 @@ export async function spawn_wrapped(
         }
 
         child.on("disconnect", () => console.log("DISCONNECT"));
-        child.on("exit", (code: number | null, signal: NodeJS.Signals | null) => console.log("EXIT"));
-        child.on("message", (message: Serializable, sendHandle: SendHandle) => console.log("MESSAGE"));
+        child.on("exit", (code: number | null, signal: NodeJS.Signals | null) => {
+            console.log("EXIT", { code, signal });
+        });
+        child.on("message", (message: Serializable, sendHandle: SendHandle) => {
+            console.log("MESSAGE", { message, sendHandle });
+        });
         child.on("spawn", () => console.log("SPAWN"));
 
         let errored = false;
