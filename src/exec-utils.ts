@@ -19,7 +19,6 @@ export type SpawnFailure = SpawnResult & {
     // ONLY on errors:
     message?: string; // FYI redundant b/c message ~= `Command failed: ${cmd}\n${stderr}\n`
     killed?: boolean;
-    cmd?: string; // FYI redundant
 };
 
 export async function spawn_wrapped(
@@ -80,7 +79,19 @@ export async function spawn_wrapped(
             // OK I am going out on a limb here, I think I only care to react here on EXIT... if signal is set (due to termination)
             // if process exits normally then CLOSE should always be called.. which is the safe time to get stdout/stderr
             // but if terminated due to timeout, IIUC in my testing, CLOSE is never called then (or not in all cases)
-
+            if (signal !== null) {
+                // TODO also check code is null/undefined?
+                //  can I have both signal and code set? I don't think so... IIAC code wins if process already exited when smth tries to terminate it (signal) 
+                logWithTime("SIGNAL_EXIT", { signal });
+                const result: SpawnFailure = {
+                    stdout,
+                    stderr,
+                    code: code ?? undefined, // s/b always undefined here
+                    signal: signal ?? undefined,
+                };
+                reject(result);
+                return;
+            }
         });
         // child.on("message", (message: Serializable, sendHandle: SendHandle) => {
         //     // when child uses process.send() => not applicable in my use case
@@ -100,16 +111,15 @@ export async function spawn_wrapped(
             // error running process
             // IIUC not just b/c of command failed w/ non-zero exit code
             const result: SpawnFailure = {
-                stdout: stdout,
-                stderr: stderr,
+                stdout,
+                stderr,
                 //
                 // one of these will always be non-null
                 code: (err as any).code, // set if process exited, else null
                 signal: (err as any).signal, // set if process was terminated by signal, else null
                 //
                 message: err.message,
-                // killed: (err as any).killed,
-                cmd: command, // TODO does error have .cmd on it? is it the composite result of processing in spawn too? (or same as I passed)
+                // ? killed: (err as any).killed
             };
             logWithTime("ERROR_RESULT", result);
             errored = true;
@@ -129,10 +139,12 @@ export async function spawn_wrapped(
             //   signal if process killed
             // FYI close does not mean code==0
             const result: SpawnResult = {
-                stdout: stdout,
-                stderr: stderr,
+                stdout,
+                stderr,
+                //
                 code: code ?? undefined,
                 signal: signal ?? undefined,
+                //
             };
             logWithTime("CLOSE_RESULT", result);
             // TODO should code => resolve() and signal => reject()
