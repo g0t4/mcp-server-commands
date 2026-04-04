@@ -49,8 +49,7 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
             spawn_options.shell = true
 
             const command_line = String(args?.command_line)
-            const result = await spawn_wrapped(command_line, [], stdin, spawn_options);
-            return result;
+            return await spawn_wrapped(command_line, [], stdin, spawn_options);
         }
 
         // executable mode — argv[0] is spawned directly, no shell interpretation
@@ -59,9 +58,7 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
         const argv = args?.argv as string[];
         const command = argv[0]
         const commandArgs = argv.slice(1);
-
-        const result = await spawn_wrapped(command, commandArgs, stdin, spawn_options);
-        return result;
+        return await spawn_wrapped(command, commandArgs, stdin, spawn_options);
     } catch (error) {
         // TODO check if not SpawnFailure => i.e. test aborting/killing
         const response = {
