@@ -21,10 +21,10 @@ jobs:
                   node-version: 22 
                   cache: "npm"
 
-            - name: install shells
+            - name: install shells and vim
               run: |
                   sudo apt-get update
-                  sudo apt-get install -y zsh fish ripgrep
+                  sudo apt-get install -y zsh fish ripgrep vim
 
             - name: Install dependencies
               run: npm ci
