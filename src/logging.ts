@@ -6,7 +6,7 @@ if (process.argv.includes("--verbose")) {
 }
 const isJest = typeof process !== 'undefined' && !!process.env.JEST_WORKER_ID;
 if (isJest) {
-    is_verbose = true; // comment out to disable verbose logging in JEST test runner
+    // is_verbose = true; // comment out to disable verbose logging in JEST test runner
 }
 
 always_log("INFO: starting mcp-server-commands");
