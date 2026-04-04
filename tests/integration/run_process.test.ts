@@ -250,7 +250,7 @@ describe("runProcess - validating argument parsing/validation and basic success/
     // TODO! other params I want to add with new STDIO approach?
 });
 
-describe("runProcess - signal handling", () => {
+describe('timeout', () => {
 
     test("should set isError and include SIGNAL when aborted by timeout", async () => {
         const result = await runProcess({
@@ -267,6 +267,11 @@ describe("runProcess - signal handling", () => {
             },
         ]);
     });
+
+
+});
+
+describe("runProcess - signal handling", () => {
 
     describe('runProcess kill handling', () => {
         test('should report killed when the child process is terminated externally', async () => {
