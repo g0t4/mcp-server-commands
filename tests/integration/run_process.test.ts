@@ -252,22 +252,23 @@ describe("runProcess - validating argument parsing/validation and basic success/
 
 describe('timeout', () => {
 
-    test("should set isError and include SIGNAL when aborted by timeout", async () => {
-        const result = await runProcess({
-            argv: ["sleep", "10"], // long enough to be killed by the timeout
-            timeout_ms: 100,      // 0.1 s timeout forces abort w/ minimal delay
+    describe('hang due to sleep command', () => {
+        test('should set isError and include SIGNAL when aborted by timeout', async () => {
+            const result = await runProcess({
+                argv: ["sleep", "10"], // long enough to be killed by the timeout
+                timeout_ms: 100,      // 0.1 s timeout forces abort w/ minimal delay
+            });
+
+            expect(result.isError).toBe(true);
+            expect(result.content).toEqual([
+                {
+                    name: "SIGNAL",
+                    type: "text",
+                    text: expect.stringMatching(/SIGTERM/i),
+                },
+            ]);
         });
-
-        expect(result.isError).toBe(true);
-        expect(result.content).toEqual([
-            {
-                name: "SIGNAL",
-                type: "text",
-                text: expect.stringMatching(/SIGTERM/i),
-            },
-        ]);
     });
-
 
 });
 
