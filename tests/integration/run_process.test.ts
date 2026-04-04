@@ -252,7 +252,7 @@ describe("runProcess - validating argument parsing/validation and basic success/
 
 describe('timeout', () => {
 
-    describe('hang due to sleep command', () => {
+    describe('hang due to `sleep` command', () => {
         test('should set isError and include SIGNAL when aborted by timeout', async () => {
             const result = await runProcess({
                 argv: ["sleep", "10"], // long enough to be killed by the timeout
@@ -274,6 +274,33 @@ describe('timeout', () => {
     //   IOTW it is not a good test of hanging/timeout!
     //   proof: `read foo </dev/null` and it will return RC=1
     //   same thing happens when STDIN == "ignore" which is what is set in spawn options when not passing STDIN arg
+
+    describe('hang due to `vim` command', () => {
+        // FYI this could be a brittle test (i.e. diff STDOUT/ERR messages based on OS/vim version/etc... so you can loosen the criteria... really only need to check for SIGNAL in result 
+        test.only('should set isError and include SIGNAL when aborted by timeout', async () => {
+            const result = await runProcess({
+                command_line: "vim",
+                timeout_ms: 1000,      // 0.1 s timeout forces abort w/ minimal delay
+            });
+
+            expect(result.isError).toBe(true);
+            expect(result.content).toEqual([
+                expect.objectContaining({
+                    name: "SIGNAL",
+                    text: expect.stringMatching(/SIGTERM/i),
+                }),
+                expect.objectContaining({
+                    name: "STDOUT",
+                    text: expect.stringContaining("Caught deadly signal TERM"),
+                }),
+                expect.objectContaining({
+                    name: "STDERR",
+                    text: expect.stringContaining("Vim: Warning: Output is not to a terminal"),
+                })
+            ]);
+        });
+    });
+
 
 
 });
