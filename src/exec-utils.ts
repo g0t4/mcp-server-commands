@@ -42,31 +42,18 @@ export async function spawn_wrapped(
             // 'ignore' attaches /dev/null
             // order: [STDIN, STDOUT, STDERR]
             options.stdio = ['ignore', 'pipe', 'pipe'];
-            // ? I wonder if this was related to fishWorkaround issue w/ STDIN (see commit history)... I was using base64 encoding to pass STDIN
         }
 
-        // TODO consider detached process group 
-        //   TODO + my own timeout management
-        //   AND thus stop using spawn options timeout 
-        //   OR is there a fix with spawn options timeout for my case?
-        //   basically I only see an issue with `git -c core.editor=vim commit --amend` test case... 
-        //   - clearly starting multiple child proceses of the child... 
-        //   - then, timeout isn't fully propagating to all of the children processes (before jest test level timeout, maybe never too)
-        //   - this is why I never saw "close" event b/c that comes after streams closed
-        //   - AND this is why "exit" appeared to be what I neeeded (for SIGTERM case only)... b/c it is a very early way to detect timeout... 
-        //     however, I need to not use "exit" for timeout signaling... and instead go back to just "close"
-        //     and make sure the timeout SIGTERM fully propagates after which "close" will fire and all will be well!
-        //     I do not want to leave zombies/leaked processes so this is worth getting right
-        //  - IIUC I should
-        //    - use detached (process group)
-        //    - stop using spawn_options.timeout (remove value from it)
-        //    - detect timeout myself
-        //    - kill PGID on timeout
-        //    - add tests to make sure close fires on complex process group examples (i.e. git+vim)
-        // TODO read a bit more and confirm this is what you want
-        //   FYI for now what you have works, issue is you might have some lingering processes until you address a real timeout mechanism (above)
-        //     but at least for now these cases won't result in indefinite hanging of tool call! (half way "fix")
-        // options.detached = true; // separate process group, can kill easier (must manage myself)
+        // -----------------------------------------------------------------
+        // Custom timeout handling and detached process group
+        // -----------------------------------------------------------------
+        // Extract any timeout passed via spawn options (set by runProcess) and
+        // remove it so the built‑in spawn timeout does not interfere.
+        const timeoutMs: number | undefined = (options as any).timeout;
+        delete (options as any).timeout;
+
+        // Use a detached child so we can kill the entire process group.
+        options.detached = true;
 
         const child = spawn(command, args, options);
         // PRN return pid to callers?
@@ -130,7 +117,41 @@ export async function spawn_wrapped(
             logWithTime("SPAWN")
         });
 
-        let errored = false;
+        // Custom settlement logic – resolve or reject only once and clear timeout.
+        let settled = false;
+        const settle = (result: any, isError: boolean) => {
+            if (settled) return;
+            settled = true;
+            if (timer) clearTimeout(timer);
+            if (isError) {
+                reject(result);
+            } else {
+                resolve(result);
+            }
+        };
+
+        // Timeout handling – kill the whole process group after the supplied timeout.
+        let timer: NodeJS.Timeout | null = null;
+        if (timeoutMs !== undefined) {
+            timer = setTimeout(() => {
+                if (process.platform !== "win32") {
+                    try { process.kill(-child.pid, "SIGTERM"); } catch (_) {}
+                } else {
+                    child.kill("SIGTERM");
+                }
+                const killTimeout = setTimeout(() => {
+                    if (process.platform !== "win32") {
+                        try { process.kill(-child.pid, "SIGKILL"); } catch (_) {}
+                    } else {
+                        child.kill("SIGKILL");
+                    }
+                }, 2000);
+                const clearKill = () => clearTimeout(killTimeout);
+                child.once("exit", clearKill);
+                child.once("close", clearKill);
+            }, timeoutMs);
+        }
+
         child.on("error", (err: Error) => {
             logWithTime("ERROR");
             // ChildProcess 'error' docs: https://nodejs.org/api/child_process.html#event-error
@@ -148,8 +169,7 @@ export async function spawn_wrapped(
                 // ? killed: (err as any).killed
             };
             logWithTime("ERROR_RESULT", result);
-            errored = true;
-            reject(result);
+            settle(result, true);
         });
 
         child.on("close", (code: number | null, signal: NodeJS.Signals | null) => {
@@ -157,9 +177,6 @@ export async function spawn_wrapped(
             // ChildProcess 'close' docs: https://nodejs.org/api/child_process.html#event-close
             //   'close' is after child process ends AND stdio streams are closed
             //   - after 'exit' or 'error'
-            //
-            // * do not resolve if 'error' already called (promise is already resolved)
-            if (errored) return;
 
             //   either code is set, or signal, but NOT BOTH
             //   signal if process killed
@@ -173,11 +190,7 @@ export async function spawn_wrapped(
                 //
             };
             logWithTime("CLOSE_RESULT", result);
-            // TODO should code => resolve() and signal => reject()
-            //  instead of right now I always resolve?
-            //  FYI might not matter much given any output that indicates a failure, the model would still see it
-            //   and reject vs resolve mostly maps to setting isError=true ... IIRC that's it so this isn't a big deal probably
-            resolve(result);
+            settle(result, false);
         });
     });
 }
