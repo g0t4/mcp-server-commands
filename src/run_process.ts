@@ -15,10 +15,12 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
     const isShellMode = Boolean(args?.command_line);
     const isExecutableMode = Array.isArray(args?.argv) && (args?.argv as unknown[]).length > 0;
 
-    if (isShellMode && isExecutableMode) {
+    const bothProvided = isShellMode && isExecutableMode;
+    if (bothProvided) {
         return errorResult("Cannot pass both 'command_line' and 'argv'. Use one or the other.");
     }
-    if (!isShellMode && !isExecutableMode) {
+    const noneProvided = !isShellMode && !isExecutableMode;
+    if (noneProvided) {
         return errorResult("Either 'command_line' (string) or 'argv' (array) is required.");
     }
 
