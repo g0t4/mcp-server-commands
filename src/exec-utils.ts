@@ -69,14 +69,24 @@ export async function spawn_wrapped(
             });
         }
 
-        child.on("disconnect", () => logWithTime("DISCONNECT"));
+        // child.on("disconnect", () => logWithTime("DISCONNECT")); // subprocess.disconnect() called by either parent/child process  
         child.on("exit", (code: number | null, signal: NodeJS.Signals | null) => {
+            // child process streams MAY still be open when EXIT is emitted (use close if need to ensure they're closed)
+            // in my testing, CLOSE is not called after EXIT when a timeout occurs (due to spawn options timeout_ms)
+            // FYI IIUC from docs, if CLOSE is emitted, it is always after EXIT... but IIUC EXIT alone might be emitted and never a CLOSE
             logWithTime("EXIT", { code, signal });
+            // PRN util.convertProcessSignalToExitCode() to go from signal => code
         });
-        child.on("message", (message: Serializable, sendHandle: SendHandle) => {
-            logWithTime("MESSAGE", { message, sendHandle });
+        // child.on("message", (message: Serializable, sendHandle: SendHandle) => {
+        //     // when child uses process.send() => not applicable in my use case
+        //     logWithTime("MESSAGE", { message, sendHandle });
+        // });
+        child.on("spawn", () => {
+            // emitted after child process starts successfully
+            // if child doesn't start, error emitted instead
+            // emitted BEFORE any data received via stdout/stderr
+            logWithTime("SPAWN")
         });
-        child.on("spawn", () => logWithTime("SPAWN"));
 
         let errored = false;
         child.on("error", (err: Error) => {
@@ -88,8 +98,9 @@ export async function spawn_wrapped(
                 stdout: stdout,
                 stderr: stderr,
                 //
-                code: (err as any).code,
-                signal: (err as any).signal,
+                // one of these will always be non-null
+                code: (err as any).code, // set if process exited, else null
+                signal: (err as any).signal, // set if process was terminated by signal, else null
                 //
                 message: err.message,
                 // killed: (err as any).killed,
