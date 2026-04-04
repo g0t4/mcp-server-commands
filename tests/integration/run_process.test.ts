@@ -15,23 +15,16 @@ import { promisify } from "util";
 describe("runProcess - validating argument parsing/validation and basic success/failure outputs", () => {
 
     describe("when shell mode (command_line) is successful and using STDIN", () => {
-        const request = runProcess({
-            command_line: "cat",
-            stdin: "Hello World",
-        });
 
-        test("should NOT set isError", async () => {
-            const result = await request;
+        test("should NOT set isError + returns EXIT_CODE=0 + STDOUT", async () => {
+            const result = await runProcess({
+                command_line: "cat",
+                stdin: "Hello World",
+            });
 
-            // *** tool response format  (isError only set if failure)
+            // *** tool response format (isError only set if failure)
             expect(result.isError).toBeUndefined();
             //  https://modelcontextprotocol.io/docs/concepts/tools#error-handling-2
-        });
-
-        test("should include STDOUT from command (from STDIN)", async () => {
-            const result = await request;
-            // console.log(result); // left these around as a convenience/reminder
-            //  console.log looks really nice with jest logging
 
             expect(result.content).toEqual([
                 {
@@ -49,20 +42,13 @@ describe("runProcess - validating argument parsing/validation and basic success/
     });
 
     describe("when executable mode (argv) is successful", () => {
-        const request = runProcess({
-            argv: ["cat"],
-            stdin: "Hello World",
-        });
-
-        test("should not set isError", async () => {
-            const result = await request;
+        test("should NOT set isError + returns EXIT_CODE=0 + STDOUT", async () => {
+            const result = await runProcess({
+                argv: ["cat"],
+                stdin: "Hello World",
+            });
 
             expect(result.isError).toBeUndefined();
-        });
-
-        test("should include STDOUT from command", async () => {
-            const result = await request;
-            // console.log(result);
 
             expect(result.content).toEqual([
                 {
