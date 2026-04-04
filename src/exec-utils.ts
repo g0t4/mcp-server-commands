@@ -1,5 +1,5 @@
 // TODO cleanup exec usages once spawn is ready
-import { spawn, SpawnOptions } from "child_process";
+import { SendHandle, Serializable, spawn, SpawnOptions } from "child_process";
 import { ObjectEncodingOptions } from "fs";
 
 export type SpawnResult = {
@@ -37,7 +37,7 @@ export async function spawn_wrapped(
         }
         const child = spawn(command, args, options);
         // PRN return pid to callers?
-        // console.log(`child.pid: ${child.pid}`);
+        console.log(`START SPAWN child.pid: ${child.pid}`);
 
         let stdout = ""
         let stderr = ""
@@ -59,8 +59,14 @@ export async function spawn_wrapped(
             });
         }
 
+        child.on("disconnect", () => console.log("DISCONNECT"));
+        child.on("exit", (code: number | null, signal: NodeJS.Signals | null) => console.log("EXIT"));
+        child.on("message", (message: Serializable, sendHandle: SendHandle) => console.log("MESSAGE"));
+        child.on("spawn", () => console.log("SPAWN"));
+
         let errored = false;
         child.on("error", (err: Error) => {
+            console.log("ERROR")
             // ChildProcess 'error' docs: https://nodejs.org/api/child_process.html#event-error
             // error running process
             // IIUC not just b/c of command failed w/ non-zero exit code
@@ -75,12 +81,13 @@ export async function spawn_wrapped(
                 // killed: (err as any).killed,
                 cmd: command, // TODO does error have .cmd on it? is it the composite result of processing in spawn too? (or same as I passed)
             };
-            // console.log("ON_ERROR", result);
+            console.log("ERROR_RESULT", result);
             errored = true;
             reject(result);
         });
 
         child.on("close", (code: number | null, signal: NodeJS.Signals | null) => {
+            console.log("CLOSE")
             // ChildProcess 'close' docs: https://nodejs.org/api/child_process.html#event-close
             //   'close' is after child process ends AND stdio streams are closed
             //   - after 'exit' or 'error'
@@ -97,7 +104,7 @@ export async function spawn_wrapped(
                 code: code ?? undefined,
                 signal: signal ?? undefined,
             };
-            // console.log("ON_CLOSE", result);
+            console.log("CLOSE_RESULT", result);
             resolve(result);
         });
     });
