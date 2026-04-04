@@ -49,10 +49,10 @@ export function always_log(message: string, data?: any) {
     if (isJest) {
         return;
     }
-    // TODO review what I want logged
+
     const timestamp = new Date().toISOString();
     const logMessage = `[${timestamp}] ${message}${data ? ": " + JSON.stringify(data) : ""}`;
-    const shareDir= process.env.HOME + "/.local/share/mcp-server-commands/";
+    const shareDir = process.env.HOME + "/.local/share/mcp-server-commands/";
     const logFile = shareDir + "/commands.log";
     fs.mkdirSync(shareDir, { recursive: true });
     fs.appendFileSync(logFile, logMessage + "\n");
