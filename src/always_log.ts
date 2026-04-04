@@ -47,6 +47,7 @@ export function verbose_log(message: string, data?: any) {
 export function always_log(message: string, data?: any) {
     const isJest = typeof process !== 'undefined' && !!process.env.JEST_WORKER_ID;
     if (isJest) {
+        console.log(`${message}${data ? ": " + JSON.stringify(data) : ""}`);
         return;
     }
 
