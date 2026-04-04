@@ -278,7 +278,6 @@ describe("runProcess - signal handling", () => {
             // start a long‑running process (sleep 10 seconds)
             //  FYI test will timeout at 5 seconds (before process finishes at 10 seconds)
             const runPromise = runProcess({
-
                 // PRN also test for shell mode?
                 // command_line: "sleep 10.5",
 
@@ -286,8 +285,6 @@ describe("runProcess - signal handling", () => {
                 // FYI 10.5 is "odd" number so it's less likely to kill smth important :)
                 // PRN I could find this otherwise to avoid killing smth else  
                 //   like check parent processes, or if multiple matches then fail this test
-
-                dry_run: false,
             });
 
             console.log("post: initial runProcess");
