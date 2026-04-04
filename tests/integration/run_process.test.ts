@@ -238,6 +238,12 @@ describe("runProcess - validating argument parsing/validation and basic success/
 
 describe('timeout', () => {
 
+    const has_SIGTERM = expect.objectContaining({
+        name: "SIGNAL",
+        type: "text",
+        text: expect.stringMatching(/SIGTERM/i),
+    });
+
     describe('hang due to `sleep` command', () => {
         test('should set isError and include SIGNAL when aborted by timeout', async () => {
             const result = await runProcess({
@@ -247,11 +253,7 @@ describe('timeout', () => {
 
             expect(result.isError).toBe(true);
             expect(result.content).toEqual([
-                {
-                    name: "SIGNAL",
-                    type: "text",
-                    text: expect.stringMatching(/SIGTERM/i),
-                },
+                has_SIGTERM
             ]);
         });
     });
@@ -272,10 +274,7 @@ describe('timeout', () => {
     //
     //         expect(result.isError).toBe(true);
     //         expect(result.content).toEqual([
-    //             expect.objectContaining({
-    //                 name: "SIGNAL",
-    //                 text: expect.stringMatching(/SIGTERM/i),
-    //             }),
+    //             has_SIGTERM,
     //             expect.objectContaining({
     //                 name: "STDOUT",
     //                 text: expect.stringContaining("Caught deadly signal TERM"),
@@ -328,11 +327,9 @@ describe('timeout', () => {
             //   signal: 'SIGTERM'
             // }
 
+
             expect(result.content).toEqual([
-                expect.objectContaining({
-                    name: "SIGNAL",
-                    text: expect.stringMatching(/SIGTERM/i),
-                }),
+                has_SIGTERM,
                 expect.objectContaining({
                     name: "STDERR",
                     // FYI \s == whitespace (including \n)
