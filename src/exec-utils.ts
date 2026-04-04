@@ -1,6 +1,7 @@
 // TODO cleanup exec usages once spawn is ready
 import { SendHandle, Serializable, spawn, SpawnOptions } from "child_process";
 import { ObjectEncodingOptions } from "fs";
+import { performance } from "perf_hooks";
 
 export type SpawnResult = {
     // this is basically ExecException except I want my own type for it...
@@ -27,6 +28,15 @@ export async function spawn_wrapped(
     stdin: string | undefined,
     options: SpawnOptions
 ): Promise<SpawnResult | SpawnFailure> {
+    // Record the start time of the spawn wrapper to report relative timings
+    const startTime = performance.now();
+
+    // Simple logger that prefixes each message with the elapsed time in seconds
+    const logWithTime = (msg: string, ...rest: any[]) => {
+        const elapsed = ((performance.now() - startTime) / 1000).toFixed(3);
+        console.log(`[${elapsed}s] ${msg}`, ...rest);
+    };
+
     return new Promise((resolve, reject) => {
         if (!stdin) {
             // FYI default is all 'pipe' (works when stdin is provided)
@@ -37,7 +47,7 @@ export async function spawn_wrapped(
         }
         const child = spawn(command, args, options);
         // PRN return pid to callers?
-        console.log(`START SPAWN child.pid: ${child.pid}`);
+        logWithTime(`START SPAWN child.pid: ${child.pid}`);
 
         let stdout = ""
         let stderr = ""
@@ -59,18 +69,18 @@ export async function spawn_wrapped(
             });
         }
 
-        child.on("disconnect", () => console.log("DISCONNECT"));
+        child.on("disconnect", () => logWithTime("DISCONNECT"));
         child.on("exit", (code: number | null, signal: NodeJS.Signals | null) => {
-            console.log("EXIT", { code, signal });
+            logWithTime("EXIT", { code, signal });
         });
         child.on("message", (message: Serializable, sendHandle: SendHandle) => {
-            console.log("MESSAGE", { message, sendHandle });
+            logWithTime("MESSAGE", { message, sendHandle });
         });
-        child.on("spawn", () => console.log("SPAWN"));
+        child.on("spawn", () => logWithTime("SPAWN"));
 
         let errored = false;
         child.on("error", (err: Error) => {
-            console.log("ERROR")
+            logWithTime("ERROR");
             // ChildProcess 'error' docs: https://nodejs.org/api/child_process.html#event-error
             // error running process
             // IIUC not just b/c of command failed w/ non-zero exit code
@@ -85,13 +95,13 @@ export async function spawn_wrapped(
                 // killed: (err as any).killed,
                 cmd: command, // TODO does error have .cmd on it? is it the composite result of processing in spawn too? (or same as I passed)
             };
-            console.log("ERROR_RESULT", result);
+            logWithTime("ERROR_RESULT", result);
             errored = true;
             reject(result);
         });
 
         child.on("close", (code: number | null, signal: NodeJS.Signals | null) => {
-            console.log("CLOSE")
+            logWithTime("CLOSE");
             // ChildProcess 'close' docs: https://nodejs.org/api/child_process.html#event-close
             //   'close' is after child process ends AND stdio streams are closed
             //   - after 'exit' or 'error'
@@ -108,7 +118,7 @@ export async function spawn_wrapped(
                 code: code ?? undefined,
                 signal: signal ?? undefined,
             };
-            console.log("CLOSE_RESULT", result);
+            logWithTime("CLOSE_RESULT", result);
             resolve(result);
         });
     });
