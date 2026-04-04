@@ -36,7 +36,7 @@ export async function spawn_wrapped(
         if (!is_verbose) return;
 
         const elapsed = ((performance.now() - startTime) / 1000).toFixed(3);
-        verbose_log(`[${elapsed}s] ${msg}`, ...rest);
+        verbose_log(`[${elapsed}s] ${msg}`, ...rest, "-", command, args);
     };
 
     return new Promise((resolve, reject) => {
