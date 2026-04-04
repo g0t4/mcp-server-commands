@@ -86,13 +86,13 @@ export async function spawn_wrapped(
                 // can I have both signal and code set? I don't think so... IIAC code wins if process already exited when smth tries to terminate it (signal) 
                 return;
             }
-            logWithTime("SIGNAL_EXIT", { signal });
             const result: SpawnFailure = {
                 stdout,
                 stderr,
                 code: code ?? undefined, // s/b always undefined here
                 signal: signal ?? undefined,
             };
+            logWithTime("SIGNAL_EXIT", result);
             reject(result);
         });
         // child.on("message", (message: Serializable, sendHandle: SendHandle) => {

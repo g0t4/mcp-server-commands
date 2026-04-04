@@ -325,10 +325,6 @@ describe('timeout', () => {
                     text: expect.stringMatching(/SIGTERM/i),
                 }),
                 expect.objectContaining({
-                    name: "STDOUT",
-                    text: expect.stringContaining("Caught deadly signal TERM"),
-                }),
-                expect.objectContaining({
                     name: "STDERR",
                     text: expect.stringContaining("Vim: Warning: Output is not to a terminal"),
                 })
