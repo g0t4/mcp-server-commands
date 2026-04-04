@@ -308,6 +308,41 @@ describe('timeout', () => {
     // });
     //
 
+    describe('spawn options timeout_ms is effectively ignored for this "hung?" process', () => {
+        test.only('should be killed and not be a test level timeout', async () => {
+            const result = await runProcess({
+                // candidates:
+                //  git commit --amend # when editor setup
+                //  git commit --edit # edit message in editor
+                //   problem is git commit requires changes to be staged... and that's extra work I don't want to replicate
+                //   what else can do this?
+                //   or is there another way with git to use editor w/o changes?
+                // set miminal config for git to commit... also set editor for hang purposes (reproducible)
+                // PRN use core.editor=nvim which also triggers test level timeout on mac (promising for cross platform consistency)
+                command_line: "git -c core.editor=vim -c user.email='wes@wes.com' -c user.name='wes' commit --amend",
+                // command_line: "git commit --amend", // TODO set core.editor=nvim ???
+                timeout_ms: 1000,      // 0.1 s timeout forces abort w/ minimal delay
+            });
+
+            expect(result.isError).toBe(true);
+            expect(result.content).toEqual([
+                expect.objectContaining({
+                    name: "SIGNAL",
+                    text: expect.stringMatching(/SIGTERM/i),
+                }),
+                expect.objectContaining({
+                    name: "STDOUT",
+                    text: expect.stringContaining("Caught deadly signal TERM"),
+                }),
+                expect.objectContaining({
+                    name: "STDERR",
+                    text: expect.stringContaining("Vim: Warning: Output is not to a terminal"),
+                })
+            ]);
+        });
+    });
+
+
 
 });
 
