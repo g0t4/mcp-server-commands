@@ -28,11 +28,9 @@ export async function spawn_wrapped(
     stdin: string | undefined,
     options: SpawnOptions
 ): Promise<SpawnResult | SpawnFailure> {
-    // Record the start time of the spawn wrapper to report relative timings
     const startTime = performance.now();
 
-    // Simple logger that prefixes each message with the elapsed time in seconds
-    const logWithTime = (msg: string, ...rest: any[]) => {
+    const logWithElapsedTime = (msg: string, ...rest: any[]) => {
         if (!is_verbose) return;
 
         const elapsed = ((performance.now() - startTime) / 1000).toFixed(3);
@@ -60,7 +58,7 @@ export async function spawn_wrapped(
 
         const child = spawn(command, args, options);
         // PRN return pid to callers?
-        logWithTime(`START SPAWN child.pid: ${child.pid}`);
+        logWithElapsedTime(`START SPAWN child.pid: ${child.pid}`);
 
         let stdout = ""
         let stderr = ""
@@ -86,13 +84,13 @@ export async function spawn_wrapped(
             // child process streams MAY still be open when EXIT is emitted (use close if need to ensure they're closed)
             // "close" will come after "exit" once process is terminated + streams are closed
             // so for now use "close" to determine if process was terminated too, that way you can access STDOUT/STDERR reliably for returning full output to agent
-            logWithTime("EXIT", { code, signal });
+            logWithElapsedTime("EXIT", { code, signal });
         });
         child.on("spawn", () => {
             // emitted after child process starts successfully
             // if child doesn't start, error emitted instead
             // emitted BEFORE any data received via stdout/stderr
-            logWithTime("SPAWN")
+            logWithElapsedTime("SPAWN")
         });
 
         // Custom settlement logic – resolve or reject only once and clear timeout.
@@ -131,7 +129,7 @@ export async function spawn_wrapped(
         }
 
         child.on("error", (err: Error) => {
-            logWithTime("ERROR");
+            logWithElapsedTime("ERROR");
             // ChildProcess 'error' docs: https://nodejs.org/api/child_process.html#event-error
             // error running process
             // IIUC not just b/c of command failed w/ non-zero exit code
@@ -146,12 +144,12 @@ export async function spawn_wrapped(
                 message: err.message,
                 // ? killed: (err as any).killed
             };
-            logWithTime("ERROR_RESULT", result);
+            logWithElapsedTime("ERROR_RESULT", result);
             settle(result, true);
         });
 
         child.on("close", (code: number | null, signal: NodeJS.Signals | null) => {
-            logWithTime("CLOSE");
+            logWithElapsedTime("CLOSE");
             // ChildProcess 'close' docs: https://nodejs.org/api/child_process.html#event-close
             //   'close' is after child process ends AND stdio streams are closed
             //   - after 'exit' or 'error'
@@ -167,7 +165,7 @@ export async function spawn_wrapped(
                 signal: signal ?? undefined,
                 //
             };
-            logWithTime("CLOSE_RESULT", result);
+            logWithElapsedTime("CLOSE_RESULT", result);
             settle(result, false);
         });
     });
