@@ -274,6 +274,7 @@ describe('timeout', () => {
 describe("runProcess - signal handling", () => {
 
     describe('runProcess kill handling', () => {
+
         test('should report killed when the child process is terminated externally', async () => {
             // start a long‑running process (sleep 10 seconds)
             //  FYI test will timeout at 5 seconds (before process finishes at 10 seconds)
@@ -316,6 +317,7 @@ describe("runProcess - signal handling", () => {
                 },
             ]);
         });
+
     });
 
     // TODO abort controller? if I add cooperative cancellation or smth like it
