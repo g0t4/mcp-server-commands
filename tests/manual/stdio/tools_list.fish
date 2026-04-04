@@ -2,7 +2,7 @@
 set request '{ "jsonrpc": "2.0", "id": 1, "method": "tools/list" }'
 
 echo $request \
-    | npx ~/repos/github/g0t4/mcp-server-commands/build/index.js \
+    | npx ~/repos/github/g0t4/mcp-server-commands/build/index.js -- --verbose  \
     | jq
 
 # ?? make this into an integration test that I can run to verify STDIO comms?
