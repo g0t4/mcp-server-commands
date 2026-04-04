@@ -135,13 +135,13 @@ export async function spawn_wrapped(
         if (timeoutMs !== undefined) {
             timer = setTimeout(() => {
                 if (process.platform !== "win32") {
-                    try { process.kill(-child.pid, "SIGTERM"); } catch (_) {}
+                    if (child.pid) { try { process.kill(-child.pid, "SIGTERM"); } catch (_) {} }
                 } else {
                     child.kill("SIGTERM");
                 }
                 const killTimeout = setTimeout(() => {
                     if (process.platform !== "win32") {
-                        try { process.kill(-child.pid, "SIGKILL"); } catch (_) {}
+                        if (child.pid) { try { process.kill(-child.pid, "SIGKILL"); } catch (_) {} }
                     } else {
                         child.kill("SIGKILL");
                     }
