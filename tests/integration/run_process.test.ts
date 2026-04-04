@@ -304,7 +304,8 @@ describe('timeout', () => {
     //
 
     describe('spawn options timeout_ms is effectively ignored for this "hung" process', () => {
-        test('should be killed and not be a test level timeout', async () => {
+        jest.setTimeout(2_500); // need a gap b/w 1_000 timeout_ms value and the test level timeout so no flaky/janky test failures
+        test.only('should be killed and not be a test level timeout', async () => {
 
             // * here are the messages that indicate test level timeout:
             //
@@ -328,7 +329,7 @@ describe('timeout', () => {
                 //   editor that hangs: vim (PRN nvim might work if issues with vim)
                 //   vim appears to work on arch/mac/ubuntu so let's run with it for now!
                 command_line: "git -c core.editor=vim -c user.email='wes@wes.com' -c user.name='wes' commit --amend",
-                timeout_ms: 1000, // force abort after 1 second... give the git command and editor time to launch (at least 100ms, but lets just do 1,000ms) else you will get random failures
+                timeout_ms: 1_000, // force abort after 1 second... give the git command and editor time to launch (at least 100ms, but lets just do 1,000ms) else you will get random failures
             });
 
             expect(result.isError).toBe(true);
