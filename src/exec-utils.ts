@@ -170,6 +170,7 @@ export async function spawn_wrapped(
             settle(result, false);
         });
     });
+    // FYI later (when needed) I can map this onto the promise that comes back from runProcess too (and tie into that unit test I have that needs pid to terminate it)
     (promise as any).pid = child_pid;
     return promise;
 }
