@@ -333,7 +333,7 @@ describe('timeout', () => {
                 //   editor that hangs: vim (PRN nvim might work if issues with vim)
                 //   vim appears to work on arch/mac/ubuntu so let's run with it for now!
                 command_line: "git -c core.editor=vim -c user.email='wes@wes.com' -c user.name='wes' commit --amend",
-                timeout_ms: 100,  // 0.1 s timeout forces abort w/ minimal delay
+                timeout_ms: 1000, // force abort after 1 second... give the git command and editor time to launch (at least 100ms, but lets just do 1,000ms) else you will get random failures
             });
 
             expect(result.isError).toBe(true);
