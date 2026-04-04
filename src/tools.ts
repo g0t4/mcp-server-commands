@@ -51,8 +51,6 @@ export function registerTools(server: Server) {
                                 type: "number",
                                 description: "Optional timeout in milliseconds, defaults to 30,000ms",
                             }
-                            // MAYBEs:
-                            // - env - obscure cases where command takes a param only via an env var?
                         },
                         // FYI no required arg top level and I am not gonna fret about specifiying one or the other, the tool definition is fine with that distinction in the descriptions, plus it is intuitive.
                         //  and back when I had mode=shell/executable required, models would still forget to add it so why bother with a huge complexity in tool definition

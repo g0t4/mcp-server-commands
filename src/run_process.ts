@@ -32,7 +32,6 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
     if (args?.cwd) {
         spawn_options.cwd = String(args.cwd);
     }
-    // PRN args.env
     if (args?.timeout_ms) {
         spawn_options.timeout = Number(args.timeout_ms);
     } else {
