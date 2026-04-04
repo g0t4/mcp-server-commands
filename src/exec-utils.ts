@@ -3,6 +3,8 @@ import { SendHandle, Serializable, spawn, SpawnOptions } from "child_process";
 import { ObjectEncodingOptions } from "fs";
 import { performance } from "perf_hooks";
 import { is_verbose, verbose_log } from "./logging.js";
+import { resultFor } from "./messages.js";
+import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 
 export type SpawnResult = {
     // this is basically ExecException except I want my own type for it...
@@ -27,7 +29,7 @@ export async function spawn_wrapped(
     args: string[],
     stdin: string | undefined,
     options: SpawnOptions
-): Promise<SpawnResult | SpawnFailure> {
+): Promise<CallToolResult> {
     const startTime = performance.now();
 
     const logWithElapsedTime = (msg: string, ...rest: any[]) => {
@@ -171,6 +173,15 @@ export async function spawn_wrapped(
         });
     });
     // FYI later (when needed) I can map this onto the promise that comes back from runProcess too (and tie into that unit test I have that needs pid to terminate it)
-    (promise as any).pid = child_pid;
-    return promise;
+    // Resolve the underlying spawn result, then map to CallToolResult including PID.
+    const spawnResult = await promise;
+    const callResult = resultFor(spawnResult);
+    if (child_pid !== null) {
+        callResult.content.push({
+            name: "PID",
+            type: "text",
+            text: String(child_pid),
+        });
+    }
+    return callResult;
 }

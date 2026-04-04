@@ -1,8 +1,8 @@
 import { SpawnOptions } from "node:child_process";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { spawn_wrapped, SpawnResult, SpawnFailure } from "./exec-utils.js";
+import { spawn_wrapped, SpawnFailure } from "./exec-utils.js";
 import { always_log } from "./logging.js";
-import { errorResult, messagesFor, resultFor } from "./messages.js";
+import { errorResult, messagesFor } from "./messages.js";
 import { ObjectEncodingOptions } from "node:fs";
 
 /**
@@ -50,7 +50,7 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
 
             const command_line = String(args?.command_line)
             const result = await spawn_wrapped(command_line, [], stdin, spawn_options);
-            return resultFor(result);
+            return result;
         }
 
         // executable mode — argv[0] is spawned directly, no shell interpretation
@@ -61,7 +61,7 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
         const commandArgs = argv.slice(1);
 
         const result = await spawn_wrapped(command, commandArgs, stdin, spawn_options);
-        return resultFor(result);
+        return result;
     } catch (error) {
         // TODO check if not SpawnFailure => i.e. test aborting/killing
         const response = {
