@@ -24,12 +24,14 @@ export type SpawnFailure = SpawnResult & {
     killed?: boolean;
 };
 
-export async function spawn_wrapped(
+export type SpawnPromise = Promise<CallToolResult> & { pid?: number };
+
+export function spawn_wrapped(
     command: string,
     args: string[],
     stdin: string | undefined,
     options: SpawnOptions
-): Promise<CallToolResult> {
+): SpawnPromise {
     const startTime = performance.now();
 
     const logWithElapsedTime = (msg: string, ...rest: any[]) => {
@@ -39,8 +41,8 @@ export async function spawn_wrapped(
         verbose_log(`[${elapsed}s] ${msg}`, ...rest, command, args);
     };
 
-    let child_pid = null;
-    const promise = new Promise<SpawnResult | SpawnFailure>((resolve, reject) => {
+    let child_pid;
+    const promise: SpawnPromise = new Promise<CallToolResult>((resolve, reject) => {
         if (!stdin) {
             // FYI default is all 'pipe' (works when stdin is provided)
             // 'ignore' attaches /dev/null
@@ -58,6 +60,18 @@ export async function spawn_wrapped(
 
         // Use a detached child so we can kill the entire process group.
         options.detached = true;
+
+        let settled = false;
+        const settle = (result: SpawnResult, isError: boolean) => {
+            if (settled) return;
+            settled = true;
+            if (timer) clearTimeout(timer);
+            if (isError) {
+                resolve(resultFor(result));
+            } else {
+                resolve(resultFor(result));
+            }
+        };
 
         const child = spawn(command, args, options);
         logWithElapsedTime(`START SPAWN child.pid: ${child.pid}`);
@@ -95,19 +109,6 @@ export async function spawn_wrapped(
             // emitted BEFORE any data received via stdout/stderr
             logWithElapsedTime("SPAWN")
         });
-
-        // Custom settlement logic – resolve or reject only once and clear timeout.
-        let settled = false;
-        const settle = (result: any, isError: boolean) => {
-            if (settled) return;
-            settled = true;
-            if (timer) clearTimeout(timer);
-            if (isError) {
-                reject(result);
-            } else {
-                resolve(result);
-            }
-        };
 
         // Timeout handling – kill the whole process group after the supplied timeout.
         let timer: NodeJS.Timeout | null = null;
@@ -174,14 +175,6 @@ export async function spawn_wrapped(
     });
     // FYI later (when needed) I can map this onto the promise that comes back from runProcess too (and tie into that unit test I have that needs pid to terminate it)
     // Resolve the underlying spawn result, then map to CallToolResult including PID.
-    const spawnResult = await promise;
-    const callResult = resultFor(spawnResult);
-    // if (child_pid !== null) {
-    //     callResult.content.push({
-    //         name: "PID",
-    //         type: "text",
-    //         text: String(child_pid),
-    //     });
-    // }
-    return callResult;
+    promise.pid = child_pid;
+    return promise
 }
