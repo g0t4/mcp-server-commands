@@ -63,14 +63,13 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
 
         const result = await spawn_wrapped(command, commandArgs, stdin, spawn_options);
         return resultFor(result);
-        // TODO... fish shell workaround (see exec-utils.ts) - ADD or FIX via a TEST FIRST
     } catch (error) {
         // TODO check if not SpawnFailure => i.e. test aborting/killing
         const response = {
             isError: true,
             content: messagesFor(error as SpawnFailure),
         };
-        // TODO try catch inside always_log so log fail doesn't block returning error response
+        // TODO try catch inside always_log so log fail doesn't block returning error response?
         always_log("WARN: run_process failed", error);
         return response;
     }
