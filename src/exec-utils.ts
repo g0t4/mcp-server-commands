@@ -79,17 +79,12 @@ export async function spawn_wrapped(
             });
         }
 
-        // child.on("disconnect", () => logWithTime("DISCONNECT")); // subprocess.disconnect() called by either parent/child process  
         child.on("exit", (code: number | null, signal: NodeJS.Signals | null) => {
             // child process streams MAY still be open when EXIT is emitted (use close if need to ensure they're closed)
             // "close" will come after "exit" once process is terminated + streams are closed
             // so for now use "close" to determine if process was terminated too, that way you can access STDOUT/STDERR reliably for returning full output to agent
             logWithTime("EXIT", { code, signal });
         });
-        // child.on("message", (message: Serializable, sendHandle: SendHandle) => {
-        //     // when child uses process.send() => not applicable in my use case
-        //     logWithTime("MESSAGE", { message, sendHandle });
-        // });
         child.on("spawn", () => {
             // emitted after child process starts successfully
             // if child doesn't start, error emitted instead
