@@ -43,16 +43,16 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
     const stdin = args?.stdin ? String(args.stdin) : undefined; // TODO
 
     try {
-        // shell mode — command_line is interpreted by the system shell
         if (isShellMode) {
+            // shell mode — command_line is interpreted by the system shell
             spawn_options.shell = true
 
             const command_line = String(args?.command_line)
             const result = await spawn_wrapped(command_line, [], stdin, spawn_options);
             return resultFor(result);
         }
-        // executable mode — argv[0] is spawned directly, no shell interpretation
-        if (isExecutableMode) {
+        else if (isExecutableMode) {
+            // executable mode — argv[0] is spawned directly, no shell interpretation
             spawn_options.shell = false
 
             const argv = args?.argv as string[];
