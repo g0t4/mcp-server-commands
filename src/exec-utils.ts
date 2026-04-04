@@ -176,12 +176,12 @@ export async function spawn_wrapped(
     // Resolve the underlying spawn result, then map to CallToolResult including PID.
     const spawnResult = await promise;
     const callResult = resultFor(spawnResult);
-    if (child_pid !== null) {
-        callResult.content.push({
-            name: "PID",
-            type: "text",
-            text: String(child_pid),
-        });
-    }
+    // if (child_pid !== null) {
+    //     callResult.content.push({
+    //         name: "PID",
+    //         type: "text",
+    //         text: String(child_pid),
+    //     });
+    // }
     return callResult;
 }
