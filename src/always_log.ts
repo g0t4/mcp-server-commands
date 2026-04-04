@@ -1,12 +1,12 @@
 import fs from 'fs';
-let verbose = false;
+export let is_verbose = false;
 // check CLI args:
 if (process.argv.includes("--verbose")) {
-    verbose = true;
+    is_verbose = true;
 }
 
 always_log("INFO: starting mcp-server-commands");
-if (verbose) {
+if (is_verbose) {
     always_log("INFO: verbose logging enabled");
 }
 
@@ -19,7 +19,7 @@ export function verbose_log(message: string, data?: any) {
     //   server.sendLoggingMessage is captured by MCP client (not Claude Desktop app)
     //   * SO, IIUC use STDERR for logging into Claude Desktop app logs in:
     //      '~/Library/Logs/Claude/mcp.log'
-    if (verbose) {
+    if (is_verbose) {
         always_log(message, data);
     }
     // inspector, catches these logs and shows them on left hand side of screen (sidebar)
@@ -58,5 +58,3 @@ export function always_log(message: string, data?: any) {
     // TODO any hail mary if this logging fails? just use console.error then?
     //   else still can get seemingly hung tool calls
 }
-
-
