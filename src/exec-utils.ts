@@ -2,6 +2,7 @@
 import { SendHandle, Serializable, spawn, SpawnOptions } from "child_process";
 import { ObjectEncodingOptions } from "fs";
 import { performance } from "perf_hooks";
+import { is_verbose, verbose_log } from "./always_log.js";
 
 export type SpawnResult = {
     // this is basically ExecException except I want my own type for it...
@@ -32,8 +33,10 @@ export async function spawn_wrapped(
 
     // Simple logger that prefixes each message with the elapsed time in seconds
     const logWithTime = (msg: string, ...rest: any[]) => {
+        if (!is_verbose) return;
+
         const elapsed = ((performance.now() - startTime) / 1000).toFixed(3);
-        console.log(`[${elapsed}s] ${msg}`, ...rest);
+        verbose_log(`[${elapsed}s] ${msg}`, ...rest);
     };
 
     return new Promise((resolve, reject) => {
