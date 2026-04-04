@@ -2,7 +2,7 @@ name: test and publish
 
 on:
     push:
-        branches: [master]
+        branches: ["*"]
         tags: ["v*"]
     # pull_request:
     #   branches: [ master ] # careful what access these builds get, i.e. to secrets (put sensitive stuff into environments for restricted access?)
