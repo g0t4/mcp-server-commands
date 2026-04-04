@@ -37,7 +37,8 @@ export async function spawn_wrapped(
         verbose_log(`[${elapsed}s] ${msg}`, ...rest, command, args);
     };
 
-    return new Promise((resolve, reject) => {
+    let child_pid = null;
+    const promise = new Promise<SpawnResult | SpawnFailure>((resolve, reject) => {
         if (!stdin) {
             // FYI default is all 'pipe' (works when stdin is provided)
             // 'ignore' attaches /dev/null
@@ -57,11 +58,11 @@ export async function spawn_wrapped(
         options.detached = true;
 
         const child = spawn(command, args, options);
-        // PRN return pid to callers?
         logWithElapsedTime(`START SPAWN child.pid: ${child.pid}`);
+        child_pid = child.pid;
 
-        let stdout = ""
-        let stderr = ""
+        let stdout = "";
+        let stderr = "";
 
         if (child.stdin && stdin) {
             child.stdin.write(stdin);
@@ -169,4 +170,6 @@ export async function spawn_wrapped(
             settle(result, false);
         });
     });
+    (promise as any).pid = child_pid;
+    return promise;
 }
