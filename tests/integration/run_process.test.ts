@@ -290,7 +290,7 @@ describe('timeout', () => {
 
     describe('spawn options timeout_ms is effectively ignored for this "hung" process', () => {
         jest.setTimeout(2_500); // need a gap b/w 1_000 timeout_ms value and the test level timeout so no flaky/janky test failures
-        test.only('should be killed and not be a test level timeout', async () => {
+        test('should be killed and not be a test level timeout', async () => {
 
             // * here are the messages that indicate test level timeout:
             //
