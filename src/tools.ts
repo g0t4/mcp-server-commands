@@ -50,15 +50,6 @@ export function registerTools(server: Server) {
                             timeout_ms: {
                                 type: "number",
                                 description: "Optional timeout in milliseconds, defaults to 30,000ms",
-                            },
-                            dry_run: {
-                                type: "boolean",
-                                description: "Optional explain what would run, defaults to False."
-                                // FYI this can help avoid the need for logging this information, I can call this as a user too!
-                                // TODO, dump info about shell (if applicable) and program versions!
-                                //  - explain the node calls too, i.e. spawn('echo foo')
-                                //  - show paths of resolved resources (i.e. shell)
-                                //  - i.e. could run command --version to see its version (attempt various flags until one works, and/or have a lookup of common tools to know how to find their version)
                             }
                             // MAYBEs:
                             // - env - obscure cases where command takes a param only via an env var?
