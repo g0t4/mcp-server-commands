@@ -336,6 +336,7 @@ describe('timeout', () => {
             });
 
             expect(result.content).toEqual([has_SIGTERM, required_VIM_warnings]);
+            // TODO why is test still leaking handles? do I need to trigger cleanup in the "exit" event when terminated?
         });
     });
 

@@ -44,6 +44,30 @@ export async function spawn_wrapped(
             options.stdio = ['ignore', 'pipe', 'pipe'];
             // ? I wonder if this was related to fishWorkaround issue w/ STDIN (see commit history)... I was using base64 encoding to pass STDIN
         }
+
+        // TODO consider detached process group 
+        //   TODO + my own timeout management
+        //   AND thus stop using spawn options timeout 
+        //   OR is there a fix with spawn options timeout for my case?
+        //   basically I only see an issue with `git -c core.editor=vim commit --amend` test case... 
+        //   - clearly starting multiple child proceses of the child... 
+        //   - then, timeout isn't fully propagating to all of the children processes (before jest test level timeout, maybe never too)
+        //   - this is why I never saw "close" event b/c that comes after streams closed
+        //   - AND this is why "exit" appeared to be what I neeeded (for SIGTERM case only)... b/c it is a very early way to detect timeout... 
+        //     however, I need to not use "exit" for timeout signaling... and instead go back to just "close"
+        //     and make sure the timeout SIGTERM fully propagates after which "close" will fire and all will be well!
+        //     I do not want to leave zombies/leaked processes so this is worth getting right
+        //  - IIUC I should
+        //    - use detached (process group)
+        //    - stop using spawn_options.timeout (remove value from it)
+        //    - detect timeout myself
+        //    - kill PGID on timeout
+        //    - add tests to make sure close fires on complex process group examples (i.e. git+vim)
+        // TODO read a bit more and confirm this is what you want
+        //   FYI for now what you have works, issue is you might have some lingering processes until you address a real timeout mechanism (above)
+        //     but at least for now these cases won't result in indefinite hanging of tool call! (half way "fix")
+        // options.detached = true; // separate process group, can kill easier (must manage myself)
+
         const child = spawn(command, args, options);
         // PRN return pid to callers?
         logWithTime(`START SPAWN child.pid: ${child.pid}`);
