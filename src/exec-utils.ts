@@ -74,8 +74,13 @@ export async function spawn_wrapped(
             // child process streams MAY still be open when EXIT is emitted (use close if need to ensure they're closed)
             // in my testing, CLOSE is not called after EXIT when a timeout occurs (due to spawn options timeout_ms)
             // FYI IIUC from docs, if CLOSE is emitted, it is always after EXIT... but IIUC EXIT alone might be emitted and never a CLOSE
-            logWithTime("EXIT", { code, signal });
             // PRN util.convertProcessSignalToExitCode() to go from signal => code
+            logWithTime("EXIT", { code, signal });
+
+            // OK I am going out on a limb here, I think I only care to react here on EXIT... if signal is set (due to termination)
+            // if process exits normally then CLOSE should always be called.. which is the safe time to get stdout/stderr
+            // but if terminated due to timeout, IIUC in my testing, CLOSE is never called then (or not in all cases)
+
         });
         // child.on("message", (message: Serializable, sendHandle: SendHandle) => {
         //     // when child uses process.send() => not applicable in my use case
@@ -130,6 +135,10 @@ export async function spawn_wrapped(
                 signal: signal ?? undefined,
             };
             logWithTime("CLOSE_RESULT", result);
+            // TODO should code => resolve() and signal => reject()
+            //  instead of right now I always resolve?
+            //  FYI might not matter much given any output that indicates a failure, the model would still see it
+            //   and reject vs resolve mostly maps to setting isError=true ... IIRC that's it so this isn't a big deal probably
             resolve(result);
         });
     });
