@@ -1,6 +1,6 @@
 import { SpawnOptions } from "node:child_process";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { spawn_wrapped, SpawnFailure } from "./exec-utils.js";
+import { spawn_wrapped, SpawnFailure, SpawnPromise } from "./exec-utils.js";
 import { always_log } from "./logging.js";
 import { errorResult, messagesFor } from "./messages.js";
 import { ObjectEncodingOptions } from "node:fs";
@@ -9,7 +9,7 @@ import { ObjectEncodingOptions } from "node:fs";
  * Executes a command and returns the result as CallToolResult.
  */
 export type RunProcessArgs = Record<string, unknown> | undefined;
-export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> {
+export function runProcess(args: RunProcessArgs): SpawnPromise{
 
     // shell mode (command_line) vs executable mode (argv) — inferred from which parameter is provided
     const isShellMode = Boolean(args?.command_line);
@@ -17,11 +17,11 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
 
     const bothProvided = isShellMode && isExecutableMode;
     if (bothProvided) {
-        return errorResult("Cannot pass both 'command_line' and 'argv'. Use one or the other.");
+        return Promise.resolve(errorResult("Cannot pass both 'command_line' and 'argv'. Use one or the other."));
     }
     const noneProvided = !isShellMode && !isExecutableMode;
     if (noneProvided) {
-        return errorResult("Either 'command_line' (string) or 'argv' (array) is required.");
+        return Promise.resolve(errorResult("Either 'command_line' (string) or 'argv' (array) is required."));
     }
 
     // * shared args
@@ -67,7 +67,6 @@ export async function runProcess(args: RunProcessArgs): Promise<CallToolResult> 
         };
         // TODO try catch inside always_log so log fail doesn't block returning error response?
         always_log("WARN: run_process failed", error);
-        return response;
+        return Promise.resolve(response);
     }
-
 }
