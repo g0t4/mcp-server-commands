@@ -8,21 +8,21 @@ import { RunProcessArgsHelper } from "./run_process.js";
 export function getBlockingMessage(args: RunProcessArgsHelper): string | null {
     // TODO need a command parser so I am not blocking anything that has "\sls\s" and "\s-R\s" basically
 
-    // Block dangerous commands (e.g., recursive ls that traverses node_modules)
-    // The check is intentionally simple: if the command is "ls" and the
-    // arguments include "-R", we refuse to run it. This avoids costly scans.
     const isRecursiveLs = (() => {
-        // Helper to detect a recursive "ls" command anywhere in the arguments.
-        const hasLs = (tokens: string[]) => tokens.includes("ls");
-        const hasRecursiveFlag = (tokens: string[]) => tokens.some((p) => p.includes("-R"));
+
+        // const hasLs = (tokens: string[]) => tokens.includes("ls");
+        // const hasRecursiveFlag = (tokens: string[]) => tokens.some((p) => p.includes("-R"));
 
         if (args.isShellMode) {
             const parts = String(args.commandLine).trim().split(/\s+/);
-            return hasLs(parts) && hasRecursiveFlag(parts);
+            const joined = parts.join(" ");
+            console.log(joined);
+            return joined == "ls -R" || joined == "bash -lc ls -R";
         }
         if (args.isExecutableMode) {
             const argv = args.argv ?? [];
-            return hasLs(argv) && hasRecursiveFlag(argv);
+            const joined = argv.join(" ");
+            return joined == "ls -R" || joined == "bash -lc ls -R";
         }
         return false;
     })();

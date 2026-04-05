@@ -103,11 +103,11 @@ export function runProcess(
         return Promise.resolve(errorResult("Either 'command_line' (string) or 'argv' (array) is required."));
     }
 
-    // // Block dangerous commands via dedicated module
-    // const blockMsg = getBlockingMessage(args);
-    // if (blockMsg) {
-    //     return Promise.resolve(errorResult(blockMsg));
-    // }
+    // Block dangerous commands via dedicated module
+    const blockMsg = getBlockingMessage(args);
+    if (blockMsg) {
+        return Promise.resolve(errorResult(blockMsg));
+    }
 
     const options: ObjectEncodingOptions & SpawnOptions = {
         // spawn options: https://nodejs.org/api/child_process.html#child_processspawncommand-args-options

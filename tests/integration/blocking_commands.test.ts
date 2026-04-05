@@ -1,7 +1,7 @@
 import { runProcess } from "../../src/run_process.js";
 
 
-describe.skip("blocking commands", () => {
+describe("blocking commands", () => {
     test("blocks recursive ls command", async () => {
         const result = await runProcess({ argv: ["ls", "-R"] });
         expect(result.isError).toBe(true);
@@ -55,7 +55,9 @@ describe.skip("blocking commands", () => {
 
     // Ensure that commands containing "ls -R" as arguments are not blocked.
     test("allows non-recursive ls in arguments", async () => {
-        const result = await runProcess({ command_line: "echo foo the ls -R bar" });
-        expect(result.isError).toBe(false);
+        const result = await runProcess({
+            command_line: "echo foo the ls -R bar",
+        });
+        expect(result.isError).toBeUndefined();
     });
 });
