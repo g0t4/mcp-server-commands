@@ -105,12 +105,11 @@ export function runProcess(
     }
 
     const isShellMode = argsHelper.isShellMode;
-    const isExecutableMode = argsHelper.isExecutableMode;
 
-    if (isShellMode && isExecutableMode) {
+    if (isShellMode && argsHelper.isExecutableMode) {
         return Promise.resolve(errorResult("Cannot pass both 'command_line' and 'argv'. Use one or the other."));
     }
-    if (!isShellMode && !isExecutableMode) {
+    if (!isShellMode && !argsHelper.isExecutableMode) {
         return Promise.resolve(errorResult("Either 'command_line' (string) or 'argv' (array) is required."));
     }
 
