@@ -104,19 +104,16 @@ export function runProcess(
         options.cwd = argsHelper.cwd;
     }
 
-    const isShellMode = argsHelper.isShellMode;
-
-    if (isShellMode && argsHelper.isExecutableMode) {
+    if (argsHelper.isShellMode && argsHelper.isExecutableMode) {
         return Promise.resolve(errorResult("Cannot pass both 'command_line' and 'argv'. Use one or the other."));
     }
-    if (!isShellMode && !argsHelper.isExecutableMode) {
+    if (!argsHelper.isShellMode && !argsHelper.isExecutableMode) {
         return Promise.resolve(errorResult("Either 'command_line' (string) or 'argv' (array) is required."));
     }
 
-    // Resolve the command/args based on the mode.
     let execCommand = "";
     let execArgs: string[] = [];
-    if (isShellMode) {
+    if (argsHelper.isShellMode) {
         (options as any).shell = true;
         execCommand = String(argsHelper.commandLine);
         execArgs = [];
