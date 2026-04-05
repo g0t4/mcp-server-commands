@@ -66,6 +66,9 @@ export function registerTools(server: Server) {
             verbose_log("INFO: ToolRequest", request);
             switch (request.params.name) {
                 case "run_process": {
+                    if (!request.params.arguments) {
+                        throw new Error("Missing arguments for run_process");
+                    }
                     const result = await runProcess(request.params.arguments);
                     // FYI logging this response is INVALUABLE! found a problem with my neovim MCP STDIO client!
                     verbose_log("INFO: ToolResponse", result);
