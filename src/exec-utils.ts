@@ -1,5 +1,5 @@
 // TODO cleanup exec usages once spawn is ready
-import { SendHandle, Serializable, spawn, SpawnOptions } from "child_process";
+import { spawn, SpawnOptions } from "child_process";
 import { ObjectEncodingOptions } from "fs";
 import { performance } from "perf_hooks";
 import { is_verbose, verbose_log } from "./logging.js";
