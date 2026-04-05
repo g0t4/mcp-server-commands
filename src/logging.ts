@@ -9,7 +9,6 @@ if (isJest) {
     // is_verbose = true; // comment out to disable verbose logging in JEST test runner
 }
 
-always_log("INFO: starting mcp-server-commands");
 if (is_verbose) {
     always_log("INFO: verbose logging enabled");
 }
