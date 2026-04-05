@@ -42,7 +42,7 @@ describe("validate common commands work", () => {
         test("ripgrep can search over STDIN when STDIN is provided", async () => {
             const result = await runProcess({
                 argv: ["rg", "--no-config", "bar"],
-                stdin: "foo\nbar\nbaz",
+                stdin_text: "foo\nbar\nbaz",
                 timeout_ms: 5000,
             });
             // console.log(result);

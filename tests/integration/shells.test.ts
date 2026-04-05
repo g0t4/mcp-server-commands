@@ -11,7 +11,7 @@ describe("test explicit shell use via executable mode (argv)", () => {
     test("should execute a simple bash command over STDIN", async () => {
         const result = await runProcess({
             argv: ["bash"],
-            stdin: 'echo "Hello World"', // STDIN
+            stdin_text: 'echo "Hello World"',
         });
 
         expect(result.content).toEqual([
@@ -31,7 +31,7 @@ describe("test explicit shell use via executable mode (argv)", () => {
     test("should handle command errors properly in bash", async () => {
         const result = await runProcess({
             argv: ["bash"],
-            stdin: "othernonexistentcommand",
+            stdin_text: "othernonexistentcommand",
         });
 
         expect(result.isError).toBe(true);
@@ -56,7 +56,7 @@ describe("test explicit shell use via executable mode (argv)", () => {
         async () => {
             const result = await runProcess({
                 argv: ["fish"],
-                stdin: 'echo "Hello from Fish"',
+                stdin_text: 'echo "Hello from Fish"',
             });
             // console.log(result);
             expect(result.content).toEqual([
@@ -99,7 +99,7 @@ describe("test explicit shell use via executable mode (argv)", () => {
     test("should execute zsh command", async () => {
         const result = await runProcess({
             argv: ["zsh"],
-            stdin: 'echo "Hello from Zsh"',
+            stdin_text: 'echo "Hello from Zsh"',
         });
         // console.log(result);
         expect(result.content).toEqual([
@@ -119,7 +119,7 @@ describe("test explicit shell use via executable mode (argv)", () => {
     test("should handle command errors properly in zsh", async () => {
         const result = await runProcess({
             argv: ["zsh"],
-            stdin: "completelynonexistentcommand",
+            stdin_text: "completelynonexistentcommand",
         });
 
         expect(result.isError).toBeTruthy();
@@ -138,7 +138,7 @@ describe("test explicit shell use via executable mode (argv)", () => {
     });
 
     test("should handle multiline scripts in zsh", async () => {
-        const stdin = `
+        const stdin_text = `
       echo "Line 1 from Zsh"
       for i in 1 2 3; do
         echo "Number $i"
@@ -146,7 +146,7 @@ describe("test explicit shell use via executable mode (argv)", () => {
     `;
         const result = await runProcess({
             argv: ["zsh"],
-            stdin: stdin,
+            stdin_text: stdin_text,
         });
         // console.log(result);
         expect(result.content).toEqual([
@@ -176,7 +176,7 @@ Number 3
         // PRN use multiple paths would be another way around checking cwd of test runner
         const result = await runProcess({
             argv: ["bash"],
-            stdin: "pwd",
+            stdin_text: "pwd",
             cwd: "/",
         });
         // console.log(result);
@@ -195,14 +195,14 @@ Number 3
     });
 
     test("should handle bash multiline scripts", async () => {
-        const stdin = `
+        const stdin_text = `
       echo "Line 1"
       echo "Line 2"
       echo "Line 3"
     `;
         const result = await runProcess({
             argv: ["bash"],
-            stdin: stdin,
+            stdin_text: stdin_text,
         });
         // validate all of output:
         // console.log(result);

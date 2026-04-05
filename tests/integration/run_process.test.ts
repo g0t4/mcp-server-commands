@@ -19,7 +19,7 @@ describe("runProcess - validating argument parsing/validation and basic success/
         test("should NOT set isError + returns EXIT_CODE=0 + STDOUT", async () => {
             const result = await runProcess({
                 command_line: "cat",
-                stdin: "Hello World",
+                stdin_text: "Hello World",
             });
 
             // *** tool response format (isError only set if failure)
@@ -45,7 +45,7 @@ describe("runProcess - validating argument parsing/validation and basic success/
         test("should NOT set isError + returns EXIT_CODE=0 + STDOUT", async () => {
             const result = await runProcess({
                 argv: ["cat"],
-                stdin: "Hello World",
+                stdin_text: "Hello World",
             });
 
             expect(result.isError).toBeUndefined();

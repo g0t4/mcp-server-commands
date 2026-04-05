@@ -53,7 +53,7 @@ export class RunProcessArgsHelper {
 
     /** Text to write to STDIN – string if supplied, otherwise undefined */
     get stdin_text(): string | undefined {
-        const v = this.raw.stdin;
+        const v = this.raw.stdin_text;
         return v == null ? undefined : String(v);
     }
 

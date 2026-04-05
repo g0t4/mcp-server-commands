@@ -43,7 +43,7 @@ export function registerTools(server: Server) {
                                 type: "string",
                                 description: "Optional to set working directory",
                             },
-                            stdin: {
+                            stdin_text: {
                                 type: "string",
                                 description: "Optional text written to STDIN (written fully, then closed). Useful for heredoc-style input or file contents."
                             },
