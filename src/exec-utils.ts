@@ -95,6 +95,12 @@ export function runProcess(
     const startTime = performance.now();
 
     const args = new RunProcessArgsHelper(runProcessArgs);
+    if (args.isShellMode && args.isExecutableMode) {
+        return Promise.resolve(errorResult("Cannot pass both 'command_line' and 'argv'. Use one or the other."));
+    }
+    if (!args.isShellMode && !args.isExecutableMode) {
+        return Promise.resolve(errorResult("Either 'command_line' (string) or 'argv' (array) is required."));
+    }
 
     const options: ObjectEncodingOptions & SpawnOptions = {
         // spawn options: https://nodejs.org/api/child_process.html#child_processspawncommand-args-options
@@ -102,13 +108,6 @@ export function runProcess(
     };
     if (args.cwd) {
         options.cwd = args.cwd;
-    }
-
-    if (args.isShellMode && args.isExecutableMode) {
-        return Promise.resolve(errorResult("Cannot pass both 'command_line' and 'argv'. Use one or the other."));
-    }
-    if (!args.isShellMode && !args.isExecutableMode) {
-        return Promise.resolve(errorResult("Either 'command_line' (string) or 'argv' (array) is required."));
     }
 
     let execCommand = "";
