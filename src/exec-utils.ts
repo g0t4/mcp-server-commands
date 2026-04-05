@@ -111,23 +111,23 @@ export function runProcess(
     }
 
     let spawnCommand = "";
-    let execArgs: string[] = [];
+    let spawnArgs: string[] = [];
     if (args.isShellMode) {
         (options as any).shell = true;
         spawnCommand = String(args.commandLine);
-        execArgs = [];
+        spawnArgs = [];
     } else {
         (options as any).shell = false;
         const argv = args.argv as string[];
         spawnCommand = argv[0];
-        execArgs = argv.slice(1);
+        spawnArgs = argv.slice(1);
     }
 
     const logWithElapsedTime = (msg: string, ...rest: any[]) => {
         if (!is_verbose) return;
 
         const elapsed = ((performance.now() - startTime) / 1000).toFixed(3);
-        verbose_log(`[${elapsed}s] ${msg}`, ...rest, spawnCommand, execArgs);
+        verbose_log(`[${elapsed}s] ${msg}`, ...rest, spawnCommand, spawnArgs);
     };
 
     let child_pid;
@@ -160,7 +160,7 @@ export function runProcess(
             }
         };
 
-        const child = spawn(spawnCommand, execArgs, options);
+        const child = spawn(spawnCommand, spawnArgs, options);
         logWithElapsedTime(`START SPAWN child.pid: ${child.pid}`);
         child_pid = child.pid;
 
