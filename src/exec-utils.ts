@@ -44,9 +44,12 @@ export function spawn_wrapped(
     let child_pid;
     const promise: SpawnPromise = new Promise<CallToolResult>((resolve, reject) => {
         if (!stdin) {
-            // FYI default is all 'pipe' (works when stdin is provided)
-            // 'ignore' attaches /dev/null
-            // order: [STDIN, STDOUT, STDERR]
+            // PRN windowsHide on Windows, signal, killSignal
+            // FYI spawn_options.stdio => default is perfect ['pipe', 'pipe', 'pipe'] 
+            //     order: [STDIN, STDOUT, STDERR]
+            //     https://nodejs.org/api/child_process.html#optionsstdio 
+            //     'ignore' attaches /dev/null
+            //     do not set 'inherit' (causes ripgrep to see STDIN socket and search it, thus hanging)
             options.stdio = ['ignore', 'pipe', 'pipe'];
         }
 

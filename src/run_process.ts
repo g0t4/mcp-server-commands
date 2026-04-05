@@ -39,10 +39,8 @@ export function runProcess(args: RunProcessArgs): SpawnPromise {
         // default timeout after 30s
         spawn_options.timeout = 30000;
     }
-    // PRN windowsHide on Windows, signal, killSignal
-    // FYI spawn_options.stdio => default is perfect ['pipe', 'pipe', 'pipe'] https://nodejs.org/api/child_process.html#optionsstdio 
-    //   do not set inherit (this is what causes ripgrep to see STDIN socket and search it, thus hanging)
-    const stdin = args?.stdin ? String(args.stdin) : undefined; // TODO
+
+    const stdin = args?.stdin ? String(args.stdin) : undefined;
 
     try {
 
