@@ -6,6 +6,8 @@
 import { RunProcessArgsHelper } from "./run_process.js";
 
 export function getBlockingMessage(args: RunProcessArgsHelper): string | null {
+    // TODO need a command parser so I am not blocking anything that has "\sls\s" and "\s-R\s" basically
+
     // Block dangerous commands (e.g., recursive ls that traverses node_modules)
     // The check is intentionally simple: if the command is "ls" and the
     // arguments include "-R", we refuse to run it. This avoids costly scans.
