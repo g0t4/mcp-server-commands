@@ -24,4 +24,18 @@ describe("blocking commands", () => {
             },
         ]);
     });
+
+    // This test currently fails because the blocking logic only checks the first token.
+    // The expectation is that a recursive ls invoked via "bash -lc" should also be blocked.
+    test("blocks recursive ls invoked via bash -lc", async () => {
+        const result = await runProcess({ command_line: "bash -lc ls -R" });
+        expect(result.isError).toBe(true);
+        expect(result.content).toEqual([
+            {
+                name: "ERROR",
+                type: "text",
+                text: expect.stringContaining("Command blocked: recursive ls is disallowed"),
+            },
+        ]);
+    });
 });
