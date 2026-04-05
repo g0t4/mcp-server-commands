@@ -317,7 +317,7 @@ describe('timeout', () => {
                 timeout_ms: 1_000, // force abort after 1 second... give the git command and editor time to launch (at least 100ms, but lets just do 1,000ms) else you will get random failures
             });
 
-            console.log(result)
+            // console.log(result)
 
             expect(result.isError).toBe(true);
 
@@ -367,20 +367,12 @@ describe("runProcess - signal handling", () => {
                 //   like check parent processes, or if multiple matches then fail this test
             });
 
-            console.log("post: initial runProcess");
-
-            console.log(`pid ${runPromise.pid!}`);
             expect(runPromise.pid!).toBeGreaterThan(0);
-
-            console.log("pre: kill");
 
             process.kill(runPromise.pid!, 9);
 
-            console.log("post: kill");
-
             // FYI interesting that killing the process doesn't result in "error" event?
             const result = await runPromise;
-            console.log("post: await runPromise");
             // console.log(result);
             expect(result.isError).toBe(true);
             expect(result.content).toEqual([
