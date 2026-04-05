@@ -9,7 +9,7 @@ import { ObjectEncodingOptions } from "node:fs";
  * Executes a command and returns the result as CallToolResult.
  */
 export type RunProcessArgs = Record<string, unknown> | undefined;
-export function runProcess(args: RunProcessArgs): SpawnPromise{
+export function runProcess(args: RunProcessArgs): SpawnPromise {
 
     // shell mode (command_line) vs executable mode (argv) — inferred from which parameter is provided
     const isShellMode = Boolean(args?.command_line);
@@ -45,21 +45,21 @@ export function runProcess(args: RunProcessArgs): SpawnPromise{
     const stdin = args?.stdin ? String(args.stdin) : undefined; // TODO
 
     try {
-        if (isShellMode) {
-            // shell mode — command_line is interpreted by the system shell
-            spawn_options.shell = true
 
+        if (isShellMode) {
+            // * shell mode — command_line is interpreted by the system shell
+            spawn_options.shell = true
             const command_line = String(args?.command_line)
             return spawn_wrapped(command_line, [], stdin, spawn_options);
         }
 
-        // executable mode — argv[0] is spawned directly, no shell interpretation
+        // * executable mode — argv[0] is spawned directly, no shell interpretation
         spawn_options.shell = false
-
         const argv = args?.argv as string[];
         const command = argv[0]
         const commandArgs = argv.slice(1);
         return spawn_wrapped(command, commandArgs, stdin, spawn_options);
+
     } catch (error) {
         // TODO check if not SpawnFailure => i.e. test aborting/killing
         const response = {
