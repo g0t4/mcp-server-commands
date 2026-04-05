@@ -77,6 +77,16 @@ export class RunProcessArgsHelper {
         const n = Number(v);
         return Number.isNaN(n) ? 30_000 : n;
     }
+
+    /** True if a shell command line is provided */
+    get isShellMode(): boolean {
+        return Boolean(this.commandLine);
+    }
+
+    /** True if an argv array with at least one element is provided */
+    get isExecutableMode(): boolean {
+        return Array.isArray(this.raw.argv) && (this.argv?.length ?? 0) > 0;
+    }
 }
 
 export function runProcess(
@@ -98,8 +108,8 @@ export function runProcess(
     // ---------------------------------------------------------------------
     // RunProcess argument handling – determine the actual command and args.
     // ---------------------------------------------------------------------
-    const isShellMode = Boolean(argsHelper.commandLine);
-    const isExecutableMode = Array.isArray(argsHelper.argv) && argsHelper.argv.length > 0;
+    const isShellMode = argsHelper.isShellMode;
+    const isExecutableMode = argsHelper.isExecutableMode;
 
     if (isShellMode && isExecutableMode) {
         return Promise.resolve(errorResult("Cannot pass both 'command_line' and 'argv'. Use one or the other."));
