@@ -263,30 +263,30 @@ describe('timeout', () => {
     //   proof: `read foo </dev/null` and it will return RC=1
     //   same thing happens when STDIN == "ignore" which is what is set in spawn options when not passing STDIN arg
 
-    // describe('hang due to `vim` command', () => {
-    //     // FYI this could be a brittle test (i.e. diff STDOUT/ERR messages based on OS/vim version/etc... so you can loosen the criteria... really only need to check for SIGNAL in result 
-    //     // yup... on ubuntu only this test times out overall (seemingly ignores spawn options timeout_ms)... whereas on mac and arch, vim is timed out by my spawn options timeout_ms
-    //     test.only('should set isError and include SIGNAL when aborted by timeout', async () => {
-    //         const result = await runProcess({
-    //             command_line: "vim",
-    //             timeout_ms: 1000,      // 0.1 s timeout forces abort w/ minimal delay
-    //         });
-    //
-    //         expect(result.isError).toBe(true);
-    //         expect(result.content).toEqual([
-    //             has_SIGTERM,
-    //             expect.objectContaining({
-    //                 name: "STDOUT",
-    //                 text: expect.stringContaining("Caught deadly signal TERM"),
-    //             }),
-    //             expect.objectContaining({
-    //                 name: "STDERR",
-    //                 text: expect.stringContaining("Vim: Warning: Output is not to a terminal"),
-    //             })
-    //         ]);
-    //     });
-    // });
-    //
+    describe('hang due to `vim` command', () => {
+        // FYI this could be a brittle test (i.e. diff STDOUT/ERR messages based on OS/vim version/etc... so you can loosen the criteria... really only need to check for SIGNAL in result 
+        // yup... on ubuntu only this test times out overall (seemingly ignores spawn options timeout_ms)... whereas on mac and arch, vim is timed out by my spawn options timeout_ms
+        test('should set isError and include SIGNAL when aborted by timeout', async () => {
+            const result = await runProcess({
+                command_line: "vim",
+                timeout_ms: 1000,      // 0.1 s timeout forces abort w/ minimal delay
+            });
+
+            expect(result.isError).toBe(true);
+            expect(result.content).toEqual([
+                has_SIGTERM,
+                expect.objectContaining({
+                    name: "STDOUT",
+                    text: expect.stringContaining("Caught deadly signal TERM"),
+                }),
+                expect.objectContaining({
+                    name: "STDERR",
+                    text: expect.stringContaining("Vim: Warning: Output is not to a terminal"),
+                })
+            ]);
+        });
+    });
+
 
     describe('spawn options timeout_ms is effectively ignored for this "hung" process', () => {
         jest.setTimeout(2_500); // need a gap b/w 1_000 timeout_ms value and the test level timeout so no flaky/janky test failures
