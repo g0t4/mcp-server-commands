@@ -63,12 +63,6 @@ export function spawn_wrapped(
             options.stdio = ['ignore', 'pipe', 'pipe'];
         }
 
-        // * timeout
-        let timeoutMs: number = 30_000; // default 30s
-        if (runProcessArgs?.timeout_ms) {
-            timeoutMs = Number(runProcessArgs.timeout_ms);
-        }
-        //
         // remove timeout on spawn options (if set) so the built‑in spawn timeout does not interfere
         delete (options as any).timeout;
 
@@ -126,6 +120,12 @@ export function spawn_wrapped(
 
         // Timeout handling – kill the whole process group after the supplied timeout.
         let timer: NodeJS.Timeout | null = null;
+
+        // * timeout
+        let timeoutMs: number = 30_000; // default 30s
+        if (runProcessArgs?.timeout_ms) {
+            timeoutMs = Number(runProcessArgs.timeout_ms);
+        }
         if (timeoutMs !== undefined) {
             timer = setTimeout(() => {
                 if (process.platform !== "win32") {
