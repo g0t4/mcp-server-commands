@@ -94,32 +94,32 @@ export function runProcess(
 ): SpawnPromise {
     const startTime = performance.now();
 
-    const argsHelper = new RunProcessArgsHelper(runProcessArgs);
+    const args = new RunProcessArgsHelper(runProcessArgs);
 
     const options: ObjectEncodingOptions & SpawnOptions = {
         // spawn options: https://nodejs.org/api/child_process.html#child_processspawncommand-args-options
         encoding: "utf8"
     };
-    if (argsHelper.cwd) {
-        options.cwd = argsHelper.cwd;
+    if (args.cwd) {
+        options.cwd = args.cwd;
     }
 
-    if (argsHelper.isShellMode && argsHelper.isExecutableMode) {
+    if (args.isShellMode && args.isExecutableMode) {
         return Promise.resolve(errorResult("Cannot pass both 'command_line' and 'argv'. Use one or the other."));
     }
-    if (!argsHelper.isShellMode && !argsHelper.isExecutableMode) {
+    if (!args.isShellMode && !args.isExecutableMode) {
         return Promise.resolve(errorResult("Either 'command_line' (string) or 'argv' (array) is required."));
     }
 
     let execCommand = "";
     let execArgs: string[] = [];
-    if (argsHelper.isShellMode) {
+    if (args.isShellMode) {
         (options as any).shell = true;
-        execCommand = String(argsHelper.commandLine);
+        execCommand = String(args.commandLine);
         execArgs = [];
     } else {
         (options as any).shell = false;
-        const argv = argsHelper.argv as string[];
+        const argv = args.argv as string[];
         execCommand = argv[0];
         execArgs = argv.slice(1);
     }
@@ -133,7 +133,7 @@ export function runProcess(
 
     let child_pid;
     const promise: SpawnPromise = new Promise<CallToolResult>((resolve, reject) => {
-        if (!argsHelper.stdin) {
+        if (!args.stdin) {
             // PRN windowsHide on Windows, signal, killSignal
             // FYI spawn_options.stdio => default is perfect ['pipe', 'pipe', 'pipe'] 
             //     order: [STDIN, STDOUT, STDERR]
@@ -168,8 +168,8 @@ export function runProcess(
         let stdout = "";
         let stderr = "";
 
-        if (child.stdin && argsHelper.stdin) {
-            child.stdin.write(argsHelper.stdin);
+        if (child.stdin && args.stdin) {
+            child.stdin.write(args.stdin);
             child.stdin.end();
         }
 
@@ -217,7 +217,7 @@ export function runProcess(
             const clearKill = () => clearTimeout(killTimeout);
             child.once("exit", clearKill);
             child.once("close", clearKill);
-        }, argsHelper.timeoutMs);
+        }, args.timeoutMs);
 
         child.on("error", (err: Error) => {
             logWithElapsedTime("ERROR");
