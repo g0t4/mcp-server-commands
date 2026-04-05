@@ -209,7 +209,6 @@ export function runProcess(
         // Timeout handling – kill the whole process group after the supplied timeout.
         let timer: NodeJS.Timeout | null = null;
 
-        const timeoutMs = argsHelper.timeoutMs;
         timer = setTimeout(() => {
             if (process.platform !== "win32") {
                 if (child.pid) { try { process.kill(-child.pid, "SIGTERM"); } catch (_) {} }
@@ -226,7 +225,7 @@ export function runProcess(
             const clearKill = () => clearTimeout(killTimeout);
             child.once("exit", clearKill);
             child.once("close", clearKill);
-        }, timeoutMs);
+        }, argsHelper.timeoutMs);
 
         child.on("error", (err: Error) => {
             logWithElapsedTime("ERROR");
