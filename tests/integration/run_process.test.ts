@@ -264,8 +264,9 @@ describe('timeout', () => {
     //   same thing happens when STDIN == "ignore" which is what is set in spawn options when not passing STDIN arg
 
     describe('hang due to `vim` command', () => {
-        // FYI this could be a brittle test (i.e. diff STDOUT/ERR messages based on OS/vim version/etc... so you can loosen the criteria... really only need to check for SIGNAL in result 
-        // yup... on ubuntu only this test times out overall (seemingly ignores spawn options timeout_ms)... whereas on mac and arch, vim is timed out by my spawn options timeout_ms
+        // with new detached process group + custom timeout... behavior now matches across ubuntu+macOS 
+        //   so let's keep this as yet another timeout example, doesn't hurt!
+        //   also helps identify vim timeout issues in case they are confused with the git-commit+vim scenario below
         test('should set isError and include SIGNAL when aborted by timeout', async () => {
             const result = await runProcess({
                 command_line: "vim",
