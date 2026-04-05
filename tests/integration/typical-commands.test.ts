@@ -1,4 +1,4 @@
-import { runProcess } from "../../src/run_process.js";
+import { runProcess } from "../../src/exec-utils.js";
 
 describe("validate common commands work", () => {
 
@@ -58,4 +58,3 @@ describe("validate common commands work", () => {
     });
 
 });
-

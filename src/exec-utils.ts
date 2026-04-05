@@ -4,6 +4,7 @@ import { ObjectEncodingOptions } from "fs";
 import { performance } from "perf_hooks";
 import { is_verbose, verbose_log } from "./logging.js";
 import { resultFor } from "./messages.js";
+import { errorResult } from "./messages.js";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 
 export type SpawnResult = {
@@ -26,11 +27,9 @@ export type SpawnFailure = SpawnResult & {
 
 export type SpawnPromise = Promise<CallToolResult> & { pid?: number };
 
-export type RunProcessArgs = Record<string, unknown> | undefined;
+export type RunProcessArgs = Record<string, unknown>;
 
-export function spawn_wrapped(
-    command: string,
-    args: string[],
+export function runProcess(
     runProcessArgs: RunProcessArgs,
 ): SpawnPromise {
     const startTime = performance.now();
@@ -44,11 +43,38 @@ export function spawn_wrapped(
     }
     const stdin = runProcessArgs?.stdin ? String(runProcessArgs.stdin) : undefined;
 
+    // ---------------------------------------------------------------------
+    // RunProcess argument handling – determine the actual command and args.
+    // ---------------------------------------------------------------------
+    const isShellMode = Boolean(runProcessArgs?.command_line);
+    const isExecutableMode = Array.isArray(runProcessArgs?.argv) && (runProcessArgs?.argv as unknown[]).length > 0;
+
+    if (isShellMode && isExecutableMode) {
+        return Promise.resolve(errorResult("Cannot pass both 'command_line' and 'argv'. Use one or the other."));
+    }
+    if (!isShellMode && !isExecutableMode) {
+        return Promise.resolve(errorResult("Either 'command_line' (string) or 'argv' (array) is required."));
+    }
+
+    // Resolve the command/args based on the mode.
+    let execCommand = "";
+    let execArgs: string[] = [];
+    if (isShellMode) {
+        (options as any).shell = true;
+        execCommand = String(runProcessArgs.command_line);
+        execArgs = [];
+    } else {
+        (options as any).shell = false;
+        const argv = runProcessArgs?.argv as string[];
+        execCommand = argv[0];
+        execArgs = argv.slice(1);
+    }
+
     const logWithElapsedTime = (msg: string, ...rest: any[]) => {
         if (!is_verbose) return;
 
         const elapsed = ((performance.now() - startTime) / 1000).toFixed(3);
-        verbose_log(`[${elapsed}s] ${msg}`, ...rest, command, args);
+        verbose_log(`[${elapsed}s] ${msg}`, ...rest, execCommand, execArgs);
     };
 
     let child_pid;
@@ -81,7 +107,7 @@ export function spawn_wrapped(
             }
         };
 
-        const child = spawn(command, args, options);
+        const child = spawn(execCommand, execArgs, options);
         logWithElapsedTime(`START SPAWN child.pid: ${child.pid}`);
         child_pid = child.pid;
 

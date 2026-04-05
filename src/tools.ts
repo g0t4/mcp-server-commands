@@ -6,7 +6,7 @@ import {
     ListToolsResult
 } from "@modelcontextprotocol/sdk/types.js";
 import { verbose_log } from "./logging.js";
-import { runProcess } from "./run_process.js";
+import { runProcess } from "./exec-utils.js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 
 export function registerTools(server: Server) {

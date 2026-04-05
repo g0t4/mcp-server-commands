@@ -1,4 +1,4 @@
-import { runProcess } from "../../src/run_process.js";
+import { runProcess } from "../../src/exec-utils.js";
 import process from "node:process"
 import { exec, spawn } from 'child_process';
 import { once } from 'events';
