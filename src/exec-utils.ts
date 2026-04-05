@@ -42,12 +42,6 @@ export function spawn_wrapped(
     if (runProcessArgs?.cwd) {
         options.cwd = String(runProcessArgs.cwd);
     }
-    if (runProcessArgs?.timeout_ms) {
-        options.timeout = Number(runProcessArgs.timeout_ms);
-    } else {
-        // default timeout after 30s
-        options.timeout = 30000;
-    }
     const stdin = runProcessArgs?.stdin ? String(runProcessArgs.stdin) : undefined;
 
     const logWithElapsedTime = (msg: string, ...rest: any[]) => {
@@ -69,12 +63,13 @@ export function spawn_wrapped(
             options.stdio = ['ignore', 'pipe', 'pipe'];
         }
 
-        // -----------------------------------------------------------------
-        // Custom timeout handling and detached process group
-        // -----------------------------------------------------------------
-        // Extract any timeout passed via spawn options (set by runProcess) and
-        // remove it so the built‑in spawn timeout does not interfere.
-        const timeoutMs: number | undefined = (options as any).timeout;
+        // * timeout
+        let timeoutMs: number = 30_000; // default 30s
+        if (runProcessArgs?.timeout_ms) {
+            timeoutMs = Number(runProcessArgs.timeout_ms);
+        }
+        //
+        // remove timeout on spawn options (if set) so the built‑in spawn timeout does not interfere
         delete (options as any).timeout;
 
         // Use a detached child so we can kill the entire process group.
