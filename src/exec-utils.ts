@@ -121,7 +121,10 @@ export function spawn_wrapped(
         // Timeout handling – kill the whole process group after the supplied timeout.
         let timer: NodeJS.Timeout | null = null;
 
-        const timeoutMs = Number(runProcessArgs?.timeout_ms ?? 30_000);
+        let timeoutMs = Number(runProcessArgs?.timeout_ms);
+        if (Number.isNaN(timeoutMs)) {
+            timeoutMs = 30_000;
+        }
         timer = setTimeout(() => {
             if (process.platform !== "win32") {
                 if (child.pid) { try { process.kill(-child.pid, "SIGTERM"); } catch (_) {} }
