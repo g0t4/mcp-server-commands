@@ -6,6 +6,7 @@ import { is_verbose, verbose_log } from "./logging.js";
 import { resultFor } from "./messages.js";
 import { errorResult } from "./messages.js";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { getBlockingMessage } from "./blocking_commands.js";
 
 export type SpawnResult = {
     // this is basically ExecException except I want my own type for it...
@@ -102,28 +103,10 @@ export function runProcess(
         return Promise.resolve(errorResult("Either 'command_line' (string) or 'argv' (array) is required."));
     }
 
-    // Block dangerous commands (e.g., recursive ls that traverses node_modules)
-    // The check is intentionally simple: if the command is "ls" and the
-    // arguments include "-R", we refuse to run it. This avoids costly scans.
-    const isRecursiveLs = (() => {
-        if (args.isShellMode) {
-            // look for "ls" followed by "-R" as separate token or combined
-            const parts = String(args.commandLine).trim().split(/\s+/);
-            return parts[0] === "ls" && parts.slice(1).some((p) => p.includes("-R"));
-        }
-        if (args.isExecutableMode) {
-            const argv = args.argv ?? [];
-            return argv[0] === "ls" && argv.slice(1).some((p) => p.includes("-R"));
-        }
-        return false;
-    })();
-    if (isRecursiveLs) {
-        // Respond with a friendly (but firm) message.
-        return Promise.resolve(
-            errorResult(
-                "Command blocked: recursive ls is disallowed because it may scan node_modules."
-            )
-        );
+    // Block dangerous commands via dedicated module
+    const blockMsg = getBlockingMessage(args);
+    if (blockMsg) {
+        return Promise.resolve(errorResult(blockMsg));
     }
 
     const options: ObjectEncodingOptions & SpawnOptions = {
