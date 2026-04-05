@@ -71,11 +71,11 @@ export class RunProcessArgsHelper {
     }
 
     /** Timeout in milliseconds – number if supplied, otherwise undefined */
-    get timeoutMs(): number | undefined {
+    /** Timeout in milliseconds – always a number (default 30_000) */
+    get timeoutMs(): number {
         const v = this.raw.timeout_ms;
-        if (v == null) return undefined;
         const n = Number(v);
-        return Number.isNaN(n) ? undefined : n;
+        return Number.isNaN(n) ? 30_000 : n;
     }
 }
 
@@ -93,7 +93,7 @@ export function runProcess(
     if (argsHelper.cwd) {
         options.cwd = argsHelper.cwd;
     }
-    const stdin = argsHelper.stdin;
+    // Inline access to stdin via argsHelper
 
     // ---------------------------------------------------------------------
     // RunProcess argument handling – determine the actual command and args.
@@ -131,7 +131,7 @@ export function runProcess(
 
     let child_pid;
     const promise: SpawnPromise = new Promise<CallToolResult>((resolve, reject) => {
-        if (!stdin) {
+        if (!argsHelper.stdin) {
             // PRN windowsHide on Windows, signal, killSignal
             // FYI spawn_options.stdio => default is perfect ['pipe', 'pipe', 'pipe'] 
             //     order: [STDIN, STDOUT, STDERR]
@@ -166,8 +166,8 @@ export function runProcess(
         let stdout = "";
         let stderr = "";
 
-        if (child.stdin && stdin) {
-            child.stdin.write(stdin);
+        if (child.stdin && argsHelper.stdin) {
+            child.stdin.write(argsHelper.stdin);
             child.stdin.end();
         }
 
@@ -199,10 +199,7 @@ export function runProcess(
         // Timeout handling – kill the whole process group after the supplied timeout.
         let timer: NodeJS.Timeout | null = null;
 
-        let timeoutMs = Number(argsHelper.timeoutMs);
-        if (Number.isNaN(timeoutMs)) {
-            timeoutMs = 30_000;
-        }
+        const timeoutMs = argsHelper.timeoutMs;
         timer = setTimeout(() => {
             if (process.platform !== "win32") {
                 if (child.pid) { try { process.kill(-child.pid, "SIGTERM"); } catch (_) {} }
