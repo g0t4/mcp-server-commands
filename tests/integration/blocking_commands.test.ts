@@ -38,4 +38,17 @@ describe("blocking commands", () => {
             },
         ]);
     });
+
+    // Same scenario using executable mode (argv) – currently not blocked.
+    test("blocks recursive ls invoked via bash -lc in argv mode", async () => {
+        const result = await runProcess({ argv: ["bash", "-lc", "ls", "-R"] });
+        expect(result.isError).toBe(true);
+        expect(result.content).toEqual([
+            {
+                name: "ERROR",
+                type: "text",
+                text: expect.stringContaining("Command blocked: recursive ls is disallowed"),
+            },
+        ]);
+    });
 });
