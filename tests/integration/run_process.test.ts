@@ -369,15 +369,12 @@ describe("runProcess - signal handling", () => {
 
             console.log("post: initial runProcess");
 
-            // Use the pid returned directly from the spawn promise
-            const pid = runPromise.pid!;
-            console.log(`pid ${pid}`);
-            expect(pid).toBeGreaterThan(0);
-            expect(pid).not.toBeNaN();
+            console.log(`pid ${runPromise.pid!}`);
+            expect(runPromise.pid!).toBeGreaterThan(0);
 
             console.log("pre: kill");
 
-            process.kill(pid, 9);
+            process.kill(runPromise.pid!, 9);
 
             console.log("post: kill");
 
