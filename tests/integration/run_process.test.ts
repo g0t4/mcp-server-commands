@@ -258,10 +258,18 @@ describe('timeout', () => {
         });
     });
 
-    // FYI `read foo` does not hang because STDIN is not a TTY and therefore read fails with RC=1 immediately
-    //   IOTW it is not a good test of hanging/timeout!
-    //   proof: `read foo </dev/null` and it will return RC=1
-    //   same thing happens when STDIN == "ignore" which is what is set in spawn options when not passing STDIN arg
+    test("read foo should fail with a non‑zero exit code", async () => {
+        const result = await runProcess({
+            command_line: "read foo",
+        });
+
+        // The builtin should exit with a non‑zero code and be marked as an error.
+        expect(result.isError).toBe(true);
+        const exitInfo = result.content.find((c: any) => c.name === "EXIT_CODE");
+        expect(exitInfo).toBeDefined();
+        expect(exitInfo.type).toBe("text");
+        expect(exitInfo.text).toEqual(expect.stringContaining("1"));
+    });
 
     describe('hang due to `vim` command', () => {
         // with new detached process group + custom timeout... behavior now matches across ubuntu+macOS 
