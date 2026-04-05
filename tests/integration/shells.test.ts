@@ -1,4 +1,4 @@
-import { runProcess } from "../../src/exec-utils.js";
+import { runProcess } from "../../src/run_process.js";
 import { IS_UBUNTU } from "./is_ubuntu.js";
 
 describe("test explicit shell use via executable mode (argv)", () => {

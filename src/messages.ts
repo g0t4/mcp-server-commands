@@ -1,4 +1,4 @@
-import { SpawnFailure, SpawnResult } from "./exec-utils.js";
+import { SpawnFailure, SpawnResult } from "./run_process.js";
 import { CallToolResult, TextContent } from "@modelcontextprotocol/sdk/types.js";
 
 export function resultFor(spawn_result: SpawnResult): CallToolResult {

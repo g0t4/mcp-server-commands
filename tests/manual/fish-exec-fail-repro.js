@@ -23,7 +23,7 @@ async function main() {
 //main();
 //
 
-import { execFileWithInput } from "../build/exec-utils.js";
+import { execFileWithInput } from "../build/run_process.js";
 
 async function test_workaround() {
     const { stdout, stderr } = await execFileWithInput(
