@@ -51,4 +51,10 @@ describe("blocking commands", () => {
             },
         ]);
     });
+
+    // Ensure that commands containing "ls -R" as arguments are not blocked.
+    test("allows non-recursive ls in arguments", async () => {
+        const result = await runProcess({ command_line: "echo foo the ls -R bar" });
+        expect(result.isError).toBe(false);
+    });
 });
