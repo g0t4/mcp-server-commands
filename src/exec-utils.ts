@@ -126,25 +126,23 @@ export function spawn_wrapped(
         if (runProcessArgs?.timeout_ms) {
             timeoutMs = Number(runProcessArgs.timeout_ms);
         }
-        if (timeoutMs !== undefined) {
-            timer = setTimeout(() => {
+        timer = setTimeout(() => {
+            if (process.platform !== "win32") {
+                if (child.pid) { try { process.kill(-child.pid, "SIGTERM"); } catch (_) {} }
+            } else {
+                child.kill("SIGTERM");
+            }
+            const killTimeout = setTimeout(() => {
                 if (process.platform !== "win32") {
-                    if (child.pid) { try { process.kill(-child.pid, "SIGTERM"); } catch (_) {} }
+                    if (child.pid) { try { process.kill(-child.pid, "SIGKILL"); } catch (_) {} }
                 } else {
-                    child.kill("SIGTERM");
+                    child.kill("SIGKILL");
                 }
-                const killTimeout = setTimeout(() => {
-                    if (process.platform !== "win32") {
-                        if (child.pid) { try { process.kill(-child.pid, "SIGKILL"); } catch (_) {} }
-                    } else {
-                        child.kill("SIGKILL");
-                    }
-                }, 2000);
-                const clearKill = () => clearTimeout(killTimeout);
-                child.once("exit", clearKill);
-                child.once("close", clearKill);
-            }, timeoutMs);
-        }
+            }, 2000);
+            const clearKill = () => clearTimeout(killTimeout);
+            child.once("exit", clearKill);
+            child.once("close", clearKill);
+        }, timeoutMs);
 
         child.on("error", (err: Error) => {
             logWithElapsedTime("ERROR");
