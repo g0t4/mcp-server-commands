@@ -103,11 +103,7 @@ export function runProcess(
     if (argsHelper.cwd) {
         options.cwd = argsHelper.cwd;
     }
-    // Inline access to stdin via argsHelper
 
-    // ---------------------------------------------------------------------
-    // RunProcess argument handling – determine the actual command and args.
-    // ---------------------------------------------------------------------
     const isShellMode = argsHelper.isShellMode;
     const isExecutableMode = argsHelper.isExecutableMode;
 
