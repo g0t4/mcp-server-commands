@@ -23,6 +23,7 @@ async function main() {
 //main();
 //
 
+// FYI make sure to rebuild since not typescript!
 import { execFileWithInput } from "../build/run_process.js";
 
 async function test_workaround() {
