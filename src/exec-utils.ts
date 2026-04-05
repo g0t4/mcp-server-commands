@@ -52,7 +52,7 @@ export class RunProcessArgsHelper {
     }
 
     /** Text to write to STDIN – string if supplied, otherwise undefined */
-    get stdin(): string | undefined {
+    get stdin_text(): string | undefined {
         const v = this.raw.stdin;
         return v == null ? undefined : String(v);
     }
@@ -132,7 +132,7 @@ export function runProcess(
 
     let child_pid;
     const promise: SpawnPromise = new Promise<CallToolResult>((resolve, reject) => {
-        if (!args.stdin) {
+        if (!args.stdin_text) {
             // PRN windowsHide on Windows, signal, killSignal
             // FYI spawn_options.stdio => default is perfect ['pipe', 'pipe', 'pipe'] 
             //     order: [STDIN, STDOUT, STDERR]
@@ -167,8 +167,8 @@ export function runProcess(
         let stdout = "";
         let stderr = "";
 
-        if (child.stdin && args.stdin) {
-            child.stdin.write(args.stdin);
+        if (child.stdin && args.stdin_text) {
+            child.stdin.write(args.stdin_text);
             child.stdin.end();
         }
 
