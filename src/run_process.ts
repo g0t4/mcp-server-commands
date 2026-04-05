@@ -102,6 +102,30 @@ export function runProcess(
         return Promise.resolve(errorResult("Either 'command_line' (string) or 'argv' (array) is required."));
     }
 
+    // Block dangerous commands (e.g., recursive ls that traverses node_modules)
+    // The check is intentionally simple: if the command is "ls" and the
+    // arguments include "-R", we refuse to run it. This avoids costly scans.
+    const isRecursiveLs = (() => {
+        if (args.isShellMode) {
+            // look for "ls" followed by "-R" as separate token or combined
+            const parts = String(args.commandLine).trim().split(/\s+/);
+            return parts[0] === "ls" && parts.slice(1).some((p) => p.includes("-R"));
+        }
+        if (args.isExecutableMode) {
+            const argv = args.argv ?? [];
+            return argv[0] === "ls" && argv.slice(1).some((p) => p.includes("-R"));
+        }
+        return false;
+    })();
+    if (isRecursiveLs) {
+        // Respond with a friendly (but firm) message.
+        return Promise.resolve(
+            errorResult(
+                "Command blocked: recursive ls is disallowed because it may scan node_modules."
+            )
+        );
+    }
+
     const options: ObjectEncodingOptions & SpawnOptions = {
         // spawn options: https://nodejs.org/api/child_process.html#child_processspawncommand-args-options
         encoding: "utf8"

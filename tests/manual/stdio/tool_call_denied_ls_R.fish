@@ -1,0 +1,28 @@
+#!/usr/bin/env fish
+
+set request '{ "jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": { "name": "run_process", "arguments": { "command_line": "ls -R" } }}'
+
+echo $request \
+    | npx ~/repos/github/g0t4/mcp-server-commands/build/index.js -- --verbose  \
+    | jq
+
+# * STDOUT
+#
+# {
+#   "result": {
+#     "content": [
+#       {
+#         "name": "EXIT_CODE",
+#         "type": "text",
+#         "text": "0"
+#       },
+#       {
+#         "name": "STDOUT",
+#         "type": "text",
+#         "text": "build\nCHANGELOG.md\njest.config.js\nLICENSE\nnode_modules\npackage-lock.json\npackage.json\nREADME.md\nsrc\ntests\nTODO.md\ntsconfig.json\n"
+#       }
+#     ]
+#   },
+#   "jsonrpc": "2.0",
+#   "id": 1
+# }
