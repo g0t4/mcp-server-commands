@@ -17,6 +17,7 @@ export function runProcess(args: RunProcessArgs): SpawnPromise{
 
     const bothProvided = isShellMode && isExecutableMode;
     if (bothProvided) {
+        // FYI I am intentionally not using Promise.reject (this is an expected error and the result indicates that, so it is resolved not rejected)
         return Promise.resolve(errorResult("Cannot pass both 'command_line' and 'argv'. Use one or the other."));
     }
     const noneProvided = !isShellMode && !isExecutableMode;
