@@ -258,17 +258,21 @@ describe('timeout', () => {
         });
     });
 
-    test("read foo should fail with a non‑zero exit code", async () => {
+    test("`read foo` DOES NOT HANG, thus no timeout... instead read detects a lack of STDIN and returns a non-zero exit code", async () => {
         const result = await runProcess({
             command_line: "read foo",
         });
 
         // The builtin should exit with a non‑zero code and be marked as an error.
         expect(result.isError).toBe(true);
-        const exitInfo = result.content.find((c: any) => c.name === "EXIT_CODE");
-        expect(exitInfo).toBeDefined();
-        expect(exitInfo.type).toBe("text");
-        expect(exitInfo.text).toEqual(expect.stringContaining("1"));
+        expect(result.content).toEqual(expect.arrayContaining([
+            expect.objectContaining({
+                name: "EXIT_CODE",
+                type: "text",
+                text: expect.stringContaining("1"),
+            }),
+        ]));
+
     });
 
     describe('hang due to `vim` command', () => {
