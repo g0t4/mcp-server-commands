@@ -24,23 +24,6 @@ export function runProcess(runProcessArgs: RunProcessArgs): SpawnPromise {
         return Promise.resolve(errorResult("Either 'command_line' (string) or 'argv' (array) is required."));
     }
 
-    // * shared args
-    const spawn_options: ObjectEncodingOptions & SpawnOptions = {
-        // spawn options: https://nodejs.org/api/child_process.html#child_processspawncommand-args-options
-        encoding: "utf8"
-    };
-    if (runProcessArgs?.cwd) {
-        spawn_options.cwd = String(runProcessArgs.cwd);
-    }
-    if (runProcessArgs?.timeout_ms) {
-        spawn_options.timeout = Number(runProcessArgs.timeout_ms);
-    } else {
-        // default timeout after 30s
-        spawn_options.timeout = 30000;
-    }
-
-    const stdin = runProcessArgs?.stdin ? String(runProcessArgs.stdin) : undefined;
-
     try {
 
         if (isShellMode) {

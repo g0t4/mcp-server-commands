@@ -35,6 +35,21 @@ export function spawn_wrapped(
 ): SpawnPromise {
     const startTime = performance.now();
 
+    const spawn_options: ObjectEncodingOptions & SpawnOptions = {
+        // spawn options: https://nodejs.org/api/child_process.html#child_processspawncommand-args-options
+        encoding: "utf8"
+    };
+    if (runProcessArgs?.cwd) {
+        spawn_options.cwd = String(runProcessArgs.cwd);
+    }
+    if (runProcessArgs?.timeout_ms) {
+        spawn_options.timeout = Number(runProcessArgs.timeout_ms);
+    } else {
+        // default timeout after 30s
+        spawn_options.timeout = 30000;
+    }
+    const stdin = runProcessArgs?.stdin ? String(runProcessArgs.stdin) : undefined;
+
     const logWithElapsedTime = (msg: string, ...rest: any[]) => {
         if (!is_verbose) return;
 
