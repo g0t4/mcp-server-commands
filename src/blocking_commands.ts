@@ -10,13 +10,17 @@ export function getBlockingMessage(args: RunProcessArgsHelper): string | null {
     // The check is intentionally simple: if the command is "ls" and the
     // arguments include "-R", we refuse to run it. This avoids costly scans.
     const isRecursiveLs = (() => {
+        // Helper to detect a recursive "ls" command anywhere in the arguments.
+        const hasLs = (tokens: string[]) => tokens.includes("ls");
+        const hasRecursiveFlag = (tokens: string[]) => tokens.some((p) => p.includes("-R"));
+
         if (args.isShellMode) {
             const parts = String(args.commandLine).trim().split(/\s+/);
-            return parts[0] === "ls" && parts.slice(1).some((p) => p.includes("-R"));
+            return hasLs(parts) && hasRecursiveFlag(parts);
         }
         if (args.isExecutableMode) {
             const argv = args.argv ?? [];
-            return argv[0] === "ls" && argv.slice(1).some((p) => p.includes("-R"));
+            return hasLs(argv) && hasRecursiveFlag(argv);
         }
         return false;
     })();
@@ -26,4 +30,3 @@ export function getBlockingMessage(args: RunProcessArgsHelper): string | null {
     }
     return null;
 }
-
