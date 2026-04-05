@@ -27,27 +27,79 @@ export type SpawnFailure = SpawnResult & {
 
 export type SpawnPromise = Promise<CallToolResult> & { pid?: number };
 
+/**
+ * Raw arguments passed to {@link runProcess}. Historically this was a loose
+ * {@link Record} but we now expose a typed helper for safer access.
+ */
 export type RunProcessArgs = Record<string, unknown>;
+
+/**
+ * Helper class that provides typed getters for the keys accepted by
+ * {@link runProcess}. It wraps a {@link RunProcessArgs} object and casts the
+ * values to the expected runtime types.
+ */
+export class RunProcessArgsHelper {
+    private readonly raw: RunProcessArgs;
+
+    constructor(raw: RunProcessArgs) {
+        this.raw = raw ?? {};
+    }
+
+    /** Working directory – string if supplied, otherwise undefined */
+    get cwd(): string | undefined {
+        const v = this.raw.cwd;
+        return v == null ? undefined : String(v);
+    }
+
+    /** Text to write to STDIN – string if supplied, otherwise undefined */
+    get stdin(): string | undefined {
+        const v = this.raw.stdin;
+        return v == null ? undefined : String(v);
+    }
+
+    /** Shell command line – string if supplied, otherwise undefined */
+    get commandLine(): string | undefined {
+        const v = this.raw.command_line;
+        return v == null ? undefined : String(v);
+    }
+
+    /** Executable argv – array of strings if supplied, otherwise undefined */
+    get argv(): string[] | undefined {
+        const v = this.raw.argv;
+        if (!Array.isArray(v)) return undefined;
+        return v.map((item) => String(item));
+    }
+
+    /** Timeout in milliseconds – number if supplied, otherwise undefined */
+    get timeoutMs(): number | undefined {
+        const v = this.raw.timeout_ms;
+        if (v == null) return undefined;
+        const n = Number(v);
+        return Number.isNaN(n) ? undefined : n;
+    }
+}
 
 export function runProcess(
     runProcessArgs: RunProcessArgs,
 ): SpawnPromise {
     const startTime = performance.now();
 
+    const argsHelper = new RunProcessArgsHelper(runProcessArgs);
+
     const options: ObjectEncodingOptions & SpawnOptions = {
         // spawn options: https://nodejs.org/api/child_process.html#child_processspawncommand-args-options
         encoding: "utf8"
     };
-    if (runProcessArgs?.cwd) {
-        options.cwd = String(runProcessArgs.cwd);
+    if (argsHelper.cwd) {
+        options.cwd = argsHelper.cwd;
     }
-    const stdin = runProcessArgs?.stdin ? String(runProcessArgs.stdin) : undefined;
+    const stdin = argsHelper.stdin;
 
     // ---------------------------------------------------------------------
     // RunProcess argument handling – determine the actual command and args.
     // ---------------------------------------------------------------------
-    const isShellMode = Boolean(runProcessArgs?.command_line);
-    const isExecutableMode = Array.isArray(runProcessArgs?.argv) && (runProcessArgs?.argv as unknown[]).length > 0;
+    const isShellMode = Boolean(argsHelper.commandLine);
+    const isExecutableMode = Array.isArray(argsHelper.argv) && argsHelper.argv.length > 0;
 
     if (isShellMode && isExecutableMode) {
         return Promise.resolve(errorResult("Cannot pass both 'command_line' and 'argv'. Use one or the other."));
@@ -61,11 +113,11 @@ export function runProcess(
     let execArgs: string[] = [];
     if (isShellMode) {
         (options as any).shell = true;
-        execCommand = String(runProcessArgs.command_line);
+        execCommand = String(argsHelper.commandLine);
         execArgs = [];
     } else {
         (options as any).shell = false;
-        const argv = runProcessArgs?.argv as string[];
+        const argv = argsHelper.argv as string[];
         execCommand = argv[0];
         execArgs = argv.slice(1);
     }
@@ -147,7 +199,7 @@ export function runProcess(
         // Timeout handling – kill the whole process group after the supplied timeout.
         let timer: NodeJS.Timeout | null = null;
 
-        let timeoutMs = Number(runProcessArgs?.timeout_ms);
+        let timeoutMs = Number(argsHelper.timeoutMs);
         if (Number.isNaN(timeoutMs)) {
             timeoutMs = 30_000;
         }
