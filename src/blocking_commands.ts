@@ -14,14 +14,14 @@ export function getBlockingMessage(args: RunProcessArgsHelper): string | null {
         // const hasRecursiveFlag = (tokens: string[]) => tokens.some((p) => p.includes("-R"));
 
         if (args.isShellMode) {
+            // strip whitespace so that `ls   -R` is blocked just like `ls -R`
             const parts = String(args.commandLine).trim().split(/\s+/);
             const joined = parts.join(" ");
-            console.log(joined);
             return joined == "ls -R" || joined == "bash -lc ls -R";
         }
         if (args.isExecutableMode) {
             const argv = args.argv ?? [];
-            const joined = argv.join(" ");
+            const joined = argv.map(a => a.trim()).join(" ");
             return joined == "ls -R" || joined == "bash -lc ls -R";
         }
         return false;
