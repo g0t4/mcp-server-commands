@@ -1,6 +1,6 @@
 import { SpawnOptions } from "node:child_process";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { spawn_wrapped, SpawnFailure, SpawnPromise } from "./exec-utils.js";
+import { RunProcessArgs, spawn_wrapped, SpawnFailure, SpawnPromise } from "./exec-utils.js";
 import { always_log } from "./logging.js";
 import { errorResult, messagesFor } from "./messages.js";
 import { ObjectEncodingOptions } from "node:fs";
@@ -8,12 +8,11 @@ import { ObjectEncodingOptions } from "node:fs";
 /**
  * Executes a command and returns the result as CallToolResult.
  */
-export type RunProcessArgs = Record<string, unknown> | undefined;
-export function runProcess(args: RunProcessArgs): SpawnPromise {
+export function runProcess(runProcessArgs: RunProcessArgs): SpawnPromise {
 
     // shell mode (command_line) vs executable mode (argv) — inferred from which parameter is provided
-    const isShellMode = Boolean(args?.command_line);
-    const isExecutableMode = Array.isArray(args?.argv) && (args?.argv as unknown[]).length > 0;
+    const isShellMode = Boolean(runProcessArgs?.command_line);
+    const isExecutableMode = Array.isArray(runProcessArgs?.argv) && (runProcessArgs?.argv as unknown[]).length > 0;
 
     const bothProvided = isShellMode && isExecutableMode;
     if (bothProvided) {
@@ -30,33 +29,33 @@ export function runProcess(args: RunProcessArgs): SpawnPromise {
         // spawn options: https://nodejs.org/api/child_process.html#child_processspawncommand-args-options
         encoding: "utf8"
     };
-    if (args?.cwd) {
-        spawn_options.cwd = String(args.cwd);
+    if (runProcessArgs?.cwd) {
+        spawn_options.cwd = String(runProcessArgs.cwd);
     }
-    if (args?.timeout_ms) {
-        spawn_options.timeout = Number(args.timeout_ms);
+    if (runProcessArgs?.timeout_ms) {
+        spawn_options.timeout = Number(runProcessArgs.timeout_ms);
     } else {
         // default timeout after 30s
         spawn_options.timeout = 30000;
     }
 
-    const stdin = args?.stdin ? String(args.stdin) : undefined;
+    const stdin = runProcessArgs?.stdin ? String(runProcessArgs.stdin) : undefined;
 
     try {
 
         if (isShellMode) {
             // * shell mode — command_line is interpreted by the system shell
             spawn_options.shell = true
-            const command_line = String(args?.command_line)
-            return spawn_wrapped(command_line, [], stdin, spawn_options);
+            const command_line = String(runProcessArgs?.command_line)
+            return spawn_wrapped(command_line, [], runProcessArgs);
         }
 
         // * executable mode — argv[0] is spawned directly, no shell interpretation
         spawn_options.shell = false
-        const argv = args?.argv as string[];
+        const argv = runProcessArgs?.argv as string[];
         const command = argv[0]
         const commandArgs = argv.slice(1);
-        return spawn_wrapped(command, commandArgs, stdin, spawn_options);
+        return spawn_wrapped(command, commandArgs, runProcessArgs);
 
     } catch (error) {
         // TODO check if not SpawnFailure => i.e. test aborting/killing

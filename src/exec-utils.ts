@@ -26,11 +26,12 @@ export type SpawnFailure = SpawnResult & {
 
 export type SpawnPromise = Promise<CallToolResult> & { pid?: number };
 
+export type RunProcessArgs = Record<string, unknown> | undefined;
+
 export function spawn_wrapped(
     command: string,
     args: string[],
-    stdin: string | undefined,
-    options: SpawnOptions
+    runProcessArgs: RunProcessArgs,
 ): SpawnPromise {
     const startTime = performance.now();
 
