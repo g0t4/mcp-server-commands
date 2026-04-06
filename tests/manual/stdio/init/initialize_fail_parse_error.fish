@@ -3,6 +3,8 @@
 # when the request fails, error response has why (at least from my mcp-server-commands server)
 
 set request '{"id":2,"jsonrpc":"2.0","method":"initialize","params":{"clientInfo":{"version":"1.0.0","name":"ExampleClient"},"protocolVersion":"2024-11-05","capabilities":{"roots":{"listChanged":false},"sampling":[]}}}'
+# remove the sampling: [] ... s/b an object but b/c of serializing in lua... it mapped to empty list! NBD just remove it and it works!
+
 
 set response (echo $request \
     | npx ~/repos/github/g0t4/mcp-server-commands/build/index.js -- --verbose)
