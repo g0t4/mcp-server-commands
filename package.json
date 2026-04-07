@@ -4,6 +4,9 @@
     "description": "An MCP server to run arbitrary commands",
     "private": false,
     "type": "module",
+    "engines": {
+        "node": ">=22 <23"
+    },
     "bin": {
         "mcp-server-commands": "./build/index.js"
     },
@@ -20,7 +23,8 @@
         "test:watch": "jest --watch",
         "test:integration-all": "jest tests/integration",
         "test:watch:integration-all": "jest --watch tests/integration",
-        "test:watch:integration-run_process": "jest --watch tests/integration/run_process.test.ts"
+        "test:watch:integration-run_process": "jest --watch tests/integration/run_process.test.ts",
+        "preinstall": "node -e \"const semver=require('semver');if(!semver.satisfies(process.version,'>=22 <23')){console.error('⚠️ Wrong Node version. Use Node 22.x');process.exit(1);}\""
     },
     "dependencies": {
         "@modelcontextprotocol/sdk": "1.9.0",
