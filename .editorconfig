@@ -1,0 +1,28 @@
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+# end_of_line = lf
+
+[*.yaml]
+indent_size = 2
+
+
+[*.lua]
+# https://github.com/CppCXY/EmmyLuaCodeStyle/blob/master/docs/format_config_EN.md
+# https://github.com/CppCXY/EmmyLuaCodeStyle/blob/master/lua.template.editorconfig
+#   FYI using editorconfig for the formatter in the lua LS I am using (couldn't get defaultConfig to work in coc-settings.json)
+#  OK, IIUC luarc s/b per workspace/repo and coc-settings.json is gonna be global fallbacks, so I should add some of this over there
+indent_size = 4
+# TODO move to coc-settings.json and see if these work with other repos:
+max_line_length = 200
+align_continuous_inline_comment = false
+align_continuous_assign_statement = false
+# BTW zed lua extension works with this (as long as I load entire repo dir and not a subdir), cool
+
+[*.{bash,sh}]
+# shfmt uses editorconfig (and/or bash LS does)
+switch_case_indent = true
