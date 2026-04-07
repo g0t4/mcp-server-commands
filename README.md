@@ -152,3 +152,15 @@ npm run inspector
 ```
 
 The Inspector will provide a URL to access debugging tools in your browser.
+
+### nvm
+
+```fish
+# https://github.com/jorgebucaran/nvm.fish - nvm for fish
+fisher install jorgebucaran/nvm.fish
+# start new shell
+nvm install v22
+nvm use v22
+npm install tree-sitter # v22 works, v24/v25 do not work
+node --version
+```
