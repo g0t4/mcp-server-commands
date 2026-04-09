@@ -1,4 +1,5 @@
 import fs from 'fs';
+import path from 'path';
 
 export let is_verbose = false;
 if (process.argv.includes("--verbose")) {
@@ -8,6 +9,11 @@ const isJest = typeof process !== 'undefined' && !!process.env.JEST_WORKER_ID;
 if (isJest) {
     // is_verbose = true; // comment out to disable verbose logging in JEST test runner
 }
+
+// CLI option to override log file location: e.g. --logFile=/tmp/mcp.log
+const cliLogFile = process.argv
+    .find((arg) => arg.startsWith("--logFile="))
+    ?.split("=")[1];
 
 if (is_verbose) {
     always_log("INFO: verbose logging enabled");
@@ -49,10 +55,12 @@ export function always_log(message: string, data?: any) {
     // * all transports => server side log file
     const timestamp = new Date().toISOString();
     const logMessage = `[${timestamp}] ${message}${data ? ": " + JSON.stringify(data) : ""}`;
-    const shareDir = process.env.HOME + "/.local/share/mcp-server-commands/";
-    const logFile = shareDir + "/commands.log";
-    fs.mkdirSync(shareDir, { recursive: true });
-    fs.appendFileSync(logFile, logMessage + "\n");
+    const defaultShareDir = process.env.HOME + "/.local/share/mcp-server-commands/";
+    const defaultLogFile = defaultShareDir + "/commands.log";
+    const targetLogFile = cliLogFile ?? defaultLogFile;
+    const targetDir = cliLogFile ? path.dirname(cliLogFile) : defaultShareDir;
+    fs.mkdirSync(targetDir, { recursive: true });
+    fs.appendFileSync(targetLogFile, logMessage + "\n");
     // TODO any hail mary if this logging fails? just use console.error then?
     //   else still can get seemingly hung tool calls
 }
