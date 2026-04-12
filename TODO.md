@@ -1,3 +1,4 @@
+- TODO remove tree-sitter deps if I don't use it for command parsing/blocking (i.e. ls -R) and then get rid of node version 22 engine constraint
 
 - TODO do any models do better with typescript/javascript naming conventions vs how I use snake case for tool and arg names right now?
    i.e. stdinText vs stdin_text... runProcess vs run_process, etc?
@@ -22,7 +23,7 @@
     - `list_jobs`
        - if I go with log files on disk, show the path to the log file(s) per job
     - `stop_job`
-       - `jobids` 
+       - `jobids`
        - `signal` to stop
        - `timeout` after which it'll be killed
     - `read_job_logs`
@@ -44,11 +45,11 @@
 ## TODOs
 
 - Every time Claude runs a python script, `python` is used as the interpreter. Which fails every time.
-    - Thankfully, Claude retries with `python3` and uses that for the rest of the chat. 
+    - Thankfully, Claude retries with `python3` and uses that for the rest of the chat.
         - Hence the idea to have some memory concept across chats! Very selective memory and very minimal.
         - I was thinking of adding a tool for this server alone, one to write to and another to read from this cmdline memory... and then otherwise instruct Claude to judiciously use the memory (i.e. never if possible)
         - And, don't put any constraints on the memory other than a list of strings. Claude can do all that on his own (i.e. a line with `pythoh3` alone should be sufficient, in fact I could do some testing with that alone and see how Claude does)
-    - Another example would be `uname` on a Windows machine. 
+    - Another example would be `uname` on a Windows machine.
     - These different scenarios aren't necessarily mission critical to fix but they offer an opportunity to improve the experience.
     - The solution may not be generalizable too and might be specific to commmand that fails, i.e. if I pass the OS name in the ListTools response, that will likely fix that issue.
     - i.e. routinely `python` is used and then `python3`
