@@ -6,10 +6,18 @@
 
 set request '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}'
 
-echo $request \
-    | npx ~/repos/github/g0t4/mcp-server-commands/build/index.js -- --verbose  \
+# initialized notification DOES NOT HAVE ID
+set initialized '{"jsonrpc":"2.0","method":"notifications/initialized"}'
+
+begin
+    echo $request
+    echo $initialized
+end | npx ~/repos/github/g0t4/mcp-server-commands/build/index.js -- --verbose \
     | jq
 
-echo $request \
-    | docker container run -i --rm mcp/fetch \
+begin
+    echo $request
+    echo $initialized
+end | uvx --directory ~/repos/github/g0t4/mcp-servers/src/fetch mcp-server-fetch \
+    # | docker container run -i --rm mcp/fetch \
     | jq
