@@ -11,13 +11,17 @@ set initialized '{"jsonrpc":"2.0","method":"notifications/initialized"}'
 
 begin
     echo $request
+    sleep 1
     echo $initialized
+    sleep 1
 end | npx ~/repos/github/g0t4/mcp-server-commands/build/index.js -- --verbose \
     | jq
 
 begin
     echo $request
+    sleep 1
     echo $initialized
+    sleep 1
 end | uvx --directory ~/repos/github/g0t4/mcp-servers/src/fetch mcp-server-fetch \
     # | docker container run -i --rm mcp/fetch \
     | jq
