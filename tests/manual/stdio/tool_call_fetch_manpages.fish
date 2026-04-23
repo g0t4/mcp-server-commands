@@ -8,4 +8,4 @@ begin
     echo $init
     echo $call
     sleep 2 # wait for server response else client here disconnects and server never gets to respond
-end | uvx --directory ~/repos/github/g0t4/mcp-servers/src/fetch mcp-server-fetch | jq
+end | uv run --directory ~/repos/github/g0t4/mcp-servers/src/fetch mcp-server-fetch | jq
