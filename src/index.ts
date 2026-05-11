@@ -7,16 +7,17 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { createRequire } from "module";
 import { registerPrompts } from "./prompts.js";
 import { registerTools } from "./tools.js";
-const require = createRequire(import.meta.url);
+import { readFileSync } from "node:fs";
+
 const {
-    name: package_name,
-    version: package_version,
-} = require("../package.json");
+    name: packageName,
+    version: packageVersion,
+} = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf-8"));
 
 const server = new Server(
     {
-        name: package_name,
-        version: package_version,
+        name: packageName,
+        version: packageVersion,
         description: "Run commands on this " + os.platform() + " machine",
     },
     {
