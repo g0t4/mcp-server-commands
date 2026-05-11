@@ -39,7 +39,7 @@ describe("runProcess - validating argument parsing/validation and basic success/
                 },
             ]);
         });
-    });
+        });
 
     describe("when executable mode (argv) is successful", () => {
         test("should NOT set isError + returns EXIT_CODE=0 + STDOUT", async () => {
@@ -60,6 +60,30 @@ describe("runProcess - validating argument parsing/validation and basic success/
                     name: "STDOUT",
                     type: "text",
                     text: "Hello World",
+                },
+            ]);
+        });
+
+        // New test: ensure that providing an empty `command_line` alongside a valid `argv`
+        // does not trigger a validation error and executes the command in executable mode.
+        test("should execute command via argv when command_line is empty", async () => {
+            const result = await runProcess({
+                command_line: "",
+                argv: ["bash", "-lc", "echo \"test\""] ,
+            });
+            // No error should be reported for a successful execution.
+            expect(result.isError).toBeUndefined();
+            expect(result.content).toEqual([
+                {
+                    name: "EXIT_CODE",
+                    type: "text",
+                    text: "0",
+                },
+                {
+                    name: "STDOUT",
+                    type: "text",
+                    // The output includes a trailing newline.
+                    text: expect.stringContaining("test"),
                 },
             ]);
         });
