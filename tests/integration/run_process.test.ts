@@ -66,10 +66,12 @@ describe("runProcess - validating argument parsing/validation and basic success/
 
         // New test: ensure that providing an empty `command_line` alongside a valid `argv`
         // does not trigger a validation error and executes the command in executable mode.
-        test("should execute command via argv when command_line is empty", async () => {
+        test("should execute command via argv when command_line is set to empty", async () => {
             const result = await runProcess({
+                // gptoss does this quite often, sets empty command_line arg (instead of just not setting it)
+                //  so why not codify it as this interpretation makes sense
                 command_line: "",
-                argv: ["bash", "-lc", "echo \"test\""],
+                argv: ["bash", "-lc", "echo 'test'"],
             });
             // No error should be reported for a successful execution.
             expect(result.isError).toBeUndefined();
