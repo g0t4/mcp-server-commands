@@ -39,7 +39,7 @@ describe("runProcess - validating argument parsing/validation and basic success/
                 },
             ]);
         });
-        });
+    });
 
     describe("when executable mode (argv) is successful", () => {
         test("should NOT set isError + returns EXIT_CODE=0 + STDOUT", async () => {
@@ -69,7 +69,7 @@ describe("runProcess - validating argument parsing/validation and basic success/
         test("should execute command via argv when command_line is empty", async () => {
             const result = await runProcess({
                 command_line: "",
-                argv: ["bash", "-lc", "echo \"test\""] ,
+                argv: ["bash", "-lc", "echo \"test\""],
             });
             // No error should be reported for a successful execution.
             expect(result.isError).toBeUndefined();
@@ -300,7 +300,7 @@ describe('timeout', () => {
     });
 
     describe('hang due to `vim` command', () => {
-        // with new detached process group + custom timeout... behavior now matches across ubuntu+macOS 
+        // with new detached process group + custom timeout... behavior now matches across ubuntu+macOS
         //   so let's keep this as yet another timeout example, doesn't hurt!
         //   also helps identify vim timeout issues in case they are confused with the git-commit+vim scenario below
         test('should set isError and include SIGNAL when aborted by timeout', async () => {
@@ -400,7 +400,7 @@ describe("runProcess - signal handling", () => {
 
                 argv: ['sleep', '10.5'],
                 // FYI 10.5 is "odd" number so it's less likely to kill smth important :)
-                // PRN I could find this otherwise to avoid killing smth else  
+                // PRN I could find this otherwise to avoid killing smth else
                 //   like check parent processes, or if multiple matches then fail this test
             });
 
