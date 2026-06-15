@@ -1,5 +1,5 @@
 enabled: true
-include:
+include_domains:
   - md
   # node related:
   - ts
@@ -10,7 +10,7 @@ include:
   - mjs
   - json
 # ignores:
-global_languages:
+global_domains:
   # node related only for global search
   #  TODO maybe have a config global retrieval vs global search (can have diff filters, or actually global search could just always be everything)
   - ts
