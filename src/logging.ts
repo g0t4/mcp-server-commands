@@ -55,10 +55,10 @@ export function always_log(message: string, data?: any) {
     // * all transports => server side log file
     const timestamp = new Date().toISOString();
     const logMessage = `[${timestamp}] ${message}${data ? ": " + JSON.stringify(data) : ""}`;
-    const defaultShareDir = process.env.HOME + "/.local/share/mcp-server-commands/";
-    const defaultLogFile = defaultShareDir + "/commands.log";
+    const defaultStateDir = process.env.HOME + "/.local/state/mcp-server-commands/";
+    const defaultLogFile = defaultStateDir + "/commands.log";
     const targetLogFile = cliLogFile ?? defaultLogFile;
-    const targetDir = cliLogFile ? path.dirname(cliLogFile) : defaultShareDir;
+    const targetDir = cliLogFile ? path.dirname(cliLogFile) : defaultStateDir;
     fs.mkdirSync(targetDir, { recursive: true });
     fs.appendFileSync(targetLogFile, logMessage + "\n");
     // TODO any hail mary if this logging fails? just use console.error then?
