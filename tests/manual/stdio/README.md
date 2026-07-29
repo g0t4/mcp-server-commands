@@ -1,3 +1,9 @@
+## TODO configure server level command + options for shell execution mode?
+
+=> i.e. shell command path + args + maybe even shell specific overrides for config file location? so you could have minimal agent config and the agent isn't using your user config! i.e. in fish the ls function dumps ANSI color codes.. I'd want to get rid of those for agents
+
+NOTE this would be for shell mode only (commandline passed) and not for argv (exec mode)
+
 ## NOTES
 
 ```sh
