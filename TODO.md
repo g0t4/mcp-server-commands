@@ -1,3 +1,10 @@
+## VERIFY CANCEL WORKS and IS APPROPRIATE
+
+I added cancel by killing processes, is that the best way? is it working?
+- see e2e test with python script
+- verify the integration test too
+
+## OLDER
 - TODO remove tree-sitter deps if I don't use it for command parsing/blocking (i.e. ls -R) and then get rid of node version 22 engine constraint
 
 - TODO do any models do better with typescript/javascript naming conventions vs how I use snake case for tool and arg names right now?
