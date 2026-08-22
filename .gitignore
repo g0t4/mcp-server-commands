@@ -2,3 +2,9 @@ node_modules/
 build/
 *.log
 .env*
+# python (uv + pytest)
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
