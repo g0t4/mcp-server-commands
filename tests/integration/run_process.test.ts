@@ -425,5 +425,29 @@ describe("runProcess - signal handling", () => {
 
     });
 
-    // TODO abort controller? if I add cooperative cancellation or smth like it
+    describe('MCP cancellation via AbortSignal', () => {
+
+        test('should kill the child process when the request signal is aborted', async () => {
+            const controller = new AbortController();
+            const runPromise = runProcess({
+                argv: ['sleep', '10.5'],
+            }, controller.signal);
+
+            expect(runPromise.pid!).toBeGreaterThan(0);
+
+            // Simulate the SDK aborting the request when a notifications/cancelled
+            // message arrives for this request id.
+            controller.abort(new Error("cancelled"));
+
+            const result = await runPromise;
+            expect(result.isError).toBe(true);
+            const signalMsg = result.content.find(
+                (c) => c.type === "text" && c.name === "SIGNAL"
+            );
+            expect(signalMsg).toBeDefined();
+            // SIGTERM is sent first; SIGKILL only escalates if the child lingers.
+            expect(signalMsg && signalMsg.type === "text" && signalMsg.text).toMatch(/^SIG(TERM|KILL)$/);
+        });
+
+    });
 });

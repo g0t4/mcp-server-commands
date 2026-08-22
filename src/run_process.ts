@@ -1,5 +1,5 @@
 // TODO cleanup exec usages once spawn is ready
-import { spawn, SpawnOptions } from "child_process";
+import { spawn, SpawnOptions, ChildProcess } from "child_process";
 import { ObjectEncodingOptions } from "fs";
 import { performance } from "perf_hooks";
 import { is_verbose, verbose_log } from "./logging.js";
@@ -90,8 +90,23 @@ export class RunProcessArgsHelper {
     }
 }
 
+/**
+ * Kills an entire process group (the child plus any descendants). On non-Windows
+ * platforms the negative PID targets the whole group; on Windows we kill the child.
+ */
+function killProcessGroup(child: ChildProcess, signal: NodeJS.Signals): void {
+    if (process.platform !== "win32") {
+        if (child.pid) {
+            try { process.kill(-child.pid, signal); } catch (_) {}
+        }
+    } else {
+        child.kill(signal);
+    }
+}
+
 export function runProcess(
     runProcessArgs: RunProcessArgs,
+    signal?: AbortSignal,
 ): SpawnPromise {
     const startTime = performance.now();
 
@@ -160,6 +175,7 @@ export function runProcess(
             if (settled) return;
             settled = true;
             if (timer) clearTimeout(timer);
+            signal?.removeEventListener("abort", onAbort);
             if (isError) {
                 resolve(resultFor(result));
             } else {
@@ -207,23 +223,26 @@ export function runProcess(
         // Timeout handling – kill the whole process group after the supplied timeout.
         let timer: NodeJS.Timeout | null = null;
 
-        timer = setTimeout(() => {
-            if (process.platform !== "win32") {
-                if (child.pid) { try { process.kill(-child.pid, "SIGTERM"); } catch (_) {} }
-            } else {
-                child.kill("SIGTERM");
-            }
+        // Kill the whole process group, escalating to SIGKILL if the child lingers.
+        const killGroup = (sig: NodeJS.Signals) => {
+            killProcessGroup(child, sig);
             const killTimeout = setTimeout(() => {
-                if (process.platform !== "win32") {
-                    if (child.pid) { try { process.kill(-child.pid, "SIGKILL"); } catch (_) {} }
-                } else {
-                    child.kill("SIGKILL");
-                }
+                killProcessGroup(child, "SIGKILL");
             }, 2000);
             const clearKill = () => clearTimeout(killTimeout);
             child.once("exit", clearKill);
             child.once("close", clearKill);
-        }, args.timeoutMs);
+        };
+
+        timer = setTimeout(() => killGroup("SIGTERM"), args.timeoutMs);
+
+        // MCP cancellation – the SDK aborts the request's signal when a
+        // notifications/cancelled message arrives for this request id.
+        const onAbort = () => {
+            if (settled) return;
+            killGroup("SIGTERM");
+        };
+        signal?.addEventListener("abort", onAbort, { once: true });
 
         child.on("error", (err: Error) => {
             logWithElapsedTime("ERROR");

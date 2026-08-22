@@ -62,14 +62,16 @@ export function registerTools(server: Server) {
 
     server.setRequestHandler(
         CallToolRequestSchema,
-        async (request): Promise<CallToolResult> => {
+        async (request, extra): Promise<CallToolResult> => {
             verbose_log("INFO: ToolRequest", request);
             switch (request.params.name) {
                 case "run_process": {
                     if (!request.params.arguments) {
                         throw new Error("Missing arguments for run_process");
                     }
-                    const result = await runProcess(request.params.arguments);
+                    // extra.signal is aborted by the SDK when the client sends a
+                    // notifications/cancelled message for this request id.
+                    const result = await runProcess(request.params.arguments, extra.signal);
                     // FYI logging this response is INVALUABLE! found a problem with my neovim MCP STDIO client!
                     verbose_log("INFO: ToolResponse", result);
                     return result;
