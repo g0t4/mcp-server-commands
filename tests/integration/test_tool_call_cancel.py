@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Pytest (e2e) for MCP cancellation via stdio against the real server.
+"""
+pytest (e2e) for MCP cancellation via stdio against the real server.
 
-Spawns build/index.js as a subprocess and verifies:
-1. a `tools/call` for `sleep 10; echo <unique-marker>` starts the sleep
-2. `pgrep -ilfa <marker>` confirms it is running
-3. after `notifications/cancelled` for the request id, the process is gone
+FYI This is in python because I can use this for other MCP servers and consolidate on one set of e2e tests for all of my MCP servers.
+Or, if I don't go that path I can always convert this to typescript+node too.
 """
 import json
 import os
