@@ -97,6 +97,24 @@ Make sure to run `npm run build`
 }
 ```
 
+### Set a default working directory
+
+By default, tool calls that don't supply a `cwd` run in the directory the server
+was launched from. If you'd rather point the server at a fixed default directory,
+pass `--workdir PATH` (or `--workdir=PATH`). A tool call's own `cwd` always takes
+precedence over this default.
+
+```json
+{
+  "mcpServers": {
+    "mcp-server-commands": {
+      "command": "npx",
+      "args": ["mcp-server-commands", "--workdir", "/path/to/your/project"]
+    }
+  }
+}
+```
+
 ## Local Models
 
 - Most models are trained such that they don't think they can run commands for you.

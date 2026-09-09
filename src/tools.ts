@@ -9,7 +9,7 @@ import { verbose_log } from "./logging.js";
 import { runProcess } from "./run_process.js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 
-export function registerTools(server: Server) {
+export function registerTools(server: Server, defaultCwd?: string) {
     server.setRequestHandler(ListToolsRequestSchema, async (): Promise<ListToolsResult> => {
         verbose_log("INFO: ListTools");
         return {
@@ -71,7 +71,7 @@ export function registerTools(server: Server) {
                     }
                     // extra.signal is aborted by the SDK when the client sends a
                     // notifications/cancelled message for this request id.
-                    const result = await runProcess(request.params.arguments, extra.signal);
+                    const result = await runProcess(request.params.arguments, extra.signal, defaultCwd);
                     // FYI logging this response is INVALUABLE! found a problem with my neovim MCP STDIO client!
                     verbose_log("INFO: ToolResponse", result);
                     return result;

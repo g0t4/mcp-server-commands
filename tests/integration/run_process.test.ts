@@ -136,6 +136,47 @@ describe("runProcess - validating argument parsing/validation and basic success/
         expect(cwd.isError).toBeUndefined();
     });
 
+    test("should use the server defaultCwd when no cwd is supplied", async () => {
+        const pwd = await runProcess({
+            command_line: "pwd",
+        }, undefined, "/");
+
+        expect(pwd.isError).toBeUndefined();
+        expect(pwd.content).toEqual([
+            {
+                name: "EXIT_CODE",
+                type: "text",
+                text: "0",
+            },
+            {
+                name: "STDOUT",
+                type: "text",
+                text: "/\n",
+            },
+        ]);
+    });
+
+    test("should prefer the per-call cwd over the server defaultCwd", async () => {
+        const pwd = await runProcess({
+            command_line: "pwd",
+            cwd: "/",
+        }, undefined, "/tmp");
+
+        expect(pwd.isError).toBeUndefined();
+        expect(pwd.content).toEqual([
+            {
+                name: "EXIT_CODE",
+                type: "text",
+                text: "0",
+            },
+            {
+                name: "STDOUT",
+                type: "text",
+                text: "/\n",
+            },
+        ]);
+    });
+
     describe("failures set isError and explain why", () => {
         describe("shell_nonexistentcommand (failure in the command position)", () => {
             test("shell mode (command_line)", async () => {

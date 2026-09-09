@@ -107,6 +107,7 @@ function killProcessGroup(child: ChildProcess, signal: NodeJS.Signals): void {
 export function runProcess(
     runProcessArgs: RunProcessArgs,
     signal?: AbortSignal,
+    defaultCwd?: string,
 ): SpawnPromise {
     const startTime = performance.now();
 
@@ -128,8 +129,11 @@ export function runProcess(
         // spawn options: https://nodejs.org/api/child_process.html#child_processspawncommand-args-options
         encoding: "utf8"
     };
-    if (args.cwd) {
-        options.cwd = args.cwd;
+    // Prefer the per-call cwd, then the server's --workdir default, then
+    // fall back to the process's own CWD (spawn's default).
+    const cwd = args.cwd ?? defaultCwd;
+    if (cwd) {
+        options.cwd = cwd;
     }
 
     let spawnCommand = "";
