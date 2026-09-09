@@ -31,6 +31,9 @@ const server = new Server(
 );
 registerTools(server);
 registerPrompts(server);
+import { verbose_log } from "./logging.js";
+
+verbose_log("INFO: workdir=" + process.cwd());
 
 async function main() {
     const transport = new StdioServerTransport();
