@@ -7,6 +7,7 @@ import { resultFor } from "./messages.js";
 import { errorResult } from "./messages.js";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { getBlockingMessage } from "./blocking_commands.js";
+import { registerProcess, ProcessHandle } from "./process_registry.js";
 
 export type SpawnResult = {
     // this is basically ExecException except I want my own type for it...
@@ -88,6 +89,16 @@ export class RunProcessArgsHelper {
     get isExecutableMode(): boolean {
         return Array.isArray(this.raw.argv) && (this.argv?.length ?? 0) > 0;
     }
+
+    /** True if the process should be started in the background (fire-and-forget) */
+    get background(): boolean {
+        return Boolean(this.raw.background);
+    }
+
+    /** True if the server should notify when a background process completes */
+    get notifyOnCompletion(): boolean {
+        return Boolean(this.raw.notify_on_completion);
+    }
 }
 
 /**
@@ -108,6 +119,7 @@ export function runProcess(
     runProcessArgs: RunProcessArgs,
     signal?: AbortSignal,
     defaultCwd?: string,
+    onComplete?: (result: CallToolResult, pid: number) => void,
 ): SpawnPromise {
     const startTime = performance.now();
 
@@ -117,6 +129,9 @@ export function runProcess(
     }
     if (!args.isShellMode && !args.isExecutableMode) {
         return Promise.resolve(errorResult("Either 'command_line' (string) or 'argv' (array) is required."));
+    }
+    if (args.notifyOnCompletion && !args.background) {
+        return Promise.resolve(errorResult("'notify_on_completion' is only applicable with 'background: true'."));
     }
 
     // Block dangerous commands via dedicated module
@@ -174,22 +189,13 @@ export function runProcess(
         // Use a detached child so we can kill the entire process group.
         options.detached = true;
 
-        let settled = false;
-        const settle = (result: SpawnResult, isError: boolean) => {
-            if (settled) return;
-            settled = true;
-            if (timer) clearTimeout(timer);
-            signal?.removeEventListener("abort", onAbort);
-            if (isError) {
-                resolve(resultFor(result));
-            } else {
-                resolve(resultFor(result));
-            }
-        };
-
         const child = spawn(spawnCommand, spawnArgs, options);
         logWithElapsedTime(`START SPAWN child.pid: ${child.pid}`);
         child_pid = child.pid;
+
+        // Background processes are registered so `process_status` can poll them.
+        const handle: ProcessHandle | undefined =
+            args.background && child.pid ? registerProcess(child.pid, child) : undefined;
 
         let stdout = "";
         let stderr = "";
@@ -201,13 +207,17 @@ export function runProcess(
 
         if (child.stdout) {
             child.stdout.on("data", (chunk: Buffer | string) => {
-                stdout += chunk.toString();
+                const text = chunk.toString();
+                stdout += text;
+                if (handle) handle.stdout += text;
             });
         }
 
         if (child.stderr) {
             child.stderr.on("data", (chunk: Buffer | string) => {
-                stderr += chunk.toString();
+                const text = chunk.toString();
+                stderr += text;
+                if (handle) handle.stderr += text;
             });
         }
 
@@ -224,29 +234,31 @@ export function runProcess(
             logWithElapsedTime("SPAWN")
         });
 
-        // Timeout handling – kill the whole process group after the supplied timeout.
-        let timer: NodeJS.Timeout | null = null;
+        // Guard against 'error' and 'close' both firing for the same process.
+        let processSettled = false;
 
-        // Kill the whole process group, escalating to SIGKILL if the child lingers.
-        const killGroup = (sig: NodeJS.Signals) => {
-            killProcessGroup(child, sig);
-            const killTimeout = setTimeout(() => {
-                killProcessGroup(child, "SIGKILL");
-            }, 2000);
-            const clearKill = () => clearTimeout(killTimeout);
-            child.once("exit", clearKill);
-            child.once("close", clearKill);
+        // Build the result and settle the process. In non-background mode this
+        // also resolves the outer promise; in background mode it only records
+        // the result in the handle so `process_status` can read it later.
+        const onProcessSettled = (result: SpawnResult, isError: boolean) => {
+            if (processSettled) return;
+            processSettled = true;
+            const finalResult = resultFor(result);
+            if (handle) {
+                handle.status = isError ? "error" : "exited";
+                handle.finalResult = finalResult;
+                handle.child = undefined;
+                handle.resolveSettled();
+                if (args.notifyOnCompletion) {
+                    onComplete?.(finalResult, handle.pid);
+                }
+            }
+            if (!args.background) {
+                if (timer) clearTimeout(timer);
+                signal?.removeEventListener("abort", onAbort);
+                resolve(finalResult);
+            }
         };
-
-        timer = setTimeout(() => killGroup("SIGTERM"), args.timeoutMs);
-
-        // MCP cancellation – the SDK aborts the request's signal when a
-        // notifications/cancelled message arrives for this request id.
-        const onAbort = () => {
-            if (settled) return;
-            killGroup("SIGTERM");
-        };
-        signal?.addEventListener("abort", onAbort, { once: true });
 
         child.on("error", (err: Error) => {
             logWithElapsedTime("ERROR");
@@ -265,7 +277,7 @@ export function runProcess(
                 // ? killed: (err as any).killed
             };
             logWithElapsedTime("ERROR_RESULT", result);
-            settle(result, true);
+            onProcessSettled(result, true);
         });
 
         child.on("close", (code: number | null, signal: NodeJS.Signals | null) => {
@@ -286,8 +298,47 @@ export function runProcess(
                 //
             };
             logWithElapsedTime("CLOSE_RESULT", result);
-            settle(result, false);
+            onProcessSettled(result, false);
         });
+
+        // Background mode: return immediately with the PID so the agent can
+        // poll via `process_status` or kill the process itself. No timeout is
+        // applied here – the agent is responsible for stopping it.
+        if (args.background) {
+            const startedResult: CallToolResult = {
+                content: [
+                    { name: "PID", type: "text", text: String(child_pid) },
+                    { name: "DONE", type: "text", text: "false" },
+                ],
+            };
+            resolve(startedResult);
+            return;
+        }
+
+        // Non-background timeout handling – kill the whole process group after
+        // the supplied timeout.
+        let timer: NodeJS.Timeout | null = null;
+
+        // Kill the whole process group, escalating to SIGKILL if the child lingers.
+        const killGroup = (sig: NodeJS.Signals) => {
+            killProcessGroup(child, sig);
+            const killTimeout = setTimeout(() => {
+                killProcessGroup(child, "SIGKILL");
+            }, 2000);
+            const clearKill = () => clearTimeout(killTimeout);
+            child.once("exit", clearKill);
+            child.once("close", clearKill);
+        };
+
+        timer = setTimeout(() => killGroup("SIGTERM"), args.timeoutMs);
+
+        // MCP cancellation – the SDK aborts the request's signal when a
+        // notifications/cancelled message arrives for this request id.
+        const onAbort = () => {
+            if (processSettled) return;
+            killGroup("SIGTERM");
+        };
+        signal?.addEventListener("abort", onAbort, { once: true });
     });
     // FYI later (when needed) I can map this onto the promise that comes back from runProcess too (and tie into that unit test I have that needs pid to terminate it)
     // Resolve the underlying spawn result, then map to CallToolResult including PID.

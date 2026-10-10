@@ -3,10 +3,12 @@ import {
     CallToolRequestSchema,
     CallToolResult,
     ListToolsRequestSchema,
-    ListToolsResult
+    ListToolsResult,
 } from "@modelcontextprotocol/sdk/types.js";
 import { verbose_log } from "./logging.js";
 import { runProcess } from "./run_process.js";
+import { getProcess, waitForProcess } from "./process_registry.js";
+import { errorResult } from "./messages.js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 
 export function registerTools(server: Server, defaultCwd?: string) {
@@ -50,12 +52,42 @@ export function registerTools(server: Server, defaultCwd?: string) {
                             timeout_ms: {
                                 type: "number",
                                 description: "Optional timeout in milliseconds, defaults to 30,000ms",
-                            }
+                            },
+                            background: {
+                                type: "boolean",
+                                description: "If true, start the process in the background and return immediately with its PID (in a PID message) instead of blocking until it finishes. Use process_status to poll it, or kill it yourself (e.g. `kill <pid>`).",
+                            },
+                            notify_on_completion: {
+                                type: "boolean",
+                                description: "Only applicable with background: true. If true, the server sends a notifications/process_completed notification when the process finishes, so you don't have to poll or sleep.",
+                            },
                         },
                         // FYI no required arg top level and I am not gonna fret about specifiying one or the other, the tool definition is fine with that distinction in the descriptions, plus it is intuitive.
                         //  and back when I had mode=shell/executable required, models would still forget to add it so why bother with a huge complexity in tool definition
                     },
-                },
+                    },
+                    {
+                        name: "process_status",
+                        description: "Check the status of a background process started with run_process (background: true). Reports done (true/false) plus STDOUT/STDERR and exit code, same as a foreground run once done. Optionally wait for completion.",
+                        inputSchema: {
+                            type: "object",
+                            properties: {
+                                pid: {
+                                    type: "number",
+                                    description: "The PID returned by run_process.",
+                                },
+                                wait: {
+                                    type: "boolean",
+                                    description: "If true, block until the process completes (or wait_timeout_ms elapses). Default false.",
+                                },
+                                wait_timeout_ms: {
+                                    type: "number",
+                                    description: "Optional max milliseconds to wait when wait is true. No limit if omitted.",
+                                },
+                            },
+                            required: ["pid"],
+                        },
+                    },
             ],
         };
     });
@@ -71,8 +103,90 @@ export function registerTools(server: Server, defaultCwd?: string) {
                     }
                     // extra.signal is aborted by the SDK when the client sends a
                     // notifications/cancelled message for this request id.
-                    const result = await runProcess(request.params.arguments, extra.signal, defaultCwd);
+                    const args = request.params.arguments;
+                    const notifyOnCompletion = Boolean(args.notify_on_completion);
+                    const progressToken = request.params._meta?.progressToken;
+                    const result = await runProcess(
+                        args,
+                        extra.signal,
+                        defaultCwd,
+                        notifyOnCompletion
+                            ? (result, pid) => {
+                                // Standard out-of-band progress notification when the
+                                // client requested a progress token.
+                                if (progressToken != null) {
+                                    server.notification({
+                                        method: "notifications/progress",
+                                        params: {
+                                            progressToken,
+                                            progress: 1,
+                                            total: 1,
+                                            message: `Background process ${pid} completed`,
+                                        },
+                                    }).catch(() => {});
+                                }
+                                // Custom completion notification carrying the PID so the
+                                // client can react (and call process_status for details).
+                                server.notification({
+                                    method: "notifications/process_completed",
+                                    params: {
+                                        pid,
+                                        isError: result.isError ?? false,
+                                        message: `Background process ${pid} completed`,
+                                    },
+                                }).catch(() => {});
+                            }
+                            : undefined,
+                    );
                     // FYI logging this response is INVALUABLE! found a problem with my neovim MCP STDIO client!
+                    verbose_log("INFO: ToolResponse", result);
+                    return result;
+                }
+                case "process_status": {
+                    if (!request.params.arguments) {
+                        throw new Error("Missing arguments for process_status");
+                    }
+                    const pid = Number(request.params.arguments.pid);
+                    if (Number.isNaN(pid)) {
+                        return errorResult("process_status requires a numeric pid");
+                    }
+
+                    const handle = getProcess(pid);
+                    if (!handle) {
+                        return errorResult(`Process not found (pid: ${pid})`);
+                    }
+
+                    const wait = Boolean(request.params.arguments.wait);
+                    const waitTimeoutMs = request.params.arguments.wait_timeout_ms == null
+                        ? undefined
+                        : Number(request.params.arguments.wait_timeout_ms);
+
+                    if (wait) {
+                        await waitForProcess(handle, waitTimeoutMs);
+                    }
+
+                    const done = handle.status !== "running";
+                    const content: CallToolResult["content"] = [
+                        { name: "DONE", type: "text", text: String(done) },
+                    ];
+
+                    if (done && handle.finalResult) {
+                        // Same STDOUT/STDERR + exit code as a foreground run.
+                        content.push(...handle.finalResult.content);
+                    } else {
+                        // Still running: surface whatever output has accumulated so far.
+                        if (handle.stdout) {
+                            content.push({ name: "STDOUT", type: "text", text: handle.stdout });
+                        }
+                        if (handle.stderr) {
+                            content.push({ name: "STDERR", type: "text", text: handle.stderr });
+                        }
+                    }
+
+                    const result: CallToolResult = { content };
+                    if (done && handle.finalResult?.isError) {
+                        result.isError = true;
+                    }
                     verbose_log("INFO: ToolResponse", result);
                     return result;
                 }
