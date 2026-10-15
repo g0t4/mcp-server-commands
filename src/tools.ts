@@ -146,6 +146,8 @@ export function registerTools(server: Server, defaultCwd?: string) {
                                         ...(isError ? { error: resultText } : {}),
                                     },
                                 };
+                                // Send the notification! (was missing - bug)
+                                server.notification(notification).catch(() => { });
                             }
                             : undefined,
                     );
