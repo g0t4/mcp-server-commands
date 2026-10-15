@@ -59,7 +59,7 @@ export function registerTools(server: Server, defaultCwd?: string) {
                             },
                             notify_on_completion: {
                                 type: "boolean",
-                                description: "Only applicable with background: true. If true, the server sends a notification/background_done notification when the process finishes, so you don't have to poll or sleep.",
+                                description: "Only applicable with background: true. If true, the server sends a notifications/background_done notification when the process finishes, so you don't have to poll or sleep.",
                             },
                         },
                         // FYI no required arg top level and I am not gonna fret about specifiying one or the other, the tool definition is fine with that distinction in the descriptions, plus it is intuitive.
@@ -126,7 +126,7 @@ export function registerTools(server: Server, defaultCwd?: string) {
                                     }).catch(() => {});
                                 }
                                 // Custom completion notification matching the format used by
-                                // the subagents MCP server (notification/background_done), so
+                                // the subagents MCP server (notifications/background_done), so
                                 // the client can correlate it via progressToken and feed the
                                 // result back to the agent without polling.
                                 const isError = result.isError ?? false;
@@ -137,7 +137,7 @@ export function registerTools(server: Server, defaultCwd?: string) {
                                     ? `FAILED: Background process ${pid} completed with error\n\nRESULT: ${resultText}`
                                     : `DONE: Background process ${pid} completed\n\nRESULT: ${resultText}`;
                                 server.notification({
-                                    method: "notification/background_done",
+                                    method: "notifications/background_done",
                                     params: {
                                         progressToken,
                                         pid: pid,
