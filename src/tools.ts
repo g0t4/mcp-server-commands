@@ -59,35 +59,35 @@ export function registerTools(server: Server, defaultCwd?: string) {
                             },
                             notify_on_completion: {
                                 type: "boolean",
-                                description: "Only applicable with background: true. If true, the server sends a notifications/background_done notification when the process finishes, so you don't have to poll or sleep.",
+                                description: "Only applicable with background: true. If true, the server sends a background/done notification when the process finishes, so you don't have to poll or sleep.",
                             },
                         },
                         // FYI no required arg top level and I am not gonna fret about specifiying one or the other, the tool definition is fine with that distinction in the descriptions, plus it is intuitive.
                         //  and back when I had mode=shell/executable required, models would still forget to add it so why bother with a huge complexity in tool definition
                     },
-                    },
-                    {
-                        name: "process_status",
-                        description: "Check the status of a background process started with run_process (background: true). Reports done (true/false) plus STDOUT/STDERR and exit code, same as a foreground run once done. Optionally wait for completion.",
-                        inputSchema: {
-                            type: "object",
-                            properties: {
-                                pid: {
-                                    type: "number",
-                                    description: "The PID returned by run_process.",
-                                },
-                                wait: {
-                                    type: "boolean",
-                                    description: "If true, block until the process completes (or wait_timeout_ms elapses). Default false.",
-                                },
-                                wait_timeout_ms: {
-                                    type: "number",
-                                    description: "Optional max milliseconds to wait when wait is true. No limit if omitted.",
-                                },
+                },
+                {
+                    name: "process_status",
+                    description: "Check the status of a background process started with run_process (background: true). Reports done (true/false) plus STDOUT/STDERR and exit code, same as a foreground run once done. Optionally wait for completion.",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            pid: {
+                                type: "number",
+                                description: "The PID returned by run_process.",
                             },
-                            required: ["pid"],
+                            wait: {
+                                type: "boolean",
+                                description: "If true, block until the process completes (or wait_timeout_ms elapses). Default false.",
+                            },
+                            wait_timeout_ms: {
+                                type: "number",
+                                description: "Optional max milliseconds to wait when wait is true. No limit if omitted.",
+                            },
                         },
+                        required: ["pid"],
                     },
+                },
             ],
         };
     });
@@ -116,17 +116,15 @@ export function registerTools(server: Server, defaultCwd?: string) {
                                 // client requested a progress token.
                                 if (progressToken != null) {
                                     server.notification({
-                                        method: "notifications/progress",
+                                        method: "background/status",
                                         params: {
                                             progressToken,
-                                            progress: 1,
-                                            total: 1,
                                             message: `Background process ${pid} completed`,
                                         },
-                                    }).catch(() => {});
+                                    }).catch(() => { });
                                 }
-                                // Custom completion notification matching the format used by
-                                // the subagents MCP server (notifications/background_done), so
+                                // Custom notification matching the format used by
+                                // the subagents MCP server (background/done), so
                                 // the client can correlate it via progressToken and feed the
                                 // result back to the agent without polling.
                                 const isError = result.isError ?? false;
@@ -136,17 +134,18 @@ export function registerTools(server: Server, defaultCwd?: string) {
                                 const message = isError
                                     ? `FAILED: Background process ${pid} completed with error\n\nRESULT: ${resultText}`
                                     : `DONE: Background process ${pid} completed\n\nRESULT: ${resultText}`;
-                                server.notification({
-                                    method: "notifications/background_done",
+                                const notification = {
+                                    method: "background/done",
                                     params: {
                                         progressToken,
                                         pid: pid,
                                         isError,
                                         message,
                                         result: resultText,
-                                        error: isError ? resultText : null,
+                                        // optional params so we don't get vim.NIL in lua land
+                                        ...(isError ? { error: resultText } : {}),
                                     },
-                                }).catch(() => {});
+                                };
                             }
                             : undefined,
                     );
