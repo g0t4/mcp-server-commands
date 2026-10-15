@@ -19,7 +19,7 @@ export function registerTools(server: Server, defaultCwd?: string) {
             // https://modelcontextprotocol.io/docs/learn/architecture#understanding-the-tool-execution-request // tool request/response
             // typescript SDK docs:
             //   servers: https://github.com/modelcontextprotocol/typescript-sdk/blob/main/docs/server.md
-            //   TODO upgrade to newer version AND check if STDIO delimiter style has changed to include content-length "header" before responses? 
+            //   TODO upgrade to newer version AND check if STDIO delimiter style has changed to include content-length "header" before responses?
             //     OR is there an opt-in for this style vs what I get with my simple nvim uv.spawn nvim client... where \n terminates/delimits each message
             tools: [
                 {
@@ -59,7 +59,7 @@ export function registerTools(server: Server, defaultCwd?: string) {
                             },
                             notify_on_completion: {
                                 type: "boolean",
-                                description: "Only applicable with background: true. If true, the server sends a notifications/process_completed notification when the process finishes, so you don't have to poll or sleep.",
+                                description: "Only applicable with background: true. If true, the server sends a notification/background_done notification when the process finishes, so you don't have to poll or sleep.",
                             },
                         },
                         // FYI no required arg top level and I am not gonna fret about specifiying one or the other, the tool definition is fine with that distinction in the descriptions, plus it is intuitive.
@@ -125,14 +125,26 @@ export function registerTools(server: Server, defaultCwd?: string) {
                                         },
                                     }).catch(() => {});
                                 }
-                                // Custom completion notification carrying the PID so the
-                                // client can react (and call process_status for details).
+                                // Custom completion notification matching the format used by
+                                // the subagents MCP server (notification/background_done), so
+                                // the client can correlate it via progressToken and feed the
+                                // result back to the agent without polling.
+                                const isError = result.isError ?? false;
+                                const resultText = result.content
+                                    .map((c) => (c.type === "text" ? c.text : JSON.stringify(c)))
+                                    .join("\n");
+                                const message = isError
+                                    ? `FAILED: Background process ${pid} completed with error\n\nRESULT: ${resultText}`
+                                    : `DONE: Background process ${pid} completed\n\nRESULT: ${resultText}`;
                                 server.notification({
-                                    method: "notifications/process_completed",
+                                    method: "notification/background_done",
                                     params: {
-                                        pid,
-                                        isError: result.isError ?? false,
-                                        message: `Background process ${pid} completed`,
+                                        progressToken,
+                                        pid: pid,
+                                        isError,
+                                        message,
+                                        result: resultText,
+                                        error: isError ? resultText : null,
                                     },
                                 }).catch(() => {});
                             }
