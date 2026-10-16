@@ -5,7 +5,7 @@ import {
     ListToolsRequestSchema,
     ListToolsResult,
 } from "@modelcontextprotocol/sdk/types.js";
-import { verbose_log } from "./logging.js";
+import { always_log, verbose_log } from "./logging.js";
 import { runProcess } from "./run_process.js";
 import { getProcess, waitForProcess } from "./process_registry.js";
 import { errorResult } from "./messages.js";
@@ -121,7 +121,9 @@ export function registerTools(server: Server, defaultCwd?: string) {
                                             progressToken,
                                             message: `Background process ${pid} completed`,
                                         },
-                                    }).catch(() => { });
+                                    }).catch((error) => {
+                                        always_log("ERROR: Failed to send background/status notification", error);
+                                    });
                                 }
                                 // Custom notification matching the format used by
                                 // the subagents MCP server (background/done), so
@@ -147,7 +149,9 @@ export function registerTools(server: Server, defaultCwd?: string) {
                                     },
                                 };
                                 // Send the notification! (was missing - bug)
-                                server.notification(notification).catch(() => { });
+                                server.notification(notification).catch((error) => {
+                                    always_log("ERROR: Failed to send background/done notification", error);
+                                });
                             }
                             : undefined,
                     );
