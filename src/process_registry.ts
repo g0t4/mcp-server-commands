@@ -22,6 +22,26 @@ export type ProcessHandle = {
     resolveSettled: () => void;
 };
 
+/**
+ * Drain the accumulated stdout buffer, returning its current contents and
+ * resetting it so subsequent calls only see NEW output.
+ */
+export function drainStdout(handle: ProcessHandle): string {
+    const output = handle.stdout;
+    handle.stdout = "";
+    return output;
+}
+
+/**
+ * Drain the accumulated stderr buffer, returning its current contents and
+ * resetting it so subsequent calls only see NEW output.
+ */
+export function drainStderr(handle: ProcessHandle): string {
+    const output = handle.stderr;
+    handle.stderr = "";
+    return output;
+}
+
 // Single in-memory registry for the lifetime of the server session.
 const registry = new Map<number, ProcessHandle>();
 

@@ -1,5 +1,5 @@
 import { runProcess } from "../../src/run_process.js";
-import { getProcess, waitForProcess } from "../../src/process_registry.js";
+import { getProcess, waitForProcess, drainStdout, drainStderr } from "../../src/process_registry.js";
 import process from "node:process";
 
 function pidFrom(result: any): number {
@@ -83,6 +83,32 @@ describe("runProcess - background mode (fire-and-forget)", () => {
         expect(handle.finalResult!.content).toEqual([
             expect.objectContaining({ name: "SIGNAL", text: "SIGKILL" }),
         ]);
+    });
+
+    test("process_status drains stdout buffer so repeated polls only return new output", async () => {
+        const result = await runProcess({
+            command_line: "echo first && sleep 1 && echo second",
+            background: true,
+        });
+        const pid = pidFrom(result);
+        const handle = getProcess(pid)!;
+
+        // Let the first echo land but the process still be running.
+        await new Promise((r) => setTimeout(r, 300));
+        expect(handle.status).toBe("running");
+        expect(handle.stdout).toContain("first");
+        expect(handle.stdout).not.toContain("second");
+
+        // First poll: sees "first", then drains.
+        const firstPoll = drainStdout(handle);
+        expect(firstPoll).toContain("first");
+        expect(handle.stdout).toBe("");
+
+        // Second poll (before "second" arrives): no output, since drained.
+        expect(handle.stdout).toBe("");
+
+        // Clean up.
+        process.kill(pid, "SIGKILL");
     });
 
     test("notify_on_completion requires background:true", async () => {

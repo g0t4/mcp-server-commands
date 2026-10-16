@@ -7,7 +7,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { always_log, verbose_log } from "./logging.js";
 import { runProcess } from "./run_process.js";
-import { getProcess, waitForProcess } from "./process_registry.js";
+import { getProcess, waitForProcess, drainStdout, drainStderr } from "./process_registry.js";
 import { errorResult } from "./messages.js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 
@@ -191,12 +191,15 @@ export function registerTools(server: Server, defaultCwd?: string) {
                         // Same STDOUT/STDERR + exit code as a foreground run.
                         content.push(...handle.finalResult.content);
                     } else {
-                        // Still running: surface whatever output has accumulated so far.
-                        if (handle.stdout) {
-                            content.push({ name: "STDOUT", type: "text", text: handle.stdout });
+                        // Still running: surface whatever output has accumulated so far,
+                        // then DRAIN the buffers so subsequent polls only see new output.
+                        const drainedStdout = drainStdout(handle);
+                        if (drainedStdout) {
+                            content.push({ name: "STDOUT", type: "text", text: drainedStdout });
                         }
-                        if (handle.stderr) {
-                            content.push({ name: "STDERR", type: "text", text: handle.stderr });
+                        const drainedStderr = drainStderr(handle);
+                        if (drainedStderr) {
+                            content.push({ name: "STDERR", type: "text", text: drainedStderr });
                         }
                     }
 
