@@ -278,3 +278,22 @@ async def test_run_xonsh_stdin_and_env() -> None:
     assert s is not None
     assert s["exit_code"] == 0
     assert s["stdout"].splitlines() == ["from env", "from stdin"]
+
+
+async def test_ripgrep_does_not_hang_on_missing_stdin() -> None:
+    # Edge case: with no stdin, ripgrep must not detect a readable stdin socket
+    # and hang (this bit the Node implementation). /dev/null stdin avoids it.
+    result = await execute("bash", "rg --no-config --debug foo", timeout_seconds=3)
+    s = result.structuredContent
+    assert s is not None
+    assert "is_stdin_readable=true" not in s.get("stderr", "")
+
+
+async def test_ripgrep_can_search_stdin_when_provided() -> None:
+    result = await execute(
+        "bash", "rg --no-config bar", stdin="foo\nbar\nbaz", timeout_seconds=5
+    )
+    s = result.structuredContent
+    assert s is not None
+    assert s["exit_code"] == 0
+    assert s["stdout"] == "bar\n"

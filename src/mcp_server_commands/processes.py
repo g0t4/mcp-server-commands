@@ -112,12 +112,18 @@ async def spawn_process(
     *,
     cwd: str | None = None,
     default_cwd: str | None = None,
+    stdin: str | None = None,
     env: dict[str, str | None] | None = None,
     bash_path: str | None = None,
 ) -> asyncio.subprocess.Process:
     """Create a fresh, non-interactive subprocess (not yet run)."""
     resolved = _resolve_cwd(cwd, default_cwd)
     env = _build_env(kind, env)
+    # Attach /dev/null to stdin when no input is provided, so tools that
+    # inspect stdin (e.g. ripgrep) don't see a readable socket and hang.
+    stdin_fd = (
+        asyncio.subprocess.PIPE if stdin is not None else asyncio.subprocess.DEVNULL
+    )
     if kind == "bash":
         bash = bash_path or "bash"
         return await asyncio.create_subprocess_exec(
@@ -126,7 +132,7 @@ async def spawn_process(
             code,
             cwd=resolved,
             env=env,
-            stdin=asyncio.subprocess.PIPE,
+            stdin=stdin_fd,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
             start_new_session=True,
@@ -141,7 +147,7 @@ async def spawn_process(
             code,
             cwd=resolved,
             env=env,
-            stdin=asyncio.subprocess.PIPE,
+            stdin=stdin_fd,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
             start_new_session=True,
@@ -317,6 +323,7 @@ async def execute(
             code,
             cwd=cwd,
             default_cwd=default_cwd,
+            stdin=stdin,
             env=env,
             bash_path=bash_path,
         )
@@ -368,6 +375,7 @@ async def execute(
         code,
         cwd=cwd,
         default_cwd=default_cwd,
+        stdin=stdin,
         env=env,
         bash_path=bash_path,
     )
