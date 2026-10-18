@@ -110,6 +110,24 @@ precedence over this default.
 }
 ```
 
+### Configure the bash interpreter
+
+`run_bash` runs commands through a real bash shell. On startup the server
+verifies bash is usable and exits with guidance if it isn't. To point the
+server at a specific bash, pass `--bash PATH` (or `--bash=PATH`), or set the
+`MCP_SERVER_COMMANDS_BASH` env var. Otherwise it defaults to `bash` on PATH.
+
+```json
+{
+  "mcpServers": {
+    "mcp-server-commands": {
+      "command": "npx",
+      "args": ["mcp-server-commands", "--bash", "/bin/bash"]
+    }
+  }
+}
+```
+
 ## Local Models
 
 - Most models are trained such that they don't think they can run commands for you.

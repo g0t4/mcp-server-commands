@@ -39,6 +39,25 @@ describe("runBash - validating argument parsing/validation and basic success/fai
                 },
             ]);
         });
+
+        test("heredocs work via bash -c", async () => {
+            const result = await runBash({
+                command_line: 'cat <<EOF\nline one\nline two\nEOF',
+            });
+            expect(result.isError).toBeUndefined();
+            expect(result.content).toEqual([
+                {
+                    name: "EXIT_CODE",
+                    type: "text",
+                    text: "0",
+                },
+                {
+                    name: "STDOUT",
+                    type: "text",
+                    text: "line one\nline two\n",
+                },
+            ]);
+        });
     });
 
     test("should change working directory based on workdir arg", async () => {

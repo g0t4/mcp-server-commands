@@ -103,6 +103,7 @@ export function runBash(
     defaultCwd?: string,
     token?: string,
     onComplete?: (result: CallToolResult, token: string) => void,
+    bashPath?: string,
 ): SpawnPromise {
     const startTime = performance.now();
     // The token is the process's identity for `process_status`/`process_stop`.
@@ -132,9 +133,11 @@ export function runBash(
         options.cwd = cwd;
     }
 
-    (options as any).shell = true;
-    const spawnCommand = String(args.commandLine);
-    const spawnArgs: string[] = [];
+    // Run through an explicit bash so `run_bash` truly means bash semantics
+    // (heredocs, pipes, etc.), regardless of the system's default shell.
+    const bash = bashPath ?? "bash";
+    const spawnCommand = bash;
+    const spawnArgs = ["-c", String(args.commandLine)];
 
     const logWithElapsedTime = (msg: string, ...rest: any[]) => {
         if (!is_verbose) return;

@@ -11,7 +11,7 @@ import { getProcess, drainStdout, drainStderr, killProcess, generateToken } from
 import { errorResult } from "./messages.js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 
-export function registerTools(server: Server, defaultCwd?: string) {
+export function registerTools(server: Server, defaultCwd?: string, bashPath?: string) {
     server.setRequestHandler(ListToolsRequestSchema, async (): Promise<ListToolsResult> => {
         verbose_log("INFO: ListTools");
         return {
@@ -135,6 +135,7 @@ export function registerTools(server: Server, defaultCwd?: string) {
                         defaultCwd,
                         token,
                         sendBackgroundDoneNotification,
+                        bashPath,
                     );
                     // FYI logging this response is INVALUABLE! found a problem with my neovim MCP STDIO client!
                     verbose_log("INFO: ToolResponse", result);
