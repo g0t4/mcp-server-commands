@@ -3,7 +3,6 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
 from mcp_stdio import NOTIFY_INITIALIZED, REQUEST_INIT, run_mcp
 
 list_tools = json.dumps({
