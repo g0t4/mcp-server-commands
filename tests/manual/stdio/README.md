@@ -15,7 +15,7 @@ cat ~/.local/state/mcp-servers/mcp-server-commands.log
 # [2026-03-31T08:32:55.070Z] INFO: ToolRequest: {"method":"tools/call","params":{"name":"run_bash","arguments":{"command_line":"system_profiler SPUSBDataType SPThunderboltDataType -json"}}}
 
 # build requests with gui form, then copy/paste
-npm run inspector
+uv run mcp-server-commands
 
 # manual session w/ back to back requests:
 ~/repos/github/g0t4/mcp-server-commands/.venv/bin/mcp-server-commands --verbose

@@ -6,12 +6,11 @@ If you want your model to use specific shell(s) on a system, I would list them i
 
 Let me know if you encounter problems!
 
-## Unified Python server (in progress)
+## Unified server
 
-There is a new unified FastMCP server in `src/mcp_server_commands/` that merges
+The server is a single FastMCP server in `src/mcp_server_commands/` that merges
 `run_bash` and `run_xonsh` into one server with **shared** `process_status` and
-`process_stop` tools (token-based). The old TypeScript server and the standalone
-`mcp-servers` xonsh server are left intact until cutover.
+`process_stop` tools (token-based). It replaced the old TypeScript server.
 
 The Python SDK is pinned to `mcp>=1.9,<2` because mcp 2.x renamed `FastMCP` to
 `MCPServer` and switched several field names to snake_case (`structured_content`,
@@ -54,17 +53,17 @@ Prompts are for users to include in chat history, i.e. via `Zed`'s slash command
 
 Install dependencies:
 ```bash
-npm install
+uv sync --dev
 ```
 
-Build the server:
+Run the tests:
 ```bash
-npm run build
+uv run pytest tests/ -q
 ```
 
-For development with auto-rebuild:
+Run the server:
 ```bash
-npm run watch
+uv run mcp-server-commands
 ```
 
 ## Installation
@@ -76,31 +75,30 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 
 Groq Desktop (beta, macOS) uses `~/Library/Application Support/groq-desktop-app/settings.json`
 
-### Use the published npm package
+### Run with uvx
 
-Published to npm as [mcp-server-commands](https://www.npmjs.com/package/mcp-server-commands) using this [workflow](https://github.com/g0t4/mcp-server-commands/actions)
+Run via `uvx`:
 
 ```json
 {
   "mcpServers": {
     "mcp-server-commands": {
-      "command": "npx",
+      "command": "uvx",
       "args": ["mcp-server-commands"]
     }
   }
 }
 ```
 
-### Use a local build (repo checkout)
+### Use a local checkout
 
-Make sure to run `npm run build`
+Make sure to run `uv sync --dev` first.
 
 ```json
 {
   "mcpServers": {
     "mcp-server-commands": {
-      // works b/c of shebang in index.js
-      "command": "/path/to/mcp-server-commands/build/index.js"
+      "command": "/path/to/mcp-server-commands/.venv/bin/mcp-server-commands"
     }
   }
 }
@@ -117,7 +115,7 @@ precedence over this default.
 {
   "mcpServers": {
     "mcp-server-commands": {
-      "command": "npx",
+      "command": "uvx",
       "args": ["mcp-server-commands", "--workdir", "/path/to/your/project"]
     }
   }
@@ -135,7 +133,7 @@ server at a specific bash, pass `--bash PATH` (or `--bash=PATH`), or set the
 {
   "mcpServers": {
     "mcp-server-commands": {
-      "command": "npx",
+      "command": "uvx",
       "args": ["mcp-server-commands", "--bash", "/bin/bash"]
     }
   }
@@ -169,9 +167,9 @@ For `HTTP`, use [`mcpo`](https://github.com/open-webui/mcpo) for an `OpenAPI` co
 This works with [`Open-WebUI`](https://github.com/open-webui/open-webui)
 
 ```bash
-uvx mcpo --port 3010 --api-key "supersecret" -- npx mcp-server-commands
+uvx mcpo --port 3010 --api-key "supersecret" -- uv run mcp-server-commands
 
-# uvx runs mcpo => mcpo run npx => npx runs mcp-server-commands
+# uvx runs mcpo => mcpo runs `uv run mcp-server-commands`
 # then, mcpo bridges STDIO <=> HTTP
 ```
 
@@ -180,32 +178,18 @@ uvx mcpo --port 3010 --api-key "supersecret" -- npx mcp-server-commands
 
 ### Logging
 
-Claude Desktop app writes logs to `~/Library/Logs/Claude/mcp-server-mcp-server-commands.log`
+The server writes logs to `$XDG_STATE_HOME/mcp-servers/mcp-server-commands.log`
+(default `~/.local/state/mcp-servers/mcp-server-commands.log`).
 
 By default, only important messages are logged (i.e. errors).
 If you want to see more messages, add `--verbose` to the `args` when configuring the server.
-
-By the way, logs are written to `STDERR` because that is what Claude Desktop routes to the log files.
-In the future, I expect well formatted log messages to be written over the `STDIO` transport to the MCP client (note: not Claude Desktop app).
 
 ### Debugging
 
 Since MCP servers communicate over stdio, debugging can be challenging. We recommend using the [MCP Inspector](https://github.com/modelcontextprotocol/inspector), which is available as a package script:
 
 ```bash
-npm run inspector
+uv run mcp-server-commands
 ```
 
 The Inspector will provide a URL to access debugging tools in your browser.
-
-### nvm
-
-```fish
-# https://github.com/jorgebucaran/nvm.fish - nvm for fish
-fisher install jorgebucaran/nvm.fish
-# start new shell
-nvm install v22
-nvm use v22
-npm install tree-sitter # v22 works, v24/v25 do not work
-node --version
-```
