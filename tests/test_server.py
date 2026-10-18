@@ -116,6 +116,44 @@ async def test_process_status_reports_done_and_result() -> None:
     assert "hello" in ss["result"]["stdout"]
 
 
+async def test_process_status_drains_stdout_buffer() -> None:
+    server = create_server()
+    result = await execute(
+        "bash", "echo first && sleep 1 && echo second", background=True
+    )
+    s = result.structuredContent
+    assert s is not None
+    token = s["token"]
+    bg = get_process(token)
+    assert bg is not None
+
+    # Wait until "first" lands in the buffer but the process is still running.
+    for _ in range(20):
+        if "first" in bg.stdout_buffer and not bg.done:
+            break
+        await asyncio.sleep(0.05)
+    assert bg.done is False
+    assert "first" in bg.stdout_buffer
+    assert "second" not in bg.stdout_buffer
+
+    # First poll: sees "first", then drains.
+    status = await server.call_tool("process_status", {"token": token})
+    ss = status.structuredContent or {}
+    assert ss["done"] is False
+    assert "first" in ss.get("stdout", "")
+    assert "second" not in ss.get("stdout", "")
+    assert bg.stdout_buffer == ""
+
+    # Second poll (before "second" arrives): no output, since drained.
+    status2 = await server.call_tool("process_status", {"token": token})
+    ss2 = status2.structuredContent or {}
+    assert ss2["done"] is False
+    assert "stdout" not in ss2 or ss2["stdout"] == ""
+
+    # Clean up.
+    await server.call_tool("process_stop", {"token": token})
+
+
 async def test_process_stop_kills_background() -> None:
     result = await execute("bash", "sleep 30", background=True)
     s = result.structuredContent
@@ -164,6 +202,35 @@ async def test_run_bash_stdin() -> None:
     assert s is not None
     assert s["exit_code"] == 0
     assert s["stdout"] == "hello from stdin"
+
+
+async def test_run_bash_cwd(tmp_path: Path) -> None:
+    result = await execute("bash", "pwd", cwd=str(tmp_path))
+    s = result.structuredContent
+    assert s is not None
+    assert s["exit_code"] == 0
+    assert s["stdout"] == str(tmp_path) + "\n"
+
+
+async def test_run_bash_default_cwd(tmp_path: Path) -> None:
+    result = await execute("bash", "pwd", default_cwd=str(tmp_path))
+    s = result.structuredContent
+    assert s is not None
+    assert s["exit_code"] == 0
+    assert s["stdout"] == str(tmp_path) + "\n"
+
+
+async def test_run_bash_command_not_found() -> None:
+    result = await execute("bash", "shell_nonexistentcommand")
+    s = result.structuredContent
+    assert s is not None
+    assert result.isError is True
+    assert s["exit_code"] == 127
+
+
+async def test_validates_empty_command_line() -> None:
+    with pytest.raises(ValueError, match="code must not be empty"):
+        await execute("bash", "   ")
 
 
 async def test_run_xonsh_stdin_and_env() -> None:
