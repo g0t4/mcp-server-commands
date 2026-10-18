@@ -4,43 +4,22 @@ I added cancel by killing processes, is that the best way? is it working?
 - see e2e test with python script
 - verify the integration test too
 
+## Background processes
+
+- Currently I use a custom approach to background tasks. Partly because I want the agent to be fully aware of what runs foreground vs background so they can opt in to run async and get notified on completion
+- Use MCP `progressToken` to check status
+- Use `pid` to kill => assumes local process... which is fine for now... I can avoid adding a special tool to `kill_process` (for now)
+  Honestly I'd like the MCP client to still have task mgmt but allow the agent to decide when tasks run in background...
+  and then client can provide a single tool for `get_status`(progressToken) to check done/progress and then `kill_task`(`progressToken`) to stop/kill the tool call
+  that way I don't need a status/kill tool for every background-able tool (which would be alot)
+  TBD if this works, I think it will
+  for now I do expose `process_status` though I am tempted to take it away b/c agents can't help but think they need to poll it...
+
 ## OLDER
 - TODO remove tree-sitter deps if I don't use it for command parsing/blocking (i.e. ls -R) and then get rid of node version 22 engine constraint
 
-- `start_job`
-   - assumptions:
-       - agent exits => jobs are killed
-   - perhaps take one arg that takes all the same args as runProcess and then I can create siblings to this with any async specific args
-   - `max_runtime` - cap to say 1 hour or 1 day max? i.e. a dev web server you could otherwise forget about
-   - TODOs
-      - review `docker run` docs for ideas for other args that are essential (don't get carried away)
-         - https://docs.docker.com/engine/containers/run/
-      - PRN allow passing job id? so they can be named i.e. `web` and `db` etc? instead of generated ID? would that make it easier for agent to target jobs?
-- Conditional Tools?
-    - Only available w/ at least one job running?
-       - OR, *enter_job_manager_mode* where these tools become available!
-           that would allow fine grained tools w/o wasted tokens on most requests that would be unrelated
-           I like the idea of modes with different tool sets and constraints
-    - common args:
-       - `jobids` - `1` or `1,4,5` or `ALL`
-    - `list_jobs`
-       - if I go with log files on disk, show the path to the log file(s) per job
-    - `stop_job`
-       - `jobids`
-       - `signal` to stop
-       - `timeout` after which it'll be killed
-    - `read_job_logs`
-       - `jobids`
-       - `query` (regex)
-       - `since`
-       - `max_lines`
-       - TODO, could I just use actual files and let the agent read those files like normal w/ ripgrep/sed/etc? why have a special tool when logs can and should go to disk!!
-    - `restart_job` - continuity to stop and start again, i.e. bouncing a web server after making changes (though ideally you'd be using hot reload capable web servers, though that is not always possible!)
-       - `jobids`
-    - `reset_job_logs` - think rotate logs in journalctl
-       - `jobids` - use `all` to reset all
-
 ## Reject specific commands / arg combos
+
 - i.e `ls -R`, `grep -R`... and their ilk => fail and have suggestions instead... that way they never get to use a crappy command
    - might want to have a way to modify default shell's startup and inject a script with customizations
      i.e. that can hide `ls`/`grep`/etc commands
