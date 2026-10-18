@@ -108,7 +108,7 @@ export class RunProcessArgsHelper {
 function killProcessGroup(child: ChildProcess, signal: NodeJS.Signals): void {
     if (process.platform !== "win32") {
         if (child.pid) {
-            try { process.kill(-child.pid, signal); } catch (_) {}
+            try { process.kill(-child.pid, signal); } catch (_) { }
         }
     } else {
         child.kill(signal);
@@ -175,9 +175,9 @@ export function runProcess(
     const promise: SpawnPromise = new Promise<CallToolResult>((resolve, reject) => {
         if (!args.stdin_text) {
             // PRN windowsHide on Windows, signal, killSignal
-            // FYI spawn_options.stdio => default is perfect ['pipe', 'pipe', 'pipe'] 
+            // FYI spawn_options.stdio => default is perfect ['pipe', 'pipe', 'pipe']
             //     order: [STDIN, STDOUT, STDERR]
-            //     https://nodejs.org/api/child_process.html#optionsstdio 
+            //     https://nodejs.org/api/child_process.html#optionsstdio
             //     'ignore' attaches /dev/null
             //     do not set 'inherit' (causes ripgrep to see STDIN socket and search it, thus hanging)
             options.stdio = ['ignore', 'pipe', 'pipe'];
