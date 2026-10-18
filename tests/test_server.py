@@ -244,6 +244,16 @@ async def test_run_bash_default_cwd(tmp_path: Path) -> None:
     assert s["stdout"] == str(tmp_path) + "\n"
 
 
+async def test_server_workdir_default_via_tool(tmp_path: Path) -> None:
+    # Mirrors the old manual tool_call_workdir_pwd test: a server-level workdir
+    # is the default when a tool call doesn't pass its own cwd.
+    server = create_server(workdir=str(tmp_path))
+    result = await server.call_tool("run_bash", {"command_line": "pwd"})
+    s = result.structuredContent or {}
+    assert s["exit_code"] == 0
+    assert s["stdout"] == str(tmp_path) + "\n"
+
+
 async def test_run_bash_command_not_found() -> None:
     result = await execute("bash", "shell_nonexistentcommand")
     s = result.structuredContent
