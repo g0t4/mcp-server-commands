@@ -217,6 +217,15 @@ async def communicate(
         except TimeoutError:
             await _kill_group(process, "SIGKILL")
             stdout, stderr = await process.communicate()
+    except asyncio.CancelledError:
+        # The MCP request was cancelled: kill the process group so the running
+        # command actually stops, then re-raise.
+        await _kill_group(process, "SIGTERM")
+        try:
+            await process.communicate()
+        except Exception:
+            pass
+        raise
     return _build_result(process, stdout, stderr, timed_out, max_output_bytes)
 
 

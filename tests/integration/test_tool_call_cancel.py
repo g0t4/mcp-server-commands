@@ -15,7 +15,9 @@ import pytest
 
 SERVER = os.environ.get(
     "MCP_SERVER_COMMANDS",
-    os.path.expanduser("~/repos/github/g0t4/mcp-server-commands/build/index.js"),
+    os.path.expanduser(
+        "~/repos/github/g0t4/mcp-server-commands/.venv/bin/mcp-server-commands"
+    ),
 )
 
 
@@ -24,7 +26,7 @@ class McpStdioClient:
 
     def __init__(self) -> None:
         self.proc = subprocess.Popen(
-            ["npx", SERVER, "--", "--verbose"],
+            [SERVER, "--verbose"],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,

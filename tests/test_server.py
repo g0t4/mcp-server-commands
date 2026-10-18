@@ -57,6 +57,21 @@ async def test_run_bash_timeout_terminates_process_group() -> None:
     assert s["exit_code"] != 0
 
 
+async def test_cancellation_kills_running_process(tmp_path: Path) -> None:
+    # Mirrors the e2e test_tool_call_cancel: cancelling the request must stop
+    # the running process (it should never reach the marker write).
+    marker = tmp_path / "marker"
+    task = asyncio.create_task(
+        execute("bash", f"sleep 30; echo done > {marker}")
+    )
+    await asyncio.sleep(0.5)  # let the sleep start
+    task.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await task
+    await asyncio.sleep(0.5)  # give SIGTERM a moment
+    assert not marker.exists()
+
+
 async def test_blocks_recursive_ls() -> None:
     result = await execute("bash", "ls -R")
     s = result.structuredContent
