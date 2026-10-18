@@ -106,7 +106,7 @@ export function registerTools(server: Server, defaultCwd?: string) {
                     const args = request.params.arguments;
                     const notifyOnCompletion = Boolean(args.notify_on_completion);
                     const progressToken = request.params._meta?.progressToken;
-                    function sendDoneOnCompletion(result: CallToolResult, pid: number) {
+                    function sendBackgroundDoneNotification(result: CallToolResult, pid: number) {
                         // Custom notification (background/done), so
                         // the client can correlate it via progressToken and feed the
                         // result back to the agent without polling.
@@ -139,7 +139,7 @@ export function registerTools(server: Server, defaultCwd?: string) {
                         extra.signal,
                         defaultCwd,
                         notifyOnCompletion
-                            ? sendDoneOnCompletion
+                            ? sendBackgroundDoneNotification
                             : undefined,
                     );
                     // FYI logging this response is INVALUABLE! found a problem with my neovim MCP STDIO client!
