@@ -64,21 +64,13 @@ export function registerTools(server: Server, defaultCwd?: string) {
                 },
                 {
                     name: "process_status",
-                    description: "Check the status of a background process started with run_process (background: true). Reports done (true/false) plus STDOUT/STDERR and exit code, same as a foreground run once done. Optionally wait for completion.",
+                    description: "Check the status of a background process started with run_process (background: true). Reports done (true/false) plus STDOUT/STDERR and exit code",
                     inputSchema: {
                         type: "object",
                         properties: {
                             pid: {
                                 type: "number",
                                 description: "The PID returned by run_process.",
-                            },
-                            wait: {
-                                type: "boolean",
-                                description: "If true, block until the process completes (or wait_timeout_ms elapses). Default false.",
-                            },
-                            wait_timeout_ms: {
-                                type: "number",
-                                description: "Optional max milliseconds to wait when wait is true. No limit if omitted.",
                             },
                         },
                         required: ["pid"],
