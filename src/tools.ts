@@ -1,4 +1,5 @@
 import os from "os";
+import { randomUUID } from "crypto";
 import {
     CallToolRequestSchema,
     CallToolResult,
@@ -7,7 +8,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { always_log, verbose_log } from "./logging.js";
 import { runProcess } from "./run_process.js";
-import { getProcess, drainStdout, drainStderr } from "./process_registry.js";
+import { getProcess, drainStdout, drainStderr, killProcess } from "./process_registry.js";
 import { errorResult } from "./messages.js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 
@@ -55,7 +56,7 @@ export function registerTools(server: Server, defaultCwd?: string) {
                             },
                             background: {
                                 type: "boolean",
-                                description: "If true, start the process in the background and return immediately with its PID (in a PID message) instead of blocking until it finishes. Use process_status to poll it, or kill it yourself (e.g. `kill <pid>`).",
+                                description: "If true, start in the background and return immediately with a TOKEN. Use process_status to poll it, process_stop to stop it.",
                             },
                         },
                         // FYI no required arg top level and I am not gonna fret about specifiying one or the other, the tool definition is fine with that distinction in the descriptions, plus it is intuitive.
@@ -64,16 +65,30 @@ export function registerTools(server: Server, defaultCwd?: string) {
                 },
                 {
                     name: "process_status",
-                    description: "Check the status of a background process started with run_process (background: true). Reports done (true/false) plus STDOUT/STDERR and exit code",
+                    description: "Check the status of a background process by token. Reports done (true/false) plus STDOUT/STDERR and exit code.",
                     inputSchema: {
                         type: "object",
                         properties: {
-                            pid: {
-                                type: "number",
-                                description: "The PID returned by run_process.",
+                            token: {
+                                type: "string",
+                                description: "The token returned by run_process (background: true).",
                             },
                         },
-                        required: ["pid"],
+                        required: ["token"],
+                    },
+                },
+                {
+                    name: "process_stop",
+                    description: "Stop a background process by token.",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            token: {
+                                type: "string",
+                                description: "The token returned by run_process (background: true).",
+                            },
+                        },
+                        required: ["token"],
                     },
                 },
             ],
@@ -93,7 +108,8 @@ export function registerTools(server: Server, defaultCwd?: string) {
                     // notifications/cancelled message for this request id.
                     const args = request.params.arguments;
                     const progressToken = request.params._meta?.progressToken;
-                    function sendBackgroundDoneNotification(result: CallToolResult, pid: number) {
+                    const token = progressToken != null ? String(progressToken) : randomUUID();
+                    function sendBackgroundDoneNotification(result: CallToolResult, token: string) {
                         // Custom notification (background/done), so
                         // the client can correlate it via progressToken and feed the
                         // result back to the agent without polling.
@@ -102,13 +118,13 @@ export function registerTools(server: Server, defaultCwd?: string) {
                             .map((c) => (c.type === "text" ? c.text : JSON.stringify(c)))
                             .join("\n");
                         const message = isError
-                            ? `FAILED: Background process ${pid} failed\n\nRESULT: ${resultText}`
-                            : `DONE: Background process ${pid} completed\n\nRESULT: ${resultText}`;
+                            ? `FAILED: Background process ${token} failed\n\nRESULT: ${resultText}`
+                            : `DONE: Background process ${token} completed\n\nRESULT: ${resultText}`;
                         const notification = {
                             method: "background/done",
                             params: {
                                 progressToken,
-                                pid: pid,
+                                token,
                                 isError,
                                 message,
                                 result: resultText,
@@ -125,6 +141,7 @@ export function registerTools(server: Server, defaultCwd?: string) {
                         args,
                         extra.signal,
                         defaultCwd,
+                        token,
                         sendBackgroundDoneNotification,
                     );
                     // FYI logging this response is INVALUABLE! found a problem with my neovim MCP STDIO client!
@@ -135,14 +152,14 @@ export function registerTools(server: Server, defaultCwd?: string) {
                     if (!request.params.arguments) {
                         throw new Error("Missing arguments for process_status");
                     }
-                    const pid = Number(request.params.arguments.pid);
-                    if (Number.isNaN(pid)) {
-                        return errorResult("process_status requires a numeric pid");
+                    const token = String(request.params.arguments.token ?? "");
+                    if (!token) {
+                        return errorResult("process_status requires a token");
                     }
 
-                    const handle = getProcess(pid);
+                    const handle = getProcess(token);
                     if (!handle) {
-                        return errorResult(`Process not found (pid: ${pid})`);
+                        return errorResult(`Process not found (token: ${token})`);
                     }
 
                     const done = handle.status !== "running";
@@ -170,6 +187,30 @@ export function registerTools(server: Server, defaultCwd?: string) {
                     if (done && handle.finalResult?.isError) {
                         result.isError = true;
                     }
+                    verbose_log("INFO: ToolResponse", result);
+                    return result;
+                }
+                case "process_stop": {
+                    if (!request.params.arguments) {
+                        throw new Error("Missing arguments for process_stop");
+                    }
+                    const token = String(request.params.arguments.token ?? "");
+                    if (!token) {
+                        return errorResult("process_stop requires a token");
+                    }
+
+                    const handle = getProcess(token);
+                    if (!handle) {
+                        return errorResult(`Process not found (token: ${token})`);
+                    }
+
+                    killProcess(handle, "SIGTERM");
+                    const killTimeout = setTimeout(() => killProcess(handle, "SIGKILL"), 2000);
+                    handle.child?.once("exit", () => clearTimeout(killTimeout));
+
+                    const result: CallToolResult = {
+                        content: [{ name: "STOPPED", type: "text", text: token }],
+                    };
                     verbose_log("INFO: ToolResponse", result);
                     return result;
                 }

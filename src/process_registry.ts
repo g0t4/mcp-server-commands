@@ -1,4 +1,5 @@
 import { ChildProcess } from "node:child_process";
+import process from "node:process";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 
 export type ProcessStatus = "running" | "exited" | "error";
@@ -8,7 +9,7 @@ export type ProcessStatus = "running" | "exited" | "error";
  * original `run_process` tool call returns so `process_status` can poll it.
  */
 export type ProcessHandle = {
-    pid: number;
+    token: string;
     status: ProcessStatus;
     stdout: string;
     stderr: string;
@@ -43,16 +44,16 @@ export function drainStderr(handle: ProcessHandle): string {
 }
 
 // Single in-memory registry for the lifetime of the server session.
-const registry = new Map<number, ProcessHandle>();
+const registry = new Map<string, ProcessHandle>();
 
-export function registerProcess(pid: number, child: ChildProcess): ProcessHandle {
+export function registerProcess(token: string, child: ChildProcess): ProcessHandle {
     let resolveSettled!: () => void;
     const settled = new Promise<void>((resolve) => {
         resolveSettled = resolve;
     });
 
     const handle: ProcessHandle = {
-        pid,
+        token,
         status: "running",
         stdout: "",
         stderr: "",
@@ -62,12 +63,27 @@ export function registerProcess(pid: number, child: ChildProcess): ProcessHandle
         settled,
         resolveSettled,
     };
-    registry.set(pid, handle);
+    registry.set(token, handle);
     return handle;
 }
 
-export function getProcess(pid: number): ProcessHandle | undefined {
-    return registry.get(pid);
+export function getProcess(token: string): ProcessHandle | undefined {
+    return registry.get(token);
+}
+
+/**
+ * Kill a background process (the whole group on non-Windows). Returns false if
+ * the child is gone. Used by the `process_stop` tool.
+ */
+export function killProcess(handle: ProcessHandle, signal: NodeJS.Signals = "SIGTERM"): boolean {
+    const child = handle.child;
+    if (!child || !child.pid) return false;
+    if (process.platform !== "win32") {
+        try { process.kill(-child.pid, signal); } catch { }
+    } else {
+        child.kill(signal);
+    }
+    return true;
 }
 
 /**

@@ -2,6 +2,7 @@
 import { spawn, SpawnOptions, ChildProcess } from "child_process";
 import { ObjectEncodingOptions } from "fs";
 import { performance } from "perf_hooks";
+import { randomUUID } from "crypto";
 import { is_verbose, verbose_log } from "./logging.js";
 import { resultFor } from "./messages.js";
 import { errorResult } from "./messages.js";
@@ -27,7 +28,7 @@ export type SpawnFailure = SpawnResult & {
     killed?: boolean;
 };
 
-export type SpawnPromise = Promise<CallToolResult> & { pid?: number };
+export type SpawnPromise = Promise<CallToolResult> & { pid?: number; token?: string };
 
 /**
  * Raw arguments passed to {@link runProcess}. Historically this was a loose
@@ -113,9 +114,14 @@ export function runProcess(
     runProcessArgs: RunProcessArgs,
     signal?: AbortSignal,
     defaultCwd?: string,
-    onComplete?: (result: CallToolResult, pid: number) => void,
+    token?: string,
+    onComplete?: (result: CallToolResult, token: string) => void,
 ): SpawnPromise {
     const startTime = performance.now();
+    // The token is the process's identity for `process_status`/`process_stop`.
+    // If the client didn't supply a progressToken we synthesize one and echo
+    // it back so the agent can still reference the process.
+    const resolvedToken = token ?? randomUUID();
 
     const args = new RunProcessArgsHelper(runProcessArgs);
     if (args.isShellMode && args.isExecutableMode) {
@@ -186,7 +192,7 @@ export function runProcess(
 
         // Background processes are registered so `process_status` can poll them.
         const handle: ProcessHandle | undefined =
-            args.background && child.pid ? registerProcess(child.pid, child) : undefined;
+            args.background && child.pid ? registerProcess(resolvedToken, child) : undefined;
 
         let stdout = "";
         let stderr = "";
@@ -241,7 +247,7 @@ export function runProcess(
                 handle.child = undefined;
                 handle.resolveSettled();
                 if (handle) {
-                    onComplete?.(finalResult, handle.pid);
+                    onComplete?.(finalResult, resolvedToken);
                 }
             }
             if (!args.background) {
@@ -292,13 +298,13 @@ export function runProcess(
             onProcessSettled(result, false);
         });
 
-        // Background mode: return immediately with the PID so the agent can
-        // poll via `process_status` or kill the process itself. No timeout is
-        // applied here – the agent is responsible for stopping it.
+        // Background mode: return immediately with the TOKEN so the agent can
+        // poll via `process_status` or stop it via `process_stop`. No timeout
+        // is applied here – the agent is responsible for stopping it.
         if (args.background) {
             const startedResult: CallToolResult = {
                 content: [
-                    { name: "PID", type: "text", text: String(child_pid) },
+                    { name: "TOKEN", type: "text", text: resolvedToken },
                     { name: "DONE", type: "text", text: "false" },
                 ],
             };
@@ -332,7 +338,9 @@ export function runProcess(
         signal?.addEventListener("abort", onAbort, { once: true });
     });
     // FYI later (when needed) I can map this onto the promise that comes back from runProcess too (and tie into that unit test I have that needs pid to terminate it)
-    // Resolve the underlying spawn result, then map to CallToolResult including PID.
+    // Keep the underlying pid internally (tests still use it to terminate), but
+    // the agent-facing identity is the token.
     promise.pid = child_pid;
+    promise.token = resolvedToken;
     return promise
 }

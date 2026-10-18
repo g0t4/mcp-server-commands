@@ -1,18 +1,17 @@
 import { runProcess } from "../../src/run_process.js";
-import { getProcess, waitForProcess, drainStdout, drainStderr } from "../../src/process_registry.js";
-import process from "node:process";
+import { getProcess, waitForProcess, drainStdout, drainStderr, killProcess } from "../../src/process_registry.js";
 
-function pidFrom(result: any): number {
+function tokenFrom(result: any): string {
     const msg = result.content.find(
-        (c: any) => c.type === "text" && c.name === "PID",
+        (c: any) => c.type === "text" && c.name === "TOKEN",
     );
     expect(msg).toBeDefined();
-    return Number(msg.text);
+    return msg.text;
 }
 
 describe("runProcess - background mode (fire-and-forget)", () => {
 
-    test("returns immediately with PID and DONE:false instead of blocking", async () => {
+    test("returns immediately with TOKEN and DONE:false instead of blocking", async () => {
         const result = await runProcess({
             command_line: "sleep 0.5",
             background: true,
@@ -21,10 +20,10 @@ describe("runProcess - background mode (fire-and-forget)", () => {
         // Background returns before the process finishes.
         expect(result.isError).toBeUndefined();
         expect(result.content).toEqual([
-            expect.objectContaining({ name: "PID", type: "text" }),
+            expect.objectContaining({ name: "TOKEN", type: "text" }),
             { name: "DONE", type: "text", text: "false" },
         ]);
-        expect(pidFrom(result)).toBeGreaterThan(0);
+        expect(tokenFrom(result).length).toBeGreaterThan(0);
     });
 
     test("process_status shows done:false while running, then done:true with STDOUT/exit code", async () => {
@@ -32,16 +31,16 @@ describe("runProcess - background mode (fire-and-forget)", () => {
             command_line: "echo hello && sleep 0.5",
             background: true,
         });
-        const pid = pidFrom(result);
+        const token = tokenFrom(result);
 
         // Still running right after start.
-        let handle = getProcess(pid)!;
+        let handle = getProcess(token)!;
         expect(handle.status).toBe("running");
         expect(handle.finalResult).toBeUndefined();
 
         // Block until it settles, so we can inspect the final result.
         await waitForProcess(handle);
-        handle = getProcess(pid)!;
+        handle = getProcess(token)!;
         expect(handle.status).toBe("exited");
 
         // Same STDOUT/STDERR + exit code as a foreground run.
@@ -56,11 +55,11 @@ describe("runProcess - background mode (fire-and-forget)", () => {
             command_line: "sleep 30",
             background: true,
         });
-        const pid = pidFrom(result);
-        const handle = getProcess(pid)!;
+        const token = tokenFrom(result);
+        const handle = getProcess(token)!;
 
-        // The agent kills the PID via a separate command (e.g. `kill -9 <pid>`).
-        process.kill(pid, "SIGKILL");
+        // The agent stops the process via process_stop (SIGKILL escalation).
+        killProcess(handle, "SIGKILL");
 
         await waitForProcess(handle);
         expect(handle.status).toBe("exited");
@@ -74,8 +73,8 @@ describe("runProcess - background mode (fire-and-forget)", () => {
             command_line: "echo first && sleep 1 && echo second",
             background: true,
         });
-        const pid = pidFrom(result);
-        const handle = getProcess(pid)!;
+        const token = tokenFrom(result);
+        const handle = getProcess(token)!;
 
         // Let the first echo land but the process still be running.
         await new Promise((r) => setTimeout(r, 300));
@@ -92,6 +91,6 @@ describe("runProcess - background mode (fire-and-forget)", () => {
         expect(handle.stdout).toBe("");
 
         // Clean up.
-        process.kill(pid, "SIGKILL");
+        killProcess(handle, "SIGKILL");
     });
 });
