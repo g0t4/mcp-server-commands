@@ -2,13 +2,12 @@
 import { spawn, SpawnOptions, ChildProcess } from "child_process";
 import { ObjectEncodingOptions } from "fs";
 import { performance } from "perf_hooks";
-import { randomUUID } from "crypto";
 import { is_verbose, verbose_log } from "./logging.js";
 import { resultFor } from "./messages.js";
 import { errorResult } from "./messages.js";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { getBlockingMessage } from "./blocking_commands.js";
-import { registerProcess, ProcessHandle } from "./process_registry.js";
+import { registerProcess, ProcessHandle, generateToken } from "./process_registry.js";
 
 export type SpawnResult = {
     // this is basically ExecException except I want my own type for it...
@@ -121,7 +120,7 @@ export function runProcess(
     // The token is the process's identity for `process_status`/`process_stop`.
     // If the client didn't supply a progressToken we synthesize one and echo
     // it back so the agent can still reference the process.
-    const resolvedToken = token ?? randomUUID();
+    const resolvedToken = token ?? generateToken();
 
     const args = new RunProcessArgsHelper(runProcessArgs);
     if (args.isShellMode && args.isExecutableMode) {

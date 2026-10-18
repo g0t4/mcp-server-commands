@@ -1,5 +1,4 @@
 import os from "os";
-import { randomUUID } from "crypto";
 import {
     CallToolRequestSchema,
     CallToolResult,
@@ -8,7 +7,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { always_log, verbose_log } from "./logging.js";
 import { runProcess } from "./run_process.js";
-import { getProcess, drainStdout, drainStderr, killProcess } from "./process_registry.js";
+import { getProcess, drainStdout, drainStderr, killProcess, generateToken } from "./process_registry.js";
 import { errorResult } from "./messages.js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 
@@ -108,7 +107,7 @@ export function registerTools(server: Server, defaultCwd?: string) {
                     // notifications/cancelled message for this request id.
                     const args = request.params.arguments;
                     const progressToken = request.params._meta?.progressToken;
-                    const token = progressToken != null ? String(progressToken) : randomUUID();
+                    const token = progressToken != null ? String(progressToken) : generateToken();
                     function sendBackgroundDoneNotification(result: CallToolResult, token: string) {
                         // Custom notification (background/done), so
                         // the client can correlate it via progressToken and feed the

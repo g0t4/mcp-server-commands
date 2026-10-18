@@ -1,8 +1,17 @@
 import { ChildProcess } from "node:child_process";
 import process from "node:process";
+import { randomBytes } from "node:crypto";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 
 export type ProcessStatus = "running" | "exited" | "error";
+
+/**
+ * Synthesize a compact session token (64-bit hex) when the client doesn't
+ * supply a progressToken. Unique enough for an in-memory registry key.
+ */
+export function generateToken(): string {
+    return randomBytes(8).toString("hex");
+}
 
 /**
  * Live handle for a background process, kept in the registry after the
