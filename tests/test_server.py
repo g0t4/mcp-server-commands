@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import os
+import signal
 from pathlib import Path
 
 import pytest
@@ -263,6 +265,48 @@ async def test_process_stop_is_idempotent() -> None:
     ss = stop_again.structuredContent or {}
     assert stop_again.isError is False
     assert ss["stopped"] is False
+
+
+async def test_process_stop_escalates_to_sigkill() -> None:
+    # A process that ignores SIGTERM must still be stopped via SIGKILL escalation.
+    result = await execute(
+        "bash",
+        'trap "" TERM; python3 -c "import signal,time; '
+        'signal.signal(signal.SIGTERM, signal.SIG_IGN); time.sleep(30)"',
+        background=True,
+    )
+    s = result.structuredContent
+    assert s is not None
+    token = s["token"]
+
+    stop = await create_server().call_tool("process_stop", {"token": token})
+    assert stop.isError is False
+
+    for _ in range(60):  # allow the 2s escalation + settle
+        bg = get_process(token)
+        if bg and bg.done:
+            break
+        await asyncio.sleep(0.1)
+    assert bg is not None and bg.done is True
+
+
+async def test_external_kill_reports_sigkill() -> None:
+    # Mirrors the TS "external kill -9 -> SIGNAL: SIGKILL" case.
+    result = await execute("bash", "sleep 30", background=True)
+    s = result.structuredContent
+    assert s is not None
+    os.killpg(s["pid"], signal.SIGKILL)
+
+    for _ in range(30):
+        bg = get_process(s["token"])
+        if bg and bg.done:
+            break
+        await asyncio.sleep(0.05)
+
+    status = await create_server().call_tool("process_status", {"token": s["token"]})
+    ss = status.structuredContent or {}
+    assert ss["done"] is True
+    assert ss["result"]["signal"] == "SIGKILL"
 
 
 def test_server_exposes_tools() -> None:

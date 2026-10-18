@@ -56,15 +56,30 @@ def get_process(token: str) -> BackgroundProcess | None:
     return _processes.get(token)
 
 
-def stop_process(token: str, signal_name: str = "SIGTERM") -> bool:
-    """Kill a background process (the whole group). Returns False if gone."""
+async def stop_process(token: str) -> bool:
+    """Kill a background process, escalating SIGTERM -> SIGKILL after 2s.
+
+    Returns False if the process is already gone.
+    """
     bg = _processes.get(token)
     if bg is None or bg.process is None or bg.process.returncode is not None:
         return False
     try:
-        os.killpg(bg.process.pid, getattr(signal, signal_name))
+        os.killpg(bg.process.pid, signal.SIGTERM)
     except (ProcessLookupError, PermissionError):
         return False
+
+    # Escalate to SIGKILL if the process is still alive after a grace period,
+    # so a stuck process that ignores SIGTERM is still stopped.
+    async def _escalate() -> None:
+        await asyncio.sleep(2.0)
+        if bg.process is not None and bg.process.returncode is None:
+            try:
+                os.killpg(bg.process.pid, signal.SIGKILL)
+            except (ProcessLookupError, PermissionError):
+                pass
+
+    asyncio.create_task(_escalate())
     return True
 
 
@@ -181,11 +196,24 @@ def _build_result(
     if stderr_truncated:
         structured["stderr_truncated"] = True
         structured["stderr_bytes"] = stderr_bytes
+    sig = _signal_name(process.returncode)
+    if sig:
+        structured["signal"] = sig
     return CallToolResult(
         content=[],
         structuredContent=structured,
         isError=process.returncode != 0 or timed_out,
     )
+
+
+def _signal_name(returncode: int | None) -> str | None:
+    """Map a negative returncode to a signal name (e.g. -9 -> SIGKILL)."""
+    if returncode is None or returncode >= 0:
+        return None
+    try:
+        return signal.Signals(-returncode).name
+    except ValueError:
+        return None
 
 
 async def _kill_group(process: asyncio.subprocess.Process, signal_name: str) -> None:

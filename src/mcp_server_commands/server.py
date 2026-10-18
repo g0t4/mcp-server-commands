@@ -249,7 +249,7 @@ def create_server(workdir: str | None = None, bash_path: str | None = None) -> F
                 isError=True,
             )
         # Idempotent: stopping an already-finished process is not an error.
-        stopped = stop_process(token, "SIGTERM")
+        stopped = await stop_process(token)
         return CallToolResult(
             content=[],
             structuredContent={"token": token, "stopped": stopped},
