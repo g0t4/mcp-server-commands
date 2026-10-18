@@ -25,6 +25,48 @@ async def test_run_bash_pipe_and_brace() -> None:
     assert s["stdout"] == "a\nb\nc\n"
 
 
+async def test_run_bash_variable_expansion_and_command_substitution() -> None:
+    result = await execute(
+        "bash", 'name=world; echo "hello $name"; echo "$(printf sub)"'
+    )
+    s = result.structuredContent
+    assert s is not None
+    assert s["exit_code"] == 0
+    assert s["stdout"] == "hello world\nsub\n"
+
+
+async def test_run_bash_here_string() -> None:
+    result = await execute("bash", 'cat <<< "hello"')
+    s = result.structuredContent
+    assert s is not None
+    assert s["exit_code"] == 0
+    assert s["stdout"] == "hello\n"
+
+
+async def test_run_bash_conditional() -> None:
+    result = await execute("bash", "[[ 5 -gt 3 ]] && echo yes")
+    s = result.structuredContent
+    assert s is not None
+    assert s["exit_code"] == 0
+    assert s["stdout"] == "yes\n"
+
+
+async def test_run_bash_chaining() -> None:
+    result = await execute("bash", "false || echo fallback")
+    s = result.structuredContent
+    assert s is not None
+    assert s["exit_code"] == 0
+    assert s["stdout"] == "fallback\n"
+
+
+async def test_run_bash_multiline_script() -> None:
+    result = await execute("bash", 'for i in 1 2 3; do echo "n=$i"; done')
+    s = result.structuredContent
+    assert s is not None
+    assert s["exit_code"] == 0
+    assert s["stdout"] == "n=1\nn=2\nn=3\n"
+
+
 async def test_run_xonsh_python_expression() -> None:
     result = await execute("xonsh", "print(sum([1, 2, 3, 4]))")
     s = result.structuredContent
@@ -54,6 +96,17 @@ async def test_run_bash_timeout_terminates_process_group() -> None:
     s = result.structuredContent
     assert s is not None
     assert s["timed_out"] is True
+    assert s["exit_code"] != 0
+
+
+async def test_read_does_not_hang_without_stdin() -> None:
+    # `read` with no stdin (devnull) returns a non-zero code quickly instead of
+    # hanging waiting for input.
+    result = await execute("bash", "read foo", timeout_seconds=5)
+    s = result.structuredContent
+    assert s is not None
+    assert result.isError is True
+    assert s.get("timed_out") is not True
     assert s["exit_code"] != 0
 
 
@@ -265,6 +318,16 @@ async def test_server_workdir_default_via_tool(tmp_path: Path) -> None:
     server = create_server(workdir=str(tmp_path))
     result = await server.call_tool("run_bash", {"command_line": "pwd"})
     s = result.structuredContent or {}
+    assert s["exit_code"] == 0
+    assert s["stdout"] == str(tmp_path) + "\n"
+
+
+async def test_run_bash_prefers_per_call_cwd(tmp_path: Path) -> None:
+    result = await execute(
+        "bash", "pwd", cwd=str(tmp_path), default_cwd="/"
+    )
+    s = result.structuredContent
+    assert s is not None
     assert s["exit_code"] == 0
     assert s["stdout"] == str(tmp_path) + "\n"
 
