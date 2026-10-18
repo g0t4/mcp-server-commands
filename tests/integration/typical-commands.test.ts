@@ -22,7 +22,7 @@ describe("validate common commands work", () => {
             //   > and thus concluded that is_stdin_readable=true\nrg: DEBUG|rg::flags::hiargs
             const request = runProcess({
                 argv: ["rg", "--no-config", "--debug", "foo"],
-                timeout_ms: 1000, // FYI set timeout_ms so you get result object below
+                timeout_seconds: 1, // FYI set timeout_seconds so you get result object below
                 // if you let test itself timeout, you won't get result object to assert below
             });
 
@@ -43,7 +43,7 @@ describe("validate common commands work", () => {
             const result = await runProcess({
                 argv: ["rg", "--no-config", "bar"],
                 stdin_text: "foo\nbar\nbaz",
-                timeout_ms: 5000,
+                timeout_seconds: 5,
             });
             // console.log(result);
             expect(result.content).toEqual(

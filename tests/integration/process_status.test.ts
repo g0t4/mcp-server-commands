@@ -39,7 +39,7 @@ describe("runProcess - background mode (fire-and-forget)", () => {
         expect(handle.status).toBe("running");
         expect(handle.finalResult).toBeUndefined();
 
-        // Block until it settles, like process_status with wait:true.
+        // Block until it settles, so we can inspect the final result.
         await waitForProcess(handle);
         handle = getProcess(pid)!;
         expect(handle.status).toBe("exited");
@@ -49,22 +49,6 @@ describe("runProcess - background mode (fire-and-forget)", () => {
             expect.objectContaining({ name: "EXIT_CODE", text: "0" }),
             expect.objectContaining({ name: "STDOUT", text: expect.stringContaining("hello") }),
         ]));
-    });
-
-    test("process_status wait_timeout_ms returns done:false when the timeout elapses", async () => {
-        const result = await runProcess({
-            command_line: "sleep 2",
-            background: true,
-        });
-        const pid = pidFrom(result);
-        const handle = getProcess(pid)!;
-
-        // Only wait 200ms; the 2s sleep should still be running.
-        await waitForProcess(handle, 200);
-        expect(handle.status).toBe("running");
-
-        // Clean up the lingering background process.
-        process.kill(pid, "SIGKILL");
     });
 
     test("a background process the agent kills itself is reflected by process_status", async () => {

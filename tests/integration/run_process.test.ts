@@ -315,7 +315,7 @@ describe('timeout', () => {
         test('should set isError and include SIGNAL when aborted by timeout', async () => {
             const result = await runProcess({
                 argv: ["sleep", "10"], // long enough to be killed by the timeout
-                timeout_ms: 300,      // sleep command is fast so a short timeout to get the test over with is fine actually... 300ms is fast enough and will avoid random failures for slow launch of sleep (if it happens)!
+                timeout_seconds: 0.3, // sleep command is fast so a short timeout to get the test over with is fine actually... 300ms is fast enough and will avoid random failures for slow launch of sleep (if it happens)!
             });
 
             expect(result.isError).toBe(true);
@@ -349,7 +349,7 @@ describe('timeout', () => {
         test('should set isError and include SIGNAL when aborted by timeout', async () => {
             const result = await runProcess({
                 command_line: "vim",
-                timeout_ms: 1000,      // 0.1 s timeout forces abort w/ minimal delay
+                timeout_seconds: 1,    // 1s timeout forces abort w/ minimal delay
             });
 
             expect(result.isError).toBe(true);
@@ -368,8 +368,8 @@ describe('timeout', () => {
     });
 
 
-    describe('spawn options timeout_ms is effectively ignored for this "hung" process', () => {
-        jest.setTimeout(2_500); // need a gap b/w 1_000 timeout_ms value and the test level timeout so no flaky/janky test failures
+    describe('spawn options timeout_seconds is effectively ignored for this "hung" process', () => {
+        jest.setTimeout(2_500); // need a gap b/w 1s timeout_seconds value and the test level timeout so no flaky/janky test failures
         test('should be killed and not be a test level timeout', async () => {
 
             // * here are the messages that indicate test level timeout:
@@ -377,7 +377,7 @@ describe('timeout', () => {
             //     thrown: "Exceeded timeout of 5000 ms for a test.
             //     Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
             //
-            //       311 |     describe('spawn options timeout_ms is effectively ignored for this "hung?" process', () => {
+            //       311 |     describe('spawn options timeout_seconds is effectively ignored for this "hung?" process', () => {
             //     > 312 |         test.only('should be killed and not be a test level timeout', async () => {
             //           |              ^
             //       313 |             const result = await runProcess({
@@ -394,7 +394,7 @@ describe('timeout', () => {
                 //   editor that hangs: vim (PRN nvim might work if issues with vim)
                 //   vim appears to work on arch/mac/ubuntu so let's run with it for now!
                 command_line: "git -c core.editor=vim -c user.email='wes@wes.com' -c user.name='wes' commit --amend",
-                timeout_ms: 1_000, // force abort after 1 second... give the git command and editor time to launch (at least 100ms, but lets just do 1,000ms) else you will get random failures
+                timeout_seconds: 1, // force abort after 1 second... give the git command and editor time to launch (at least 100ms) else you will get random failures
             });
 
             // console.log(result)

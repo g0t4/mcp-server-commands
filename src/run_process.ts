@@ -72,12 +72,11 @@ export class RunProcessArgsHelper {
         return v.map((item) => String(item));
     }
 
-    /** Timeout in milliseconds – number if supplied, otherwise undefined */
-    /** Timeout in milliseconds – always a number (default 30_000) */
-    get timeoutMs(): number {
-        const v = this.raw.timeout_ms;
+    /** Timeout in seconds – always a number (default 30) */
+    get timeoutSeconds(): number {
+        const v = this.raw.timeout_seconds;
         const n = Number(v);
-        return Number.isNaN(n) ? 30_000 : n;
+        return Number.isNaN(n) ? 30 : n;
     }
 
     /** True if a shell command line is provided */
@@ -322,7 +321,7 @@ export function runProcess(
             child.once("close", clearKill);
         };
 
-        timer = setTimeout(() => killGroup("SIGTERM"), args.timeoutMs);
+        timer = setTimeout(() => killGroup("SIGTERM"), args.timeoutSeconds * 1000);
 
         // MCP cancellation – the SDK aborts the request's signal when a
         // notifications/cancelled message arrives for this request id.

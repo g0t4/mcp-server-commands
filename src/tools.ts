@@ -7,7 +7,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { always_log, verbose_log } from "./logging.js";
 import { runProcess } from "./run_process.js";
-import { getProcess, waitForProcess, drainStdout, drainStderr } from "./process_registry.js";
+import { getProcess, drainStdout, drainStderr } from "./process_registry.js";
 import { errorResult } from "./messages.js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 
@@ -49,9 +49,9 @@ export function registerTools(server: Server, defaultCwd?: string) {
                                 type: "string",
                                 description: "Optional text written to STDIN (written fully, then closed). Useful for heredoc-style input or file contents."
                             },
-                            timeout_ms: {
+                            timeout_seconds: {
                                 type: "number",
-                                description: "Optional timeout in milliseconds, defaults to 30,000ms",
+                                description: "Default: 30 seconds.",
                             },
                             background: {
                                 type: "boolean",
@@ -143,15 +143,6 @@ export function registerTools(server: Server, defaultCwd?: string) {
                     const handle = getProcess(pid);
                     if (!handle) {
                         return errorResult(`Process not found (pid: ${pid})`);
-                    }
-
-                    const wait = Boolean(request.params.arguments.wait);
-                    const waitTimeoutMs = request.params.arguments.wait_timeout_ms == null
-                        ? undefined
-                        : Number(request.params.arguments.wait_timeout_ms);
-
-                    if (wait) {
-                        await waitForProcess(handle, waitTimeoutMs);
                     }
 
                     const done = handle.status !== "running";
