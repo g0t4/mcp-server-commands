@@ -106,39 +106,40 @@ export function registerTools(server: Server, defaultCwd?: string) {
                     const args = request.params.arguments;
                     const notifyOnCompletion = Boolean(args.notify_on_completion);
                     const progressToken = request.params._meta?.progressToken;
+                    function sendDoneOnCompletion(result: CallToolResult, pid: number) {
+                        // Custom notification (background/done), so
+                        // the client can correlate it via progressToken and feed the
+                        // result back to the agent without polling.
+                        const isError = result.isError ?? false;
+                        const resultText = result.content
+                            .map((c) => (c.type === "text" ? c.text : JSON.stringify(c)))
+                            .join("\n");
+                        const message = isError
+                            ? `FAILED: Background process ${pid} completed with error\n\nRESULT: ${resultText}`
+                            : `DONE: Background process ${pid} completed\n\nRESULT: ${resultText}`;
+                        const notification = {
+                            method: "background/done",
+                            params: {
+                                progressToken,
+                                pid: pid,
+                                isError,
+                                message,
+                                result: resultText,
+                                // optional params so we don't get vim.NIL in lua land
+                                ...(isError ? { error: resultText } : {}),
+                            },
+                        };
+                        // Send the notification! (was missing - bug)
+                        server.notification(notification).catch((error) => {
+                            always_log("ERROR: Failed to send background/done notification", error);
+                        });
+                    }
                     const result = await runProcess(
                         args,
                         extra.signal,
                         defaultCwd,
                         notifyOnCompletion
-                            ? (result, pid) => {
-                                // Custom notification (background/done), so
-                                // the client can correlate it via progressToken and feed the
-                                // result back to the agent without polling.
-                                const isError = result.isError ?? false;
-                                const resultText = result.content
-                                    .map((c) => (c.type === "text" ? c.text : JSON.stringify(c)))
-                                    .join("\n");
-                                const message = isError
-                                    ? `FAILED: Background process ${pid} completed with error\n\nRESULT: ${resultText}`
-                                    : `DONE: Background process ${pid} completed\n\nRESULT: ${resultText}`;
-                                const notification = {
-                                    method: "background/done",
-                                    params: {
-                                        progressToken,
-                                        pid: pid,
-                                        isError,
-                                        message,
-                                        result: resultText,
-                                        // optional params so we don't get vim.NIL in lua land
-                                        ...(isError ? { error: resultText } : {}),
-                                    },
-                                };
-                                // Send the notification! (was missing - bug)
-                                server.notification(notification).catch((error) => {
-                                    always_log("ERROR: Failed to send background/done notification", error);
-                                });
-                            }
+                            ? sendDoneOnCompletion
                             : undefined,
                     );
                     // FYI logging this response is INVALUABLE! found a problem with my neovim MCP STDIO client!
