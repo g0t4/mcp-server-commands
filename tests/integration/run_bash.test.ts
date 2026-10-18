@@ -1,4 +1,4 @@
-import { runProcess } from "../../src/run_process.js";
+import { runBash } from "../../src/run_bash.js";
 import process from "node:process"
 import { exec, spawn } from 'child_process';
 import { once } from 'events';
@@ -12,12 +12,12 @@ import { promisify } from "util";
 //      non-zero exit code, STDOUT/STDERR, etc...
 //      feels richer way to explain problem with a command
 
-describe("runProcess - validating argument parsing/validation and basic success/failure outputs", () => {
+describe("runBash - validating argument parsing/validation and basic success/failure outputs", () => {
 
     describe("when shell mode (command_line) is successful and using STDIN", () => {
 
         test("should NOT set isError + returns EXIT_CODE=0 + STDOUT", async () => {
-            const result = await runProcess({
+            const result = await runBash({
                 command_line: "cat",
                 stdin_text: "Hello World",
             });
@@ -42,7 +42,7 @@ describe("runProcess - validating argument parsing/validation and basic success/
     });
 
     test("should change working directory based on workdir arg", async () => {
-        const pwd = await runProcess({
+        const pwd = await runBash({
             command_line: "pwd",
         });
         // console.log(pwd);
@@ -65,7 +65,7 @@ describe("runProcess - validating argument parsing/validation and basic success/
         expect(pwd.isError).toBeUndefined();
 
         // * test setting CWD to /
-        const cwd = await runProcess({
+        const cwd = await runBash({
             command_line: "pwd",
             cwd: "/",
         });
@@ -87,7 +87,7 @@ describe("runProcess - validating argument parsing/validation and basic success/
     });
 
     test("should use the server defaultCwd when no cwd is supplied", async () => {
-        const pwd = await runProcess({
+        const pwd = await runBash({
             command_line: "pwd",
         }, undefined, "/");
 
@@ -107,7 +107,7 @@ describe("runProcess - validating argument parsing/validation and basic success/
     });
 
     test("should prefer the per-call cwd over the server defaultCwd", async () => {
-        const pwd = await runProcess({
+        const pwd = await runBash({
             command_line: "pwd",
             cwd: "/",
         }, undefined, "/tmp");
@@ -130,7 +130,7 @@ describe("runProcess - validating argument parsing/validation and basic success/
     describe("failures set isError and explain why", () => {
         describe("shell_nonexistentcommand (failure in the command position)", () => {
             test("shell mode (command_line)", async () => {
-                const result = await runProcess({
+                const result = await runBash({
                     command_line: "shell_nonexistentcommand",
                 });
                 // console.log(result);
@@ -170,7 +170,7 @@ describe("runProcess - validating argument parsing/validation and basic success/
             test("shell mode (command_line) returning non‑zero exit code", async () => {
                 // tests failing command through the 'close' event pathway
                 //  yes this couples to implementation, so be it!
-                const result = await runProcess({
+                const result = await runBash({
                     command_line: "exit 42",
                 });
                 // console.log(result);
@@ -188,7 +188,7 @@ describe("runProcess - validating argument parsing/validation and basic success/
 
     });
 
-    describe("simple runProcess argument validation failures", () => {
+    describe("simple runBash argument validation failures", () => {
         const scenarios = [
             {
                 name: "no command_line provided",
@@ -199,7 +199,7 @@ describe("runProcess - validating argument parsing/validation and basic success/
         ];
 
         test.each(scenarios)("$name", async ({ args, expectedMessage }) => {
-            const result = await runProcess(args as any);
+            const result = await runBash(args as any);
             expect(result.isError).toBe(true);
             expect(result.content).toEqual([
                 {
@@ -223,7 +223,7 @@ describe('timeout', () => {
 
     describe('hang due to `sleep` command', () => {
         test('should set isError and include SIGNAL when aborted by timeout', async () => {
-            const result = await runProcess({
+            const result = await runBash({
                 command_line: "sleep 10", // long enough to be killed by the timeout
                 timeout_seconds: 0.3, // sleep command is fast so a short timeout to get the test over with is fine actually... 300ms is fast enough and will avoid random failures for slow launch of sleep (if it happens)!
             });
@@ -236,7 +236,7 @@ describe('timeout', () => {
     });
 
     test("`read foo` DOES NOT HANG, thus no timeout... instead read detects a lack of STDIN and returns a non-zero exit code", async () => {
-        const result = await runProcess({
+        const result = await runBash({
             command_line: "read foo",
         });
 
@@ -257,7 +257,7 @@ describe('timeout', () => {
         //   so let's keep this as yet another timeout example, doesn't hurt!
         //   also helps identify vim timeout issues in case they are confused with the git-commit+vim scenario below
         test('should set isError and include SIGNAL when aborted by timeout', async () => {
-            const result = await runProcess({
+            const result = await runBash({
                 command_line: "vim",
                 timeout_seconds: 1,    // 1s timeout forces abort w/ minimal delay
             });
@@ -290,12 +290,12 @@ describe('timeout', () => {
             //       311 |     describe('spawn options timeout_seconds is effectively ignored for this "hung?" process', () => {
             //     > 312 |         test.only('should be killed and not be a test level timeout', async () => {
             //           |              ^
-            //       313 |             const result = await runProcess({
+            //       313 |             const result = await runBash({
             //
             // A worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.
             //
 
-            const result = await runProcess({
+            const result = await runBash({
                 // candidates:
                 //  git commit --amend ... this works across mac/arch/ubuntu! and if the test is going to timeout then the commit is never actually modified (unless the test fails to fail ;)... and succeeds in amending somehow)
                 //  git commit --edit # edit message in editor
@@ -340,14 +340,14 @@ describe('timeout', () => {
 
 });
 
-describe("runProcess - signal handling", () => {
+describe("runBash - signal handling", () => {
 
-    describe('runProcess kill handling', () => {
+    describe('runBash kill handling', () => {
 
         test('should report killed when the child process is terminated externally', async () => {
             // start a long‑running process (sleep 10 seconds)
             //  FYI test will timeout at 5 seconds (before process finishes at 10 seconds)
-            const runPromise = runProcess({
+            const runPromise = runBash({
                 command_line: "sleep 10.5",
                 // FYI 10.5 is "odd" number so it's less likely to kill smth important :)
                 // PRN I could find this otherwise to avoid killing smth else
@@ -377,7 +377,7 @@ describe("runProcess - signal handling", () => {
 
         test('should kill the child process when the request signal is aborted', async () => {
             const controller = new AbortController();
-            const runPromise = runProcess({
+            const runPromise = runBash({
                 command_line: "sleep 10.5",
             }, controller.signal);
 

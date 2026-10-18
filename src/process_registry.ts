@@ -15,7 +15,7 @@ export function generateToken(): string {
 
 /**
  * Live handle for a background process, kept in the registry after the
- * original `run_process` tool call returns so `process_status` can poll it.
+ * original `run_bash` tool call returns so `process_status` can poll it.
  */
 export type ProcessHandle = {
     token: string;

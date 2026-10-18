@@ -6,7 +6,7 @@ import {
     ListToolsResult,
 } from "@modelcontextprotocol/sdk/types.js";
 import { always_log, verbose_log } from "./logging.js";
-import { runProcess } from "./run_process.js";
+import { runBash } from "./run_bash.js";
 import { getProcess, drainStdout, drainStderr, killProcess, generateToken } from "./process_registry.js";
 import { errorResult } from "./messages.js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
@@ -24,7 +24,7 @@ export function registerTools(server: Server, defaultCwd?: string) {
             tools: [
                 {
                     // TODO RUN_PROCESS MIGRATION! provide examples in system message, that way it is very clear how to use these!
-                    name: "run_process",
+                    name: "run_bash",
                     description: "Run a process on this " + os.platform() + " machine",
                     inputSchema: {
                         type: "object",
@@ -64,7 +64,7 @@ export function registerTools(server: Server, defaultCwd?: string) {
                         properties: {
                             token: {
                                 type: "string",
-                                description: "The token returned by run_process (background: true).",
+                                description: "The token returned by run_bash (background: true).",
                             },
                         },
                         required: ["token"],
@@ -78,7 +78,7 @@ export function registerTools(server: Server, defaultCwd?: string) {
                         properties: {
                             token: {
                                 type: "string",
-                                description: "The token returned by run_process (background: true).",
+                                description: "The token returned by run_bash (background: true).",
                             },
                         },
                         required: ["token"],
@@ -93,9 +93,9 @@ export function registerTools(server: Server, defaultCwd?: string) {
         async (request, extra): Promise<CallToolResult> => {
             verbose_log("INFO: ToolRequest", request);
             switch (request.params.name) {
-                case "run_process": {
+                case "run_bash": {
                     if (!request.params.arguments) {
-                        throw new Error("Missing arguments for run_process");
+                        throw new Error("Missing arguments for run_bash");
                     }
                     // extra.signal is aborted by the SDK when the client sends a
                     // notifications/cancelled message for this request id.
@@ -129,7 +129,7 @@ export function registerTools(server: Server, defaultCwd?: string) {
                             always_log("ERROR: Failed to send background/done notification", error);
                         });
                     }
-                    const result = await runProcess(
+                    const result = await runBash(
                         args,
                         extra.signal,
                         defaultCwd,

@@ -30,20 +30,20 @@ export type SpawnFailure = SpawnResult & {
 export type SpawnPromise = Promise<CallToolResult> & { pid?: number; token?: string };
 
 /**
- * Raw arguments passed to {@link runProcess}. Historically this was a loose
+ * Raw arguments passed to {@link runBash}. Historically this was a loose
  * {@link Record} but we now expose a typed helper for safer access.
  */
-export type RunProcessArgs = Record<string, unknown>;
+export type RunBashArgs = Record<string, unknown>;
 
 /**
  * Helper class that provides typed getters for the keys accepted by
- * {@link runProcess}. It wraps a {@link RunProcessArgs} object and casts the
+ * {@link runBash}. It wraps a {@link RunBashArgs} object and casts the
  * values to the expected runtime types.
  */
-export class RunProcessArgsHelper {
-    private readonly raw: RunProcessArgs;
+export class RunBashArgsHelper {
+    private readonly raw: RunBashArgs;
 
-    constructor(raw: RunProcessArgs) {
+    constructor(raw: RunBashArgs) {
         this.raw = raw ?? {};
     }
 
@@ -97,8 +97,8 @@ function killProcessGroup(child: ChildProcess, signal: NodeJS.Signals): void {
     }
 }
 
-export function runProcess(
-    runProcessArgs: RunProcessArgs,
+export function runBash(
+    runBashArgs: RunBashArgs,
     signal?: AbortSignal,
     defaultCwd?: string,
     token?: string,
@@ -110,7 +110,7 @@ export function runProcess(
     // it back so the agent can still reference the process.
     const resolvedToken = token ?? generateToken();
 
-    const args = new RunProcessArgsHelper(runProcessArgs);
+    const args = new RunBashArgsHelper(runBashArgs);
     if (!args.isShellMode) {
         return Promise.resolve(errorResult("'command_line' (string) is required."));
     }
@@ -312,7 +312,7 @@ export function runProcess(
         };
         signal?.addEventListener("abort", onAbort, { once: true });
     });
-    // FYI later (when needed) I can map this onto the promise that comes back from runProcess too (and tie into that unit test I have that needs pid to terminate it)
+    // FYI later (when needed) I can map this onto the promise that comes back from runBash too (and tie into that unit test I have that needs pid to terminate it)
     // Keep the underlying pid internally (tests still use it to terminate), but
     // the agent-facing identity is the token.
     promise.pid = child_pid;

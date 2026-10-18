@@ -24,7 +24,7 @@ async function main() {
 //
 
 // FYI make sure to rebuild since not typescript!
-import { execFileWithInput } from "../build/run_process.js";
+import { execFileWithInput } from "../build/run_bash.js";
 
 async function test_workaround() {
     const { stdout, stderr } = await execFileWithInput(

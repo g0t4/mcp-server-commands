@@ -3,9 +3,9 @@
  * Currently blocks recursive "ls -R" commands which can scan large
  * directories such as node_modules.
  */
-import { RunProcessArgsHelper } from "./run_process.js";
+import { RunBashArgsHelper } from "./run_bash.js";
 
-export function getBlockingMessage(args: RunProcessArgsHelper): string | null {
+export function getBlockingMessage(args: RunBashArgsHelper): string | null {
     // TODO need a command parser so I am not blocking anything that has "\sls\s" and "\s-R\s" basically
 
     const isRecursiveLs = (() => {

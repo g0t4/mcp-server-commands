@@ -100,7 +100,7 @@ def test_cancel_stops_a_running_sleep(mcp_client: McpStdioClient) -> None:
         "id": 2,
         "method": "tools/call",
         "params": {
-            "name": "run_process",
+            "name": "run_bash",
             "arguments": {"command_line": f"sleep 10; echo {marker}"},
         },
     })

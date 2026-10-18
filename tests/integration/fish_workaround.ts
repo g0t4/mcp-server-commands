@@ -1,6 +1,6 @@
 
 //
-// * 2026-02-09 after porting to run_process
+// * 2026-02-09 after porting to run_bash
 //   * SO FAR I can only repro this on GH actions ubuntu-latest runner
 //   not happening on arch, macOS
 //   so for now I don't care as ubuntu is not my target env

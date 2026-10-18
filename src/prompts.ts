@@ -16,14 +16,14 @@ export function registerPrompts(server: Server) {
         verbose_log("INFO: ListPrompts");
         return {
             prompts: [
-                // ?? add prompts for various LLMs that tailor instructions to make them optimize use of run_process tool
+                // ?? add prompts for various LLMs that tailor instructions to make them optimize use of run_bash tool
                 //  idea is, users could insert those manually, or perhaps automatically if necessary, depending on context
                 //  that way you don't need one prompt for everything and certain models won't need any help (i.e. Claude) vs
-                //  llama4 which struggled with old run_script tool (now just stdin on run_process) so it might need some
+                //  llama4 which struggled with old run_script tool (now just stdin on run_bash) so it might need some
                 //  special instructions and yeah... I think that's a use case for these prompts
                 //  /prompt llama4 ?
                 {
-                    name: "run_process",
+                    name: "run_bash",
                     description:
                         "Include command output in the prompt. " +
                         "This is effectively a user tool call.",
@@ -40,13 +40,13 @@ export function registerPrompts(server: Server) {
         // if (request.params.name == "examples") {
         //     return GetExamplePromptMessages();
         // } else
-        if (request.params.name !== "run_process") {
+        if (request.params.name !== "run_bash") {
             throw new Error(
                 "Unknown or not implemented prompt: " + request.params.name
             );
         }
         verbose_log("INFO: PromptRequest", request);
-        throw new Error("run_process not yet ported to prompts");
+        throw new Error("run_bash not yet ported to prompts");
 
         const command_line = String(request.params.arguments?.command_line);
         // Is it possible/feasible to pass a path for the workdir when running the command?
@@ -54,7 +54,7 @@ export function registerPrompts(server: Server) {
         // - IMO makes more sense to have it be based on the Zed workdir of each project
         // - Fallback could be to configure on server level (i.e. home dir of current user) - perhaps CLI arg? (thinking of zed's context_servers config section)
 
-        // TODO RUN_PROCESS MIGRATION - finish rest of migrtation to run_process
+        // TODO RUN_PROCESS MIGRATION - finish rest of migrtation to run_bash
         const { stdout, stderr } = await execAsync(command_line);
         // TODO gracefully handle errors and turn them into a prompt message that can be used by LLM to troubleshoot the issue, currently errors result in nothing inserted into the prompt and instead it shows the Zed's chat panel as a failure
 

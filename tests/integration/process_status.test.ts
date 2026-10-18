@@ -1,4 +1,4 @@
-import { runProcess } from "../../src/run_process.js";
+import { runBash } from "../../src/run_bash.js";
 import { getProcess, waitForProcess, drainStdout, drainStderr, killProcess } from "../../src/process_registry.js";
 
 function tokenFrom(result: any): string {
@@ -9,10 +9,10 @@ function tokenFrom(result: any): string {
     return msg.text;
 }
 
-describe("runProcess - background mode (fire-and-forget)", () => {
+describe("runBash - background mode (fire-and-forget)", () => {
 
     test("returns immediately with TOKEN and DONE:false instead of blocking", async () => {
-        const result = await runProcess({
+        const result = await runBash({
             command_line: "sleep 0.5",
             background: true,
         });
@@ -27,7 +27,7 @@ describe("runProcess - background mode (fire-and-forget)", () => {
     });
 
     test("process_status shows done:false while running, then done:true with STDOUT/exit code", async () => {
-        const result = await runProcess({
+        const result = await runBash({
             command_line: "echo hello && sleep 0.5",
             background: true,
         });
@@ -51,7 +51,7 @@ describe("runProcess - background mode (fire-and-forget)", () => {
     });
 
     test("a background process the agent kills itself is reflected by process_status", async () => {
-        const result = await runProcess({
+        const result = await runBash({
             command_line: "sleep 30",
             background: true,
         });
@@ -69,7 +69,7 @@ describe("runProcess - background mode (fire-and-forget)", () => {
     });
 
     test("process_status drains stdout buffer so repeated polls only return new output", async () => {
-        const result = await runProcess({
+        const result = await runBash({
             command_line: "echo first && sleep 1 && echo second",
             background: true,
         });
