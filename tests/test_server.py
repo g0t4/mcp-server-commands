@@ -173,6 +173,30 @@ async def test_process_stop_kills_background() -> None:
     assert bg is not None and bg.done is True
 
 
+async def test_process_stop_is_idempotent() -> None:
+    result = await execute("bash", "sleep 30", background=True)
+    s = result.structuredContent
+    assert s is not None
+    token = s["token"]
+
+    # First stop actually kills it.
+    stop = await create_server().call_tool("process_stop", {"token": token})
+    assert stop.structuredContent or {}
+    assert stop.isError is False
+
+    # Wait for the process to finish, then stop again: not an error.
+    for _ in range(30):
+        bg = get_process(token)
+        if bg and bg.done:
+            break
+        await asyncio.sleep(0.05)
+
+    stop_again = await create_server().call_tool("process_stop", {"token": token})
+    ss = stop_again.structuredContent or {}
+    assert stop_again.isError is False
+    assert ss["stopped"] is False
+
+
 def test_server_exposes_tools() -> None:
     server = create_server()
     tools = server._tool_manager.list_tools()

@@ -248,19 +248,11 @@ def create_server(workdir: str | None = None, bash_path: str | None = None) -> F
                 structuredContent={"error": f"Unknown token: {token}"},
                 isError=True,
             )
+        # Idempotent: stopping an already-finished process is not an error.
         stopped = stop_process(token, "SIGTERM")
-        if not stopped:
-            return CallToolResult(
-                content=[],
-                structuredContent={
-                    "token": token,
-                    "error": "process already finished or could not be stopped",
-                },
-                isError=True,
-            )
         return CallToolResult(
             content=[],
-            structuredContent={"token": token, "stopped": True},
+            structuredContent={"token": token, "stopped": stopped},
             isError=False,
         )
 
