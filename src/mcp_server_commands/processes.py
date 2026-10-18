@@ -19,6 +19,8 @@ from typing import Any, Callable
 
 from mcp.types import CallToolResult
 
+from mcp_server_commands.blocking import get_blocking_message
+
 DEFAULT_TIMEOUT_SECONDS = 30.0
 DEFAULT_MAX_OUTPUT_BYTES = 131072
 MAX_TIMEOUT_SECONDS = 600.0
@@ -300,6 +302,15 @@ async def execute(
         raise ValueError(
             f"timeout_seconds must be greater than 0 and at most {MAX_TIMEOUT_SECONDS}"
         )
+
+    if kind == "bash":
+        blocked = get_blocking_message(code)
+        if blocked is not None:
+            return CallToolResult(
+                content=[],
+                structuredContent={"error": blocked},
+                isError=True,
+            )
 
     if background:
         token = token or uuid.uuid4().hex

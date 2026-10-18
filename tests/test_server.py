@@ -57,6 +57,38 @@ async def test_run_bash_timeout_terminates_process_group() -> None:
     assert s["exit_code"] != 0
 
 
+async def test_blocks_recursive_ls() -> None:
+    result = await execute("bash", "ls -R")
+    s = result.structuredContent
+    assert s is not None
+    assert result.isError is True
+    assert "Command blocked: recursive ls" in s["error"]
+
+
+async def test_blocks_recursive_ls_with_extra_whitespace() -> None:
+    result = await execute("bash", "ls    -R")
+    s = result.structuredContent
+    assert s is not None
+    assert result.isError is True
+    assert "Command blocked: recursive ls" in s["error"]
+
+
+async def test_blocks_recursive_ls_via_bash_lc() -> None:
+    result = await execute("bash", "bash -lc ls -R")
+    s = result.structuredContent
+    assert s is not None
+    assert result.isError is True
+    assert "Command blocked: recursive ls" in s["error"]
+
+
+async def test_allows_non_recursive_ls_in_arguments() -> None:
+    result = await execute("bash", "echo foo the ls -R bar")
+    s = result.structuredContent
+    assert s is not None
+    assert result.isError is False
+    assert s["exit_code"] == 0
+
+
 async def test_background_run_bash_returns_token() -> None:
     result = await execute("bash", "sleep 0.2", background=True)
     s = result.structuredContent
