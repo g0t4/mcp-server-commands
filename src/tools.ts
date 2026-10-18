@@ -112,21 +112,7 @@ export function registerTools(server: Server, defaultCwd?: string) {
                         defaultCwd,
                         notifyOnCompletion
                             ? (result, pid) => {
-                                // Standard out-of-band progress notification when the
-                                // client requested a progress token.
-                                if (progressToken != null) {
-                                    server.notification({
-                                        method: "background/status",
-                                        params: {
-                                            progressToken,
-                                            message: `Background process ${pid} completed`,
-                                        },
-                                    }).catch((error) => {
-                                        always_log("ERROR: Failed to send background/status notification", error);
-                                    });
-                                }
-                                // Custom notification matching the format used by
-                                // the subagents MCP server (background/done), so
+                                // Custom notification (background/done), so
                                 // the client can correlate it via progressToken and feed the
                                 // result back to the agent without polling.
                                 const isError = result.isError ?? false;
