@@ -18,7 +18,6 @@ run_process = json.dumps(
                     "echo foo"
                 ),
                 "background": True,
-                "notify_on_completion": True,
             },
         },
     }
