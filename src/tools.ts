@@ -115,7 +115,7 @@ export function registerTools(server: Server, defaultCwd?: string) {
                             .map((c) => (c.type === "text" ? c.text : JSON.stringify(c)))
                             .join("\n");
                         const message = isError
-                            ? `FAILED: Background process ${pid} completed with error\n\nRESULT: ${resultText}`
+                            ? `FAILED: Background process ${pid} failed\n\nRESULT: ${resultText}`
                             : `DONE: Background process ${pid} completed\n\nRESULT: ${resultText}`;
                         const notification = {
                             method: "background/done",
