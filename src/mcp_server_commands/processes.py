@@ -23,7 +23,6 @@ from mcp_server_commands.blocking import get_blocking_message
 
 DEFAULT_TIMEOUT_SECONDS = 30.0
 DEFAULT_MAX_OUTPUT_BYTES = 131072
-MAX_TIMEOUT_SECONDS = 600.0
 
 
 @dataclass
@@ -298,10 +297,8 @@ async def execute(
     """Execute code in a fresh subprocess (foreground or background)."""
     if not code.strip():
         raise ValueError("code must not be empty")
-    if not 0 < timeout_seconds <= MAX_TIMEOUT_SECONDS:
-        raise ValueError(
-            f"timeout_seconds must be greater than 0 and at most {MAX_TIMEOUT_SECONDS}"
-        )
+    if timeout_seconds <= 0:
+        raise ValueError("timeout_seconds must be greater than 0")
 
     if kind == "bash":
         blocked = get_blocking_message(code)
