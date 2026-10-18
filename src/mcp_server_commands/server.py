@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import argparse
 import os
+import subprocess
+import sys
 from typing import Any
 
 from mcp.server.fastmcp import Context, FastMCP
@@ -265,6 +267,19 @@ def create_server(workdir: str | None = None, bash_path: str | None = None) -> F
     return server
 
 
+def _bash_error(bash_path: str) -> str | None:
+    """Return an error message if bash can't be run, else None."""
+    try:
+        result = subprocess.run(
+            [bash_path, "--version"], capture_output=True, check=False
+        )
+    except OSError as error:
+        return f"could not run bash: {error}"
+    if result.returncode != 0:
+        return f"bash exited with status {result.returncode}"
+    return None
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="MCP server exposing unified bash and xonsh execution"
@@ -295,9 +310,17 @@ def main() -> None:
     args = parser.parse_args()
     global _verbose
     _verbose = args.verbose
-    create_server(workdir=args.workdir, bash_path=args.bash).run(
-        transport=args.transport
-    )
+    bash = args.bash or "bash"
+    problem = _bash_error(bash)
+    if problem:
+        print(
+            f'run_bash requires bash, but "{bash}" is not usable ({problem}).\n'
+            "Provide the path to bash via the --bash argument or the "
+            "MCP_SERVER_COMMANDS_BASH env var, then restart the server.",
+            file=sys.stderr,
+        )
+        raise SystemExit(1)
+    create_server(workdir=args.workdir, bash_path=bash).run(transport=args.transport)
 
 
 if __name__ == "__main__":
