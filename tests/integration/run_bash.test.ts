@@ -60,6 +60,77 @@ describe("runBash - validating argument parsing/validation and basic success/fai
         });
     });
 
+    // These assert bash-specific semantics that plain /bin/sh (dash) can't do.
+    // They only pass because run_bash spawns an explicit `bash -c`.
+    describe("bash-isms", () => {
+        test("pipes", async () => {
+            const result = await runBash({ command_line: "printf 'a\\nb\\nc\\n' | grep b" });
+            expect(result.isError).toBeUndefined();
+            expect(result.content).toEqual([
+                { name: "EXIT_CODE", type: "text", text: "0" },
+                { name: "STDOUT", type: "text", text: "b\n" },
+            ]);
+        });
+
+        test("variable expansion and command substitution", async () => {
+            const result = await runBash({
+                command_line: 'name=world; echo "hello $name"; echo "$(printf sub)"',
+            });
+            expect(result.isError).toBeUndefined();
+            expect(result.content).toEqual([
+                { name: "EXIT_CODE", type: "text", text: "0" },
+                { name: "STDOUT", type: "text", text: "hello world\nsub\n" },
+            ]);
+        });
+
+        test("brace expansion (bash-only, not in dash)", async () => {
+            const result = await runBash({ command_line: "echo {a,b,c}" });
+            expect(result.isError).toBeUndefined();
+            expect(result.content).toEqual([
+                { name: "EXIT_CODE", type: "text", text: "0" },
+                { name: "STDOUT", type: "text", text: "a b c\n" },
+            ]);
+        });
+
+        test("here-string (bash-only)", async () => {
+            const result = await runBash({ command_line: "cat <<< \"hello\"" });
+            expect(result.isError).toBeUndefined();
+            expect(result.content).toEqual([
+                { name: "EXIT_CODE", type: "text", text: "0" },
+                { name: "STDOUT", type: "text", text: "hello\n" },
+            ]);
+        });
+
+        test("[[ ]] conditional (bash-only)", async () => {
+            const result = await runBash({ command_line: "[[ 5 -gt 3 ]] && echo yes" });
+            expect(result.isError).toBeUndefined();
+            expect(result.content).toEqual([
+                { name: "EXIT_CODE", type: "text", text: "0" },
+                { name: "STDOUT", type: "text", text: "yes\n" },
+            ]);
+        });
+
+        test("&& and || chaining", async () => {
+            const result = await runBash({ command_line: "false || echo fallback" });
+            expect(result.isError).toBeUndefined();
+            expect(result.content).toEqual([
+                { name: "EXIT_CODE", type: "text", text: "0" },
+                { name: "STDOUT", type: "text", text: "fallback\n" },
+            ]);
+        });
+
+        test("multiline script", async () => {
+            const result = await runBash({
+                command_line: 'for i in 1 2 3; do echo "n=$i"; done',
+            });
+            expect(result.isError).toBeUndefined();
+            expect(result.content).toEqual([
+                { name: "EXIT_CODE", type: "text", text: "0" },
+                { name: "STDOUT", type: "text", text: "n=1\nn=2\nn=3\n" },
+            ]);
+        });
+    });
+
     test("should change working directory based on workdir arg", async () => {
         const pwd = await runBash({
             command_line: "pwd",
