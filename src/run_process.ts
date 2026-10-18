@@ -94,11 +94,6 @@ export class RunProcessArgsHelper {
     get background(): boolean {
         return Boolean(this.raw.background);
     }
-
-    /** True if the server should notify when a background process completes */
-    get notifyOnCompletion(): boolean {
-        return Boolean(this.raw.notify_on_completion);
-    }
 }
 
 /**
@@ -129,9 +124,6 @@ export function runProcess(
     }
     if (!args.isShellMode && !args.isExecutableMode) {
         return Promise.resolve(errorResult("Either 'command_line' (string) or 'argv' (array) is required."));
-    }
-    if (args.notifyOnCompletion && !args.background) {
-        return Promise.resolve(errorResult("'notify_on_completion' is only applicable with 'background: true'."));
     }
 
     // Block dangerous commands via dedicated module
@@ -249,7 +241,7 @@ export function runProcess(
                 handle.finalResult = finalResult;
                 handle.child = undefined;
                 handle.resolveSettled();
-                if (args.notifyOnCompletion) {
+                if (handle) {
                     onComplete?.(finalResult, handle.pid);
                 }
             }

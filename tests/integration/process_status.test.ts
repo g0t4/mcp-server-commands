@@ -110,20 +110,4 @@ describe("runProcess - background mode (fire-and-forget)", () => {
         // Clean up.
         process.kill(pid, "SIGKILL");
     });
-
-    test("notify_on_completion requires background:true", async () => {
-        const result = await runProcess({
-            command_line: "echo hi",
-            notify_on_completion: true,
-        });
-
-        expect(result.isError).toBe(true);
-        expect(result.content).toEqual([
-            {
-                name: "ERROR",
-                type: "text",
-                text: expect.stringContaining("only applicable with 'background: true'"),
-            },
-        ]);
-    });
 });

@@ -57,10 +57,6 @@ export function registerTools(server: Server, defaultCwd?: string) {
                                 type: "boolean",
                                 description: "If true, start the process in the background and return immediately with its PID (in a PID message) instead of blocking until it finishes. Use process_status to poll it, or kill it yourself (e.g. `kill <pid>`).",
                             },
-                            notify_on_completion: {
-                                type: "boolean",
-                                description: "Only applicable with background: true. If true, the server sends a background/done notification when the process finishes, so you don't have to poll or sleep.",
-                            },
                         },
                         // FYI no required arg top level and I am not gonna fret about specifiying one or the other, the tool definition is fine with that distinction in the descriptions, plus it is intuitive.
                         //  and back when I had mode=shell/executable required, models would still forget to add it so why bother with a huge complexity in tool definition
@@ -104,7 +100,6 @@ export function registerTools(server: Server, defaultCwd?: string) {
                     // extra.signal is aborted by the SDK when the client sends a
                     // notifications/cancelled message for this request id.
                     const args = request.params.arguments;
-                    const notifyOnCompletion = Boolean(args.notify_on_completion);
                     const progressToken = request.params._meta?.progressToken;
                     function sendBackgroundDoneNotification(result: CallToolResult, pid: number) {
                         // Custom notification (background/done), so
@@ -138,9 +133,7 @@ export function registerTools(server: Server, defaultCwd?: string) {
                         args,
                         extra.signal,
                         defaultCwd,
-                        notifyOnCompletion
-                            ? sendBackgroundDoneNotification
-                            : undefined,
+                        sendBackgroundDoneNotification,
                     );
                     // FYI logging this response is INVALUABLE! found a problem with my neovim MCP STDIO client!
                     verbose_log("INFO: ToolResponse", result);
