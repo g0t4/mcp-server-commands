@@ -6,6 +6,20 @@ If you want your model to use specific shell(s) on a system, I would list them i
 
 Let me know if you encounter problems!
 
+## Unified Python server (in progress)
+
+There is a new unified FastMCP server in `src/mcp_server_commands/` that merges
+`run_bash` and `run_xonsh` into one server with **shared** `process_status` and
+`process_stop` tools (token-based). The old TypeScript server and the standalone
+`mcp-servers` xonsh server are left intact until cutover.
+
+The Python SDK is pinned to `mcp>=1.9,<2` because mcp 2.x renamed `FastMCP` to
+`MCPServer` and switched several field names to snake_case (`structured_content`,
+`is_error`, etc.). The v1 line still receives critical fixes, so this pin is
+intentional. When migrating to 2.x, the changes are mechanical: import renames,
+snake_case accessors, and dict access for `ctx.request_context.meta`'s
+`progress_token`.
+
 ## Tools
 
 Tools are for LLMs to request. Claude Sonnet 3.5 intelligently uses `run_bash`. And, initial testing shows promising results with [Groq Desktop with MCP](https://github.com/groq/groq-desktop-beta) and `llama4` models.
