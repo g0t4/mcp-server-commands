@@ -7,10 +7,6 @@ I added cancel by killing processes, is that the best way? is it working?
 ## OLDER
 - TODO remove tree-sitter deps if I don't use it for command parsing/blocking (i.e. ls -R) and then get rid of node version 22 engine constraint
 
-- TODO do any models do better with typescript/javascript naming conventions vs how I use snake case for tool and arg names right now?
-   i.e. stdinText vs stdin_text... runProcess vs run_process, etc?
-   I ask because definitions are sometimes presented in a typescript like type syntax (i.e. in gptoss harmony format)... and so one wonders if typescript naming conventions would be a boon (or not matter)?
-
 - `start_job`
    - assumptions:
        - agent exits => jobs are killed
