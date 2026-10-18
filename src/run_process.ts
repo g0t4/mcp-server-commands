@@ -65,13 +65,6 @@ export class RunProcessArgsHelper {
         return v == null ? undefined : String(v);
     }
 
-    /** Executable argv – array of strings if supplied, otherwise undefined */
-    get argv(): string[] | undefined {
-        const v = this.raw.argv;
-        if (!Array.isArray(v)) return undefined;
-        return v.map((item) => String(item));
-    }
-
     /** Timeout in seconds – always a number (default 30) */
     get timeoutSeconds(): number {
         const v = this.raw.timeout_seconds;
@@ -82,11 +75,6 @@ export class RunProcessArgsHelper {
     /** True if a shell command line is provided */
     get isShellMode(): boolean {
         return Boolean(this.commandLine);
-    }
-
-    /** True if an argv array with at least one element is provided */
-    get isExecutableMode(): boolean {
-        return Array.isArray(this.raw.argv) && (this.argv?.length ?? 0) > 0;
     }
 
     /** True if the process should be started in the background (fire-and-forget) */
@@ -123,11 +111,8 @@ export function runProcess(
     const resolvedToken = token ?? generateToken();
 
     const args = new RunProcessArgsHelper(runProcessArgs);
-    if (args.isShellMode && args.isExecutableMode) {
-        return Promise.resolve(errorResult("Cannot pass both 'command_line' and 'argv'. Use one or the other."));
-    }
-    if (!args.isShellMode && !args.isExecutableMode) {
-        return Promise.resolve(errorResult("Either 'command_line' (string) or 'argv' (array) is required."));
+    if (!args.isShellMode) {
+        return Promise.resolve(errorResult("'command_line' (string) is required."));
     }
 
     // Block dangerous commands via dedicated module
@@ -147,18 +132,9 @@ export function runProcess(
         options.cwd = cwd;
     }
 
-    let spawnCommand = "";
-    let spawnArgs: string[] = [];
-    if (args.isShellMode) {
-        (options as any).shell = true;
-        spawnCommand = String(args.commandLine);
-        spawnArgs = [];
-    } else {
-        (options as any).shell = false;
-        const argv = args.argv as string[];
-        spawnCommand = argv[0];
-        spawnArgs = argv.slice(1);
-    }
+    (options as any).shell = true;
+    const spawnCommand = String(args.commandLine);
+    const spawnArgs: string[] = [];
 
     const logWithElapsedTime = (msg: string, ...rest: any[]) => {
         if (!is_verbose) return;

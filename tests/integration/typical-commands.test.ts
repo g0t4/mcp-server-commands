@@ -21,7 +21,7 @@ describe("validate common commands work", () => {
             //   > for heuristic stdin detection on Unix, found that is_file=false, is_fifo=false and is_socket=true, 
             //   > and thus concluded that is_stdin_readable=true\nrg: DEBUG|rg::flags::hiargs
             const request = runProcess({
-                argv: ["rg", "--no-config", "--debug", "foo"],
+                command_line: "rg --no-config --debug foo",
                 timeout_seconds: 1, // FYI set timeout_seconds so you get result object below
                 // if you let test itself timeout, you won't get result object to assert below
             });
@@ -41,7 +41,7 @@ describe("validate common commands work", () => {
         });
         test("ripgrep can search over STDIN when STDIN is provided", async () => {
             const result = await runProcess({
-                argv: ["rg", "--no-config", "bar"],
+                command_line: "rg --no-config bar",
                 stdin_text: "foo\nbar\nbaz",
                 timeout_seconds: 5,
             });

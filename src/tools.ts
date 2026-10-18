@@ -32,13 +32,7 @@ export function registerTools(server: Server, defaultCwd?: string) {
                             // ListToolsResult => Tool type (in protocol) => https://modelcontextprotocol.io/specification/2025-06-18/schema#tool
                             command_line: {
                                 type: "string",
-                                description: "Shell mode: a shell command line executed via the system's default shell. Supports pipes, redirects, globbing. Cannot be combined with 'argv'."
-                            },
-                            argv: {
-                                minItems: 1, // * made up too
-                                type: "array",
-                                items: { type: "string" },
-                                description: "Executable mode: directly spawn a process. argv[0] is the executable, followed by arguments passed verbatim (no shell interpretation). Cannot be combined with 'command_line'."
+                                description: "A shell command line executed via the system's default shell. Supports pipes, redirects, globbing."
                             },
                             cwd: {
                                 // or "workdir" like before? => eval model behavior w/ each name?
@@ -59,7 +53,7 @@ export function registerTools(server: Server, defaultCwd?: string) {
                             },
                         },
                         // FYI no required arg top level and I am not gonna fret about specifiying one or the other, the tool definition is fine with that distinction in the descriptions, plus it is intuitive.
-                        //  and back when I had mode=shell/executable required, models would still forget to add it so why bother with a huge complexity in tool definition
+                        // command_line is the only supported mode now.
                     },
                 },
                 {

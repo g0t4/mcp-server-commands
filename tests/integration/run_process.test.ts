@@ -41,56 +41,6 @@ describe("runProcess - validating argument parsing/validation and basic success/
         });
     });
 
-    describe("when executable mode (argv) is successful", () => {
-        test("should NOT set isError + returns EXIT_CODE=0 + STDOUT", async () => {
-            const result = await runProcess({
-                argv: ["cat"],
-                stdin_text: "Hello World",
-            });
-
-            expect(result.isError).toBeUndefined();
-
-            expect(result.content).toEqual([
-                {
-                    name: "EXIT_CODE",
-                    type: "text",
-                    text: "0",
-                },
-                {
-                    name: "STDOUT",
-                    type: "text",
-                    text: "Hello World",
-                },
-            ]);
-        });
-
-        // New test: ensure that providing an empty `command_line` alongside a valid `argv`
-        // does not trigger a validation error and executes the command in executable mode.
-        test("should execute command via argv when command_line is set to empty", async () => {
-            const result = await runProcess({
-                // gptoss does this quite often, sets empty command_line arg (instead of just not setting it)
-                //  so why not codify it as this interpretation makes sense
-                command_line: "",
-                argv: ["bash", "-lc", "echo 'test'"],
-            });
-            // No error should be reported for a successful execution.
-            expect(result.isError).toBeUndefined();
-            expect(result.content).toEqual([
-                {
-                    name: "EXIT_CODE",
-                    type: "text",
-                    text: "0",
-                },
-                {
-                    name: "STDOUT",
-                    type: "text",
-                    // The output includes a trailing newline.
-                    text: expect.stringContaining("test"),
-                },
-            ]);
-        });
-    });
-
     test("should change working directory based on workdir arg", async () => {
         const pwd = await runProcess({
             command_line: "pwd",
@@ -214,40 +164,6 @@ describe("runProcess - validating argument parsing/validation and basic success/
                 ]);
             });
 
-            test("executable mode (argv)", async () => {
-                // * error is from spawn (not shell)
-                //   thus 'error' event returns this one
-                // * not the same as shell mode above
-                // ON_ERROR {
-                //   stdout: '',
-                //   stderr: '',
-                //   code: 'ENOENT',
-                //   signal: undefined,
-                //   message: 'spawn exec_nonexistentcommand ENOENT',
-                //   killed: undefined,
-                //   cmd: 'exec_nonexistentcommand'
-                // }
-
-                const result = await runProcess({
-                    argv: ["exec_nonexistentcommand"],
-                });
-                // console.log(result);
-
-                expect(result.isError).toBe(true);
-                expect(result.content).toEqual([
-                    {
-                        name: "EXIT_CODE",
-                        type: "text",
-                        text: expect.stringContaining("ENOENT"),
-                    },
-                    {
-                        name: "MESSAGE",
-                        type: "text",
-                        text: expect.stringContaining("spawn exec_nonexistentcommand ENOENT"),
-                    },
-                ]);
-
-            });
         });
 
         describe("valid command, fails", () => {
@@ -275,16 +191,10 @@ describe("runProcess - validating argument parsing/validation and basic success/
     describe("simple runProcess argument validation failures", () => {
         const scenarios = [
             {
-                name: "neither command_line nor argv provided",
+                name: "no command_line provided",
                 args: {},
                 expectedMessage:
-                    "Either 'command_line' (string) or 'argv' (array) is required."
-            },
-            {
-                name: "both command_line and argv provided",
-                args: { command_line: "echo hi", argv: ["date"] },
-                expectedMessage:
-                    "Cannot pass both 'command_line' and 'argv'. Use one or the other."
+                    "'command_line' (string) is required."
             },
         ];
 
@@ -314,7 +224,7 @@ describe('timeout', () => {
     describe('hang due to `sleep` command', () => {
         test('should set isError and include SIGNAL when aborted by timeout', async () => {
             const result = await runProcess({
-                argv: ["sleep", "10"], // long enough to be killed by the timeout
+                command_line: "sleep 10", // long enough to be killed by the timeout
                 timeout_seconds: 0.3, // sleep command is fast so a short timeout to get the test over with is fine actually... 300ms is fast enough and will avoid random failures for slow launch of sleep (if it happens)!
             });
 
@@ -438,10 +348,7 @@ describe("runProcess - signal handling", () => {
             // start a long‑running process (sleep 10 seconds)
             //  FYI test will timeout at 5 seconds (before process finishes at 10 seconds)
             const runPromise = runProcess({
-                // PRN also test for shell mode?
-                // command_line: "sleep 10.5",
-
-                argv: ['sleep', '10.5'],
+                command_line: "sleep 10.5",
                 // FYI 10.5 is "odd" number so it's less likely to kill smth important :)
                 // PRN I could find this otherwise to avoid killing smth else
                 //   like check parent processes, or if multiple matches then fail this test
@@ -471,7 +378,7 @@ describe("runProcess - signal handling", () => {
         test('should kill the child process when the request signal is aborted', async () => {
             const controller = new AbortController();
             const runPromise = runProcess({
-                argv: ['sleep', '10.5'],
+                command_line: "sleep 10.5",
             }, controller.signal);
 
             expect(runPromise.pid!).toBeGreaterThan(0);

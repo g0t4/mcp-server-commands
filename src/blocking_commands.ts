@@ -19,11 +19,6 @@ export function getBlockingMessage(args: RunProcessArgsHelper): string | null {
             const joined = parts.join(" ");
             return joined == "ls -R" || joined == "bash -lc ls -R";
         }
-        if (args.isExecutableMode) {
-            const argv = args.argv ?? [];
-            const joined = argv.map(a => a.trim()).join(" ");
-            return joined == "ls -R" || joined == "bash -lc ls -R";
-        }
         return false;
     })();
 

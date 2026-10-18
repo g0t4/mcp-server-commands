@@ -29,7 +29,6 @@ export function registerPrompts(server: Server) {
                         "This is effectively a user tool call.",
                     arguments: [
                         { name: "command_line", },
-                        { name: "argv", },
                         // ? other args?
                     ],
                 },
@@ -50,7 +49,6 @@ export function registerPrompts(server: Server) {
         throw new Error("run_process not yet ported to prompts");
 
         const command_line = String(request.params.arguments?.command_line);
-        const argv = String(request.params.arguments?.argv);
         // Is it possible/feasible to pass a path for the workdir when running the command?
         // - currently it uses / (yikez)
         // - IMO makes more sense to have it be based on the Zed workdir of each project

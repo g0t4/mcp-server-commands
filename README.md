@@ -1,11 +1,6 @@
 ## `runProcess` tool
 
-The `runProcess` tool runs processes on the host machine. There are two mutually exclusive ways to invoke it:
-
-1. **`command_line`** (string) — Executed via the system's default shell (just like typing into `bash`/`fish`/`pwsh`/etc). Shell features like pipes, redirects, and variable expansion all work.
-2. **`argv`** (string array) — Direct executable invocation. `argv[0]` is the executable, the rest are arguments. No shell interpretation.
-
-You cannot pass both. The tool infers whether to use a shell from which parameter you provide.
+The `runProcess` tool runs processes on the host machine via **`command_line`** (string) — executed through the system's default shell (just like typing into `bash`/`fish`/`pwsh`/etc). Shell features like pipes, redirects, and variable expansion all work.
 
 If you want your model to use specific shell(s) on a system, I would list them in your system prompt. Or, maybe in your tool instructions, though models tend to pay better attention to examples in a system prompt.
 
