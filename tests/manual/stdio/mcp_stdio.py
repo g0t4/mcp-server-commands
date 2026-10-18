@@ -1,8 +1,12 @@
-"""Shared helper for driving the MCP server over stdio in tests.
+"""Shared helper for driving the unified MCP server over stdio in tests.
 
 Each test script sends a sequence of newline-delimited JSON-RPC messages to
-``uv run -m subagents`` (the MCP stdio server), then pipes the server's
-responses through ``jq`` (or renders an image, in the case of screencap).
+the unified Python server, then pipes the server's responses through ``jq``
+(or renders an image, in the case of screencap).
+
+NOTE: the mcp Python SDK's stdio transport is newline-delimited (each JSON-RPC
+message is a single line), not Content-Length framed. Keep this in sync if you
+ever swap transports.
 """
 
 import subprocess
@@ -11,8 +15,10 @@ import threading
 import time
 from pathlib import Path
 
-MCP_SERVER_DIR = Path("~/repos/github/g0t4/mcp-server-commands/build/index.js").expanduser()
-print(MCP_SERVER_DIR)
+MCP_SERVER_CMD = str(
+    Path("~/repos/github/g0t4/mcp-server-commands/.venv/bin/mcp-server-commands").expanduser()
+)
+print(MCP_SERVER_CMD)
 
 REQUEST_INIT = (
     '{"jsonrpc":"2.0","id":1,"method":"initialize","params":'
@@ -34,15 +40,13 @@ def run_mcp(messages):
 
     ``messages`` is an iterable of ``(message, delay_after_send_seconds)``
     tuples. Each message is written to the server's stdin, then the delay
-    elapses before the next message is sent (mirroring the original fish tests,
-    where sleeps kept the pipe open so the server had time to respond). After
-    the last delay the stdin pipe is closed, which sends EOF and shuts the
-    server down.
+    elapses before the next message is sent. After the last delay the stdin
+    pipe is closed, which sends EOF and shuts the server down.
 
     Server stderr is left inherited so it surfaces on the terminal, exactly as
     it did in the fish tests (stdout is reserved for the JSON-RPC transport).
     """
-    cmd = ["npx", MCP_SERVER_DIR, "--", "--verbose"]
+    cmd = [MCP_SERVER_CMD, "--verbose"]
     proc = subprocess.Popen(
         cmd,
         stdin=subprocess.PIPE,
@@ -66,7 +70,7 @@ def run_mcp(messages):
     # EOF on stdin tells the stdio server to exit.
     proc.stdin.close()
     proc.wait()
-    reader.join() # block once dump is all that remains
+    reader.join()  # block once the dump is all that remains
 
 
 def pipe_to_jq(stdout):
