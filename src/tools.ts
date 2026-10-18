@@ -122,7 +122,6 @@ export function registerTools(server: Server, defaultCwd?: string) {
                         const notification = {
                             method: "background/done",
                             params: {
-                                progressToken,
                                 token,
                                 isError,
                                 message,
