@@ -22,7 +22,6 @@ from mcp.types import CallToolResult
 from mcp_server_commands.blocking import get_blocking_message
 
 DEFAULT_TIMEOUT_SECONDS = 30.0
-DEFAULT_MAX_OUTPUT_BYTES = 131072
 
 
 @dataclass
@@ -113,14 +112,6 @@ def _build_env(kind: str, changes: dict[str, str | None] | None) -> dict[str, st
     return env
 
 
-def _truncate_and_decode(data: bytes, limit: int) -> tuple[str, bool, int]:
-    original_bytes = len(data)
-    truncated = original_bytes > limit
-    if truncated:
-        data = data[:limit]
-    return data.decode("utf-8", errors="replace"), truncated, original_bytes
-
-
 async def spawn_process(
     kind: str,
     code: str,
@@ -175,27 +166,14 @@ def _build_result(
     stdout: bytes,
     stderr: bytes,
     timed_out: bool,
-    max_output_bytes: int,
 ) -> CallToolResult:
-    stdout_text, stdout_truncated, stdout_bytes = _truncate_and_decode(
-        stdout, max_output_bytes
-    )
-    stderr_text, stderr_truncated, stderr_bytes = _truncate_and_decode(
-        stderr, max_output_bytes
-    )
     structured = {
         "exit_code": process.returncode,
-        "stdout": stdout_text,
-        "stderr": stderr_text,
+        "stdout": stdout.decode("utf-8", errors="replace"),
+        "stderr": stderr.decode("utf-8", errors="replace"),
     }
     if timed_out:
         structured["timed_out"] = True
-    if stdout_truncated:
-        structured["stdout_truncated"] = True
-        structured["stdout_bytes"] = stdout_bytes
-    if stderr_truncated:
-        structured["stderr_truncated"] = True
-        structured["stderr_bytes"] = stderr_bytes
     sig = _signal_name(process.returncode)
     if sig:
         structured["signal"] = sig
@@ -228,7 +206,6 @@ async def communicate(
     *,
     stdin: str | None = None,
     timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS,
-    max_output_bytes: int = DEFAULT_MAX_OUTPUT_BYTES,
 ) -> CallToolResult:
     """Run a spawned process to completion and build the result."""
     timed_out = False
@@ -254,7 +231,7 @@ async def communicate(
         except Exception:
             pass
         raise
-    return _build_result(process, stdout, stderr, timed_out, max_output_bytes)
+    return _build_result(process, stdout, stderr, timed_out)
 
 
 async def stream(
@@ -263,7 +240,6 @@ async def stream(
     *,
     stdin: str | None = None,
     timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS,
-    max_output_bytes: int = DEFAULT_MAX_OUTPUT_BYTES,
 ) -> CallToolResult:
     """Run a spawned process, streaming output into the bg task's buffers."""
     timed_out = False
@@ -319,7 +295,7 @@ async def stream(
     await asyncio.gather(stdout_task, stderr_task)
     stdout = b"".join(stdout_chunks)
     stderr = b"".join(stderr_chunks)
-    return _build_result(process, stdout, stderr, timed_out, max_output_bytes)
+    return _build_result(process, stdout, stderr, timed_out)
 
 
 async def execute(
@@ -331,7 +307,6 @@ async def execute(
     stdin: str | None = None,
     env: dict[str, str | None] | None = None,
     timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS,
-    max_output_bytes: int = DEFAULT_MAX_OUTPUT_BYTES,
     background: bool = False,
     token: str | None = None,
     bash_path: str | None = None,
@@ -371,7 +346,6 @@ async def execute(
                 bg,
                 stdin=stdin,
                 timeout_seconds=timeout_seconds,
-                max_output_bytes=max_output_bytes,
             )
         )
 
@@ -420,5 +394,4 @@ async def execute(
         process,
         stdin=stdin,
         timeout_seconds=timeout_seconds,
-        max_output_bytes=max_output_bytes,
     )

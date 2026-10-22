@@ -107,7 +107,7 @@ def create_server(workdir: str | None = None, bash_path: str | None = None) -> F
         description=(
             "Run a bash command line in a fresh process. Bash semantics "
             "(pipes, heredocs, globbing). Returns structured stdout, stderr, "
-            "exit status, timeout, and truncation metadata. "
+            "exit status and timeout metadata. Output is returned in full. "
             "Use background=True to return immediately with a TOKEN; then use "
             "process_status to poll and process_stop to stop it."
         ),
@@ -144,8 +144,8 @@ def create_server(workdir: str | None = None, bash_path: str | None = None) -> F
         description=(
             "Run Xonsh source in a fresh process. Xonsh accepts shell-like "
             "commands and ordinary Python in the same program. Returns "
-            "structured stdout, stderr, exit status, timeout, and truncation "
-            "metadata. Use background=True to return immediately with a TOKEN; "
+            "structured stdout, stderr, exit status and timeout metadata. "
+            "Output is returned in full. Use background=True to return immediately with a TOKEN; "
             "then use process_status to poll and process_stop to stop it."
         ),
     )
@@ -155,7 +155,6 @@ def create_server(workdir: str | None = None, bash_path: str | None = None) -> F
         stdin: str | None = None,
         env: dict[str, str | None] | None = None,
         timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS,
-        max_output_bytes: int = 131072,
         background: bool = False,
         ctx: Context | None = None,
     ) -> CallToolResult:
@@ -173,7 +172,6 @@ def create_server(workdir: str | None = None, bash_path: str | None = None) -> F
             stdin=stdin,
             env=env,
             timeout_seconds=timeout_seconds,
-            max_output_bytes=max_output_bytes,
             background=background,
             token=token,
             on_background_done=on_done,

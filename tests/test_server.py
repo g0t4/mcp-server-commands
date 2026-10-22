@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import base64
 import os
 import signal
 from pathlib import Path
@@ -322,6 +323,32 @@ async def test_run_bash_via_tool() -> None:
     s = result.structuredContent or {}
     assert s["exit_code"] == 0
     assert s["stdout"] == "tool\n"
+
+
+@pytest.mark.parametrize("kind", ["bash", "xonsh"])
+@pytest.mark.parametrize("background", [False, True])
+async def test_large_output_is_returned_intact(kind: str, background: bool) -> None:
+    payload = base64.b64encode(b"image bytes" * 100000).decode()
+    stdout = "data:image/png;base64," + payload + "\n"
+    stderr = "diagnostic" * 20000
+    # Exercise the public tools, including background collection, beyond the old cap.
+    code = "import sys, base64; print('data:image/png;base64,' + base64.b64encode(b'image bytes' * 100000).decode()); _ = sys.stderr.write('diagnostic' * 20000)"
+    server = create_server()
+    args = {"code": code} if kind == "xonsh" else {
+        "command_line": "python3 - <<'PY'\n" + code + "\nPY"
+    }
+    result = await server.call_tool("run_" + kind, {**args, "background": background})
+    s = result.structuredContent or {}
+    if background:
+        bg = get_process(s["token"])
+        assert bg is not None and bg.task is not None
+        finished = await bg.task
+        s = finished.structuredContent or {}
+    assert s["exit_code"] == 0
+    assert s["stdout"] == stdout
+    assert s["stderr"] == stderr
+    assert "stdout_truncated" not in s
+    assert "stderr_truncated" not in s
 
 
 async def test_run_xonsh_via_tool() -> None:
