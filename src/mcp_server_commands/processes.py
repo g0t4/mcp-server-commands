@@ -12,8 +12,9 @@ import asyncio
 import os
 import signal
 import sys
+import tempfile
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable
 
@@ -22,7 +23,7 @@ from mcp.types import CallToolResult
 from mcp_server_commands.blocking import get_blocking_message
 
 DEFAULT_TIMEOUT_SECONDS = 30.0
-DEFAULT_MAX_OUTPUT_BYTES = 131072
+DEFAULT_MAX_OUTPUT_BYTES = 16 * 1024
 
 
 @dataclass
@@ -44,6 +45,7 @@ class BackgroundProcess:
     stdout_bytes: int = 0
     stderr_bytes: int = 0
     max_output_bytes: int = DEFAULT_MAX_OUTPUT_BYTES
+    captures: dict[str, OutputCapture] = field(default_factory=dict)
 
 
 _processes: dict[str, BackgroundProcess] = {}
@@ -116,12 +118,41 @@ def _build_env(kind: str, changes: dict[str, str | None] | None) -> dict[str, st
     return env
 
 
-def _truncate_and_decode(data: bytes, limit: int) -> tuple[str, bool, int]:
-    original_bytes = len(data)
-    truncated = original_bytes > limit
-    if truncated:
-        data = data[:limit]
-    return data.decode("utf-8", errors="replace"), truncated, original_bytes
+class OutputCapture:
+    """Keep small output inline; spill the complete byte stream on overflow."""
+
+    def __init__(self, name: str, limit: int):
+        self.name, self.limit = name, limit
+        self.data = bytearray()
+        self.total_bytes = 0
+        self.file = None
+        self.path: str | None = None
+
+    def write(self, data: bytes) -> None:
+        self.total_bytes += len(data)
+        if self.file is None and self.total_bytes > self.limit:
+            self.file = tempfile.NamedTemporaryFile(prefix=f"mcp-command-{self.name}-", suffix=".log", delete=False)
+            self.path = self.file.name
+            self.file.write(self.data)
+            self.data.clear()
+        if self.file is not None:
+            self.file.write(data)
+            self.file.flush()  # Polling agents may inspect the file while still running.
+        else:
+            self.data.extend(data)
+
+    def fields(self) -> dict:
+        if self.path is not None:
+            return {self.name: "", self.name + "_file": self.path,
+                    self.name + "_bytes": self.total_bytes, self.name + "_truncated": True}
+        return {self.name: self.data.decode("utf-8", errors="replace")}
+
+    def close(self) -> None:
+        if self.file is not None:
+            self.file.close()
+
+
+OUTPUT_FILE_NOTE = "Oversized output was saved to files. Use grep, rg or sed to read selected sections."
 
 
 async def spawn_process(
@@ -179,26 +210,23 @@ def _build_result(
     stderr: bytes,
     timed_out: bool,
     max_output_bytes: int,
+    output_captures: dict[str, OutputCapture] | None = None,
 ) -> CallToolResult:
-    stdout_text, stdout_truncated, stdout_bytes = _truncate_and_decode(
-        stdout, max_output_bytes
-    )
-    stderr_text, stderr_truncated, stderr_bytes = _truncate_and_decode(
-        stderr, max_output_bytes
-    )
-    structured = {
-        "exit_code": process.returncode,
-        "stdout": stdout_text,
-        "stderr": stderr_text,
-    }
+    captures = output_captures or {name: OutputCapture(name, max_output_bytes) for name in ("stdout", "stderr")}
+    if output_captures is None:
+        try:
+            captures["stdout"].write(stdout)
+            captures["stderr"].write(stderr)
+        finally:
+            for capture in captures.values():
+                capture.close()
+    structured = {"exit_code": process.returncode}
+    for capture in captures.values():
+        structured.update(capture.fields())
+    if any(capture.path for capture in captures.values()):
+        structured["output_note"] = OUTPUT_FILE_NOTE
     if timed_out:
         structured["timed_out"] = True
-    if stdout_truncated:
-        structured["stdout_truncated"] = True
-        structured["stdout_bytes"] = stdout_bytes
-    if stderr_truncated:
-        structured["stderr_truncated"] = True
-        structured["stderr_bytes"] = stderr_bytes
     sig = _signal_name(process.returncode)
     if sig:
         structured["signal"] = sig
@@ -276,40 +304,25 @@ async def stream(
         process.stdin.close()
 
     bg.max_output_bytes = max_output_bytes
-    stdout_chunks: list[bytes] = []
-    stderr_chunks: list[bytes] = []
+    bg.captures = {name: OutputCapture(name, max_output_bytes) for name in ("stdout", "stderr")}
 
-    async def _read_stream(
-        stream: asyncio.StreamReader | None,
-        chunks: list[bytes],
-        buffer_attr: str,
-    ) -> None:
+    async def _read_stream(stream: asyncio.StreamReader | None, name: str) -> None:
+        capture = bg.captures[name]
         if stream is None:
             return
         try:
-            while True:
-                chunk = await stream.read(8192)
-                if not chunk:
-                    break
-                size_attr = buffer_attr.replace("_buffer", "_bytes")
-                previous_bytes = getattr(bg, size_attr)
-                setattr(bg, size_attr, previous_bytes + len(chunk))
-                # Continue draining the process, but retain only the bounded prefix.
-                retained = chunk[:max(0, max_output_bytes - previous_bytes)]
-                if retained:
-                    chunks.append(retained)
-                    setattr(bg, buffer_attr, getattr(bg, buffer_attr) + retained.decode("utf-8", errors="replace"))
-        except asyncio.CancelledError:
-            pass
-        except Exception:
-            pass
+            while chunk := await stream.read(8192):
+                capture.write(chunk)
+                setattr(bg, name + "_bytes", capture.total_bytes)
+                if capture.path:
+                    setattr(bg, name + "_buffer", "")
+                else:
+                    setattr(bg, name + "_buffer", getattr(bg, name + "_buffer") + chunk.decode("utf-8", errors="replace"))
+        finally:
+            capture.close()
 
-    stdout_task = asyncio.create_task(
-        _read_stream(process.stdout, stdout_chunks, "stdout_buffer")
-    )
-    stderr_task = asyncio.create_task(
-        _read_stream(process.stderr, stderr_chunks, "stderr_buffer")
-    )
+    stdout_task = asyncio.create_task(_read_stream(process.stdout, "stdout"))
+    stderr_task = asyncio.create_task(_read_stream(process.stderr, "stderr"))
 
     try:
         await asyncio.wait_for(process.wait(), timeout=timeout_seconds)
@@ -323,15 +336,7 @@ async def stream(
             await process.wait()
 
     await asyncio.gather(stdout_task, stderr_task)
-    stdout = b"".join(stdout_chunks)
-    stderr = b"".join(stderr_chunks)
-    result = _build_result(process, stdout, stderr, timed_out, max_output_bytes)
-    for name in ("stdout", "stderr"):
-        original_bytes = getattr(bg, name + "_bytes")
-        if original_bytes > max_output_bytes:
-            result.structuredContent[name + "_truncated"] = True
-            result.structuredContent[name + "_bytes"] = original_bytes
-    return result
+    return _build_result(process, b"", b"", timed_out, max_output_bytes, bg.captures)
 
 
 async def execute(

@@ -21,10 +21,14 @@ snake_case accessors, and dict access for `ctx.request_context.meta`'s
 
 ## Tools
 
-Command stdout and stderr are capped at 128 KiB each, for both foreground and
-background execution. Oversized output includes `stdout_truncated` / `stderr_truncated`
-and the original byte counts. Background polling respects the same per-command cap.
-Narrow the command output or redirect it to a file and read selected sections.
+Command stdout and stderr up to 16 KiB each are returned inline. Larger streams
+are saved in full to private temporary files instead of being included in the
+response. Results include `stdout_file` / `stderr_file`, original byte counts,
+and compatibility truncation flags. Use `grep`, `rg`, or bounded `sed` ranges on
+those paths to retrieve relevant sections without flooding context again.
+Background polls use the same per-command threshold; files remain readable while
+the process runs and after it exits. The files live in the operating system's
+temporary directory and are not deleted when the command server exits.
 Use the agent's `open_image` tool to view images rather than printing encoded bytes.
 
 Tools are for LLMs to request. Claude Sonnet 3.5 intelligently uses `run_bash`. And, initial testing shows promising results with [Groq Desktop with MCP](https://github.com/groq/groq-desktop-beta) and `llama4` models.

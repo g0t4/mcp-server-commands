@@ -327,7 +327,7 @@ async def test_run_bash_via_tool() -> None:
 
 @pytest.mark.parametrize("kind", ["bash", "xonsh"])
 @pytest.mark.parametrize("background", [False, True])
-async def test_large_output_is_capped(kind: str, background: bool) -> None:
+async def test_large_output_is_saved_in_full(kind: str, background: bool) -> None:
     payload = base64.b64encode(b"image bytes" * 100000).decode()
     stdout = "data:image/png;base64," + payload + "\n"
     stderr = "diagnostic" * 20000
@@ -345,8 +345,14 @@ async def test_large_output_is_capped(kind: str, background: bool) -> None:
         finished = await bg.task
         s = finished.structuredContent or {}
     assert s["exit_code"] == 0
-    assert s["stdout"] == stdout[:DEFAULT_MAX_OUTPUT_BYTES]
-    assert s["stderr"] == stderr[:DEFAULT_MAX_OUTPUT_BYTES]
+    assert s["stdout"] == s["stderr"] == ""
+    for name, expected in (("stdout", stdout), ("stderr", stderr)):
+        path = Path(s[name + "_file"])
+        try:
+            assert path.read_bytes() == expected.encode()
+            assert path.stat().st_mode & 0o777 == 0o600
+        finally:
+            path.unlink()
     assert s["stdout_truncated"] is True
     assert s["stderr_truncated"] is True
     assert s["stdout_bytes"] == len(stdout.encode())
@@ -471,11 +477,38 @@ async def test_running_background_polls_cannot_bypass_output_cap() -> None:
         polled = (await server.call_tool("process_status", {"token": token})).structuredContent
         assert polled["done"] is False
         for name, char in (("stdout", "x"), ("stderr", "e")):
-            assert polled[name] == char * DEFAULT_MAX_OUTPUT_BYTES
+            assert polled[name] == ""
+            assert Path(polled[name + "_file"]).read_bytes() == char.encode() * size
             assert polled[name + "_truncated"] is True
             assert polled[name + "_bytes"] == size
         again = (await server.call_tool("process_status", {"token": token})).structuredContent
-        assert "stdout" not in again and "stderr" not in again
+        assert again["stdout"] == again["stderr"] == ""
+        assert again["stdout_file"] == polled["stdout_file"]
     finally:
         await server.call_tool("process_stop", {"token": token})
         await bg.task
+        for capture in bg.captures.values():
+            if capture.path:
+                Path(capture.path).unlink(missing_ok=True)
+
+
+@pytest.mark.parametrize("size", [DEFAULT_MAX_OUTPUT_BYTES, DEFAULT_MAX_OUTPUT_BYTES + 1])
+async def test_spill_boundary_preserves_small_stream_and_original_bytes(size: int) -> None:
+    result = await execute("bash", f"python3 - <<'PY'\nimport sys\nsys.stdout.buffer.write(b'x'*{size})\nsys.stderr.write('small diagnostic')\nPY")
+    s = result.structuredContent
+    assert s["stderr"] == "small diagnostic"
+    assert "stderr_file" not in s
+    if size <= DEFAULT_MAX_OUTPUT_BYTES:
+        assert s["stdout"] == "x" * size
+        assert "stdout_file" not in s
+    else:
+        assert s["stdout"] == ""
+        path = Path(s["stdout_file"])
+        try:
+            assert path.read_bytes() == b"x" * size
+            # The agent can narrow output with grep and stay below the same limit.
+            narrowed = await execute("bash", "head -c 10 " + str(path))
+            assert narrowed.structuredContent["stdout"] == "x" * 10
+            assert "stdout_file" not in narrowed.structuredContent
+        finally:
+            path.unlink()
