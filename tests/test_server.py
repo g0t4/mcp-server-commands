@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from mcp_server_commands.processes import execute, get_process
+from mcp_server_commands.processes import DEFAULT_MAX_OUTPUT_BYTES, execute, get_process
 from mcp_server_commands.server import create_server
 
 
@@ -327,11 +327,11 @@ async def test_run_bash_via_tool() -> None:
 
 @pytest.mark.parametrize("kind", ["bash", "xonsh"])
 @pytest.mark.parametrize("background", [False, True])
-async def test_large_output_is_returned_intact(kind: str, background: bool) -> None:
+async def test_large_output_is_capped(kind: str, background: bool) -> None:
     payload = base64.b64encode(b"image bytes" * 100000).decode()
     stdout = "data:image/png;base64," + payload + "\n"
     stderr = "diagnostic" * 20000
-    # Exercise the public tools, including background collection, beyond the old cap.
+    # Exercise the public tools, including background collection, beyond the cap.
     code = "import sys, base64; print('data:image/png;base64,' + base64.b64encode(b'image bytes' * 100000).decode()); _ = sys.stderr.write('diagnostic' * 20000)"
     server = create_server()
     args = {"code": code} if kind == "xonsh" else {
@@ -345,10 +345,12 @@ async def test_large_output_is_returned_intact(kind: str, background: bool) -> N
         finished = await bg.task
         s = finished.structuredContent or {}
     assert s["exit_code"] == 0
-    assert s["stdout"] == stdout
-    assert s["stderr"] == stderr
-    assert "stdout_truncated" not in s
-    assert "stderr_truncated" not in s
+    assert s["stdout"] == stdout[:DEFAULT_MAX_OUTPUT_BYTES]
+    assert s["stderr"] == stderr[:DEFAULT_MAX_OUTPUT_BYTES]
+    assert s["stdout_truncated"] is True
+    assert s["stderr_truncated"] is True
+    assert s["stdout_bytes"] == len(stdout.encode())
+    assert s["stderr_bytes"] == len(stderr.encode())
 
 
 async def test_run_xonsh_via_tool() -> None:
@@ -446,3 +448,34 @@ async def test_ripgrep_can_search_stdin_when_provided() -> None:
     assert s is not None
     assert s["exit_code"] == 0
     assert s["stdout"] == "bar\n"
+
+
+async def test_running_background_polls_cannot_bypass_output_cap() -> None:
+    server = create_server()
+    size = DEFAULT_MAX_OUTPUT_BYTES + 4096
+    code = (
+        f"import sys,time; sys.stdout.write('x'*{size}); sys.stdout.flush(); "
+        f"sys.stderr.write('e'*{size}); sys.stderr.flush(); time.sleep(10)"
+    )
+    initial = await server.call_tool("run_bash", {
+        "command_line": "python3 - <<'PY'\n" + code + "\nPY",
+        "background": True,
+    })
+    token = initial.structuredContent["token"]
+    bg = get_process(token)
+    try:
+        for _ in range(200):
+            if bg.stdout_bytes == size and bg.stderr_bytes == size:
+                break
+            await asyncio.sleep(0.01)
+        polled = (await server.call_tool("process_status", {"token": token})).structuredContent
+        assert polled["done"] is False
+        for name, char in (("stdout", "x"), ("stderr", "e")):
+            assert polled[name] == char * DEFAULT_MAX_OUTPUT_BYTES
+            assert polled[name + "_truncated"] is True
+            assert polled[name + "_bytes"] == size
+        again = (await server.call_tool("process_status", {"token": token})).structuredContent
+        assert "stdout" not in again and "stderr" not in again
+    finally:
+        await server.call_tool("process_stop", {"token": token})
+        await bg.task
